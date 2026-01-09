@@ -6,15 +6,44 @@ import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { ShipmentStatus, STATUS_LABELS } from '@/lib/constants';
 import { Link } from 'react-router-dom';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  Legend,
+} from 'recharts';
+import { format, subDays, startOfDay, eachDayOfInterval } from 'date-fns';
+
+const STATUS_COLORS: Record<string, string> = {
+  REGISTERED: '#6b7280',
+  RECEIVED: '#3b82f6',
+  PROCESSING: '#8b5cf6',
+  IN_TRANSIT: '#0ea5e9',
+  AT_TERMINAL: '#f59e0b',
+  CUSTOMS_CLEARANCE: '#ec4899',
+  OUT_FOR_DELIVERY: '#14b8a6',
+  DELIVERED: '#22c55e',
+  ON_HOLD_INCIDENT: '#ef4444',
+  CANCELLED: '#71717a',
+};
 
 export default function Dashboard() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async () => {
-      // Get shipment counts by status
+      // Get all shipments with dates
       const { data: shipments } = await supabase
         .from('shipments')
-        .select('current_status');
+        .select('id, current_status, created_at, client_id');
 
       const statusCounts: Record<string, number> = {};
       shipments?.forEach(s => {
@@ -35,6 +64,42 @@ export default function Dashboard() {
         .order('created_at', { ascending: false })
         .limit(5);
 
+      // Calculate shipments over last 30 days
+      const last30Days = eachDayOfInterval({
+        start: subDays(new Date(), 29),
+        end: new Date(),
+      });
+
+      const shipmentsOverTime = last30Days.map(day => {
+        const dayStart = startOfDay(day);
+        const count = shipments?.filter(s => {
+          const createdDate = startOfDay(new Date(s.created_at));
+          return createdDate.getTime() === dayStart.getTime();
+        }).length || 0;
+
+        return {
+          date: format(day, 'MMM dd'),
+          shipments: count,
+        };
+      });
+
+      // Get clients with shipment counts
+      const { data: clients } = await supabase
+        .from('clients')
+        .select('id, name');
+
+      const clientShipmentCounts = clients?.map(client => ({
+        name: client.name.length > 15 ? client.name.slice(0, 15) + '...' : client.name,
+        shipments: shipments?.filter(s => s.client_id === client.id).length || 0,
+      })).filter(c => c.shipments > 0).sort((a, b) => b.shipments - a.shipments).slice(0, 8) || [];
+
+      // Prepare pie chart data
+      const pieData = Object.entries(statusCounts).map(([status, count]) => ({
+        name: STATUS_LABELS[status as ShipmentStatus] || status,
+        value: count,
+        status,
+      }));
+
       return {
         totalShipments,
         activeShipments,
@@ -42,6 +107,9 @@ export default function Dashboard() {
         deliveredCount,
         statusCounts,
         recentShipments,
+        shipmentsOverTime,
+        clientShipmentCounts,
+        pieData,
       };
     },
   });
@@ -109,23 +177,160 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Status distribution */}
+        {/* Charts row */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Shipments over time */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Shipments Over Time</CardTitle>
+              <CardDescription>New shipments created in the last 30 days</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px]">
+                {isLoading ? (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    Loading chart...
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={stats?.shipmentsOverTime}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                      <XAxis 
+                        dataKey="date" 
+                        tick={{ fontSize: 12 }}
+                        tickLine={false}
+                        axisLine={false}
+                        interval="preserveStartEnd"
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 12 }}
+                        tickLine={false}
+                        axisLine={false}
+                        allowDecimals={false}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px',
+                        }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="shipments" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={2}
+                        dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
+                        activeDot={{ r: 5 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Status distribution pie chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Status Distribution</CardTitle>
+              <CardDescription>Current shipment status breakdown</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px]">
+                {isLoading ? (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    Loading chart...
+                  </div>
+                ) : stats?.pieData?.length ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={stats.pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={2}
+                        dataKey="value"
+                        label={({ name, value }) => `${name}: ${value}`}
+                        labelLine={false}
+                      >
+                        {stats.pieData.map((entry, index) => (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={STATUS_COLORS[entry.status] || '#6b7280'} 
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px',
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    No data yet
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Client shipments bar chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Shipments by Status</CardTitle>
-            <CardDescription>Distribution of shipments across different statuses</CardDescription>
+            <CardTitle>Shipments by Client</CardTitle>
+            <CardDescription>Top clients by shipment volume</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-3">
-              {Object.entries(stats?.statusCounts || {}).map(([status, count]) => (
-                <div key={status} className="flex items-center gap-2 bg-muted px-3 py-2 rounded-lg">
-                  <StatusBadge status={status as ShipmentStatus} />
-                  <span className="font-semibold">{count as number}</span>
+            <div className="h-[300px]">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  Loading chart...
                 </div>
-              ))}
-              {isLoading && <span className="text-muted-foreground">Loading...</span>}
-              {!isLoading && Object.keys(stats?.statusCounts || {}).length === 0 && (
-                <span className="text-muted-foreground">No shipments yet</span>
+              ) : stats?.clientShipmentCounts?.length ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={stats.clientShipmentCounts} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
+                    <XAxis 
+                      type="number"
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                      allowDecimals={false}
+                    />
+                    <YAxis 
+                      type="category"
+                      dataKey="name" 
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                      width={120}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                    />
+                    <Bar 
+                      dataKey="shipments" 
+                      fill="hsl(var(--primary))" 
+                      radius={[0, 4, 4, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  No client data yet
+                </div>
               )}
             </div>
           </CardContent>
