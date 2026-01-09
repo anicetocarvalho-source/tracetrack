@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.seed-users]
 verify_jwt = false
+
+[functions.notify-sla-breach]
+verify_jwt = false
