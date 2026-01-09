@@ -18,6 +18,7 @@ import AuditLogs from "./pages/backoffice/AuditLogs";
 import Settings from "./pages/backoffice/Settings";
 import MyShipments from "./pages/portal/MyShipments";
 import ShipmentTracking from "./pages/portal/ShipmentTracking";
+import Profile from "./pages/portal/Profile";
 
 const queryClient = new QueryClient();
 
@@ -83,6 +84,11 @@ const App = () => (
             <Route path="/portal/shipments/:id" element={
               <ProtectedRoute requireCustomer>
                 <ShipmentTracking />
+              </ProtectedRoute>
+            } />
+            <Route path="/portal/profile" element={
+              <ProtectedRoute requireCustomer>
+                <Profile />
               </ProtectedRoute>
             } />
 
