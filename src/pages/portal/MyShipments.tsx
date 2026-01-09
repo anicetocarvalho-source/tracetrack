@@ -8,8 +8,10 @@ import { CustomerLayout } from '@/components/layouts/CustomerLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 
 export default function MyShipments() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
 
   const { data: shipments, isLoading } = useQuery({
@@ -34,14 +36,14 @@ export default function MyShipments() {
     <CustomerLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold">My Shipments</h1>
-          <p className="text-muted-foreground">Track your shipments</p>
+          <h1 className="text-2xl font-bold">{t('nav.myShipments')}</h1>
+          <p className="text-muted-foreground">{t('portal.trackShipments')}</p>
         </div>
 
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search shipments..."
+            placeholder={t('common.search')}
             className="pl-10"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -50,12 +52,12 @@ export default function MyShipments() {
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {isLoading ? (
-            <p className="text-muted-foreground col-span-full">Loading...</p>
+            <p className="text-muted-foreground col-span-full">{t('common.loading')}</p>
           ) : shipments?.length === 0 ? (
             <Card className="col-span-full">
               <CardContent className="py-12 text-center">
                 <Package className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">No shipments found</p>
+                <p className="text-muted-foreground">{t('shipments.noShipments')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -72,7 +74,7 @@ export default function MyShipments() {
                     </div>
                     <div className="text-sm text-muted-foreground space-y-1">
                       <p>BL: {shipment.bl_reference}</p>
-                      <p>{shipment.containers?.length || 0} containers</p>
+                      <p>{shipment.containers?.length || 0} {t('shipments.containers').toLowerCase()}</p>
                       <p>{format(new Date(shipment.created_at), 'MMM d, yyyy')}</p>
                     </div>
                   </CardContent>
