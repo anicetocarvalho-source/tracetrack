@@ -60,7 +60,7 @@ export default function MyShipments() {
             </Card>
           ) : (
             shipments?.map((shipment: any) => (
-              <Link key={shipment.id} to={`/portal/track/${shipment.id}`}>
+              <Link key={shipment.id} to={`/portal/shipments/${shipment.id}`}>
                 <Card className="hover:border-primary transition-colors cursor-pointer">
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-start mb-3">
