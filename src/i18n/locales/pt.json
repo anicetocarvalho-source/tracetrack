@@ -309,7 +309,14 @@
     "addOperator": "Adicionar operador...",
     "settingsSaved": "Configurações guardadas",
     "errorSavingSettings": "Erro ao guardar configurações",
-    "loadingSettings": "A carregar configurações..."
+    "loadingSettings": "A carregar configurações...",
+    "automationSettings": "Configurações de Automação",
+    "automationSettingsDesc": "Configurar processos automáticos em segundo plano",
+    "exceptionDetectionFrequency": "Frequência de Deteção de Exceções",
+    "exceptionDetectionFrequencyDesc": "Com que frequência o sistema procura exceções de envio",
+    "selectFrequency": "Selecionar frequência",
+    "cronUpdated": "Agendamento atualizado",
+    "errorUpdatingCron": "Erro ao atualizar agendamento"
   },
   "auditLogs": {
     "title": "Logs de Auditoria",
