@@ -10,7 +10,10 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/backoffice/Dashboard";
 import Shipments from "./pages/backoffice/Shipments";
+import ShipmentDetail from "./pages/backoffice/ShipmentDetail";
+import CreateShipment from "./pages/backoffice/CreateShipment";
 import MyShipments from "./pages/portal/MyShipments";
+import ShipmentTracking from "./pages/portal/ShipmentTracking";
 
 const queryClient = new QueryClient();
 
@@ -36,11 +39,26 @@ const App = () => (
                 <Shipments />
               </ProtectedRoute>
             } />
+            <Route path="/backoffice/shipments/new" element={
+              <ProtectedRoute requireInternal>
+                <CreateShipment />
+              </ProtectedRoute>
+            } />
+            <Route path="/backoffice/shipments/:id" element={
+              <ProtectedRoute requireInternal>
+                <ShipmentDetail />
+              </ProtectedRoute>
+            } />
 
             {/* Customer portal routes */}
             <Route path="/portal" element={
               <ProtectedRoute requireCustomer>
                 <MyShipments />
+              </ProtectedRoute>
+            } />
+            <Route path="/portal/shipments/:id" element={
+              <ProtectedRoute requireCustomer>
+                <ShipmentTracking />
               </ProtectedRoute>
             } />
 
