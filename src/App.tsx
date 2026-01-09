@@ -19,6 +19,7 @@ import AuditLogs from "./pages/backoffice/AuditLogs";
 import Settings from "./pages/backoffice/Settings";
 import ActionRequired from "./pages/backoffice/ActionRequired";
 import ExceptionRules from "./pages/backoffice/ExceptionRules";
+import SLAManagement from "./pages/backoffice/SLAManagement";
 import MyShipments from "./pages/portal/MyShipments";
 import ShipmentTracking from "./pages/portal/ShipmentTracking";
 import Profile from "./pages/portal/Profile";
@@ -85,6 +86,11 @@ const App = () => (
             <Route path="/backoffice/exception-rules" element={
               <ProtectedRoute requireInternal>
                 <ExceptionRules />
+              </ProtectedRoute>
+            } />
+            <Route path="/backoffice/sla-management" element={
+              <ProtectedRoute requireInternal>
+                <SLAManagement />
               </ProtectedRoute>
             } />
 
