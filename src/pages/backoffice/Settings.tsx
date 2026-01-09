@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, X, Save, Ship, Package, MapPin, Users } from 'lucide-react';
+import { Plus, X, Ship, Package, MapPin, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 
 interface SystemSetting {
   id: string;
@@ -19,38 +20,39 @@ interface SystemSetting {
   updated_at: string;
 }
 
-const SETTING_CONFIG = {
-  shipping_lines: {
-    title: 'Shipping Lines',
-    description: 'Configure available shipping carriers',
-    icon: Ship,
-    placeholder: 'Add shipping line...',
-  },
-  container_types: {
-    title: 'Container Types',
-    description: 'Configure available container types',
-    icon: Package,
-    placeholder: 'Add container type...',
-  },
-  terminals: {
-    title: 'Terminals',
-    description: 'Configure available terminal locations',
-    icon: MapPin,
-    placeholder: 'Add terminal...',
-  },
-  operators: {
-    title: 'Operators',
-    description: 'Configure available operator names',
-    icon: Users,
-    placeholder: 'Add operator...',
-  },
-};
-
 const Settings = () => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [newItems, setNewItems] = useState<Record<string, string>>({});
+
+  const SETTING_CONFIG: Record<string, { title: string; description: string; icon: any; placeholder: string }> = {
+    shipping_lines: {
+      title: t('settings.shippingLines'),
+      description: t('settings.shippingLinesDesc'),
+      icon: Ship,
+      placeholder: t('settings.addShippingLine'),
+    },
+    container_types: {
+      title: t('settings.containerTypes'),
+      description: t('settings.containerTypesDesc'),
+      icon: Package,
+      placeholder: t('settings.addContainerType'),
+    },
+    terminals: {
+      title: t('settings.terminals'),
+      description: t('settings.terminalsDesc'),
+      icon: MapPin,
+      placeholder: t('settings.addTerminal'),
+    },
+    operators: {
+      title: t('settings.operators'),
+      description: t('settings.operatorsDesc'),
+      icon: Users,
+      placeholder: t('settings.addOperator'),
+    },
+  };
 
   const { data: settings = [], isLoading } = useQuery({
     queryKey: ['system-settings'],
@@ -77,10 +79,10 @@ const Settings = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['system-settings'] });
-      toast({ title: 'Settings saved' });
+      toast({ title: t('settings.settingsSaved') });
     },
     onError: (error: Error) => {
-      toast({ title: 'Error saving settings', description: error.message, variant: 'destructive' });
+      toast({ title: t('settings.errorSavingSettings'), description: error.message, variant: 'destructive' });
     },
   });
 
@@ -92,7 +94,7 @@ const Settings = () => {
     if (!setting) return;
 
     if (setting.value.includes(newItem)) {
-      toast({ title: 'Item already exists', variant: 'destructive' });
+      toast({ title: t('common.itemAlreadyExists'), variant: 'destructive' });
       return;
     }
 
@@ -119,7 +121,7 @@ const Settings = () => {
     return (
       <BackofficeLayout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-pulse text-muted-foreground">Loading settings...</div>
+          <div className="animate-pulse text-muted-foreground">{t('settings.loadingSettings')}</div>
         </div>
       </BackofficeLayout>
     );
@@ -129,8 +131,8 @@ const Settings = () => {
     <BackofficeLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-          <p className="text-muted-foreground">Configure system options and dropdown values</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('settings.title')}</h1>
+          <p className="text-muted-foreground">{t('settings.subtitle')}</p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -188,13 +190,13 @@ const Settings = () => {
                       </Badge>
                     ))}
                     {(!setting?.value || setting.value.length === 0) && (
-                      <span className="text-sm text-muted-foreground">No items configured</span>
+                      <span className="text-sm text-muted-foreground">{t('common.noItemsConfigured')}</span>
                     )}
                   </div>
 
                   {setting && (
                     <p className="text-xs text-muted-foreground">
-                      Last updated: {new Date(setting.updated_at).toLocaleString()}
+                      {t('common.lastUpdated')}: {new Date(setting.updated_at).toLocaleString()}
                     </p>
                   )}
                 </CardContent>

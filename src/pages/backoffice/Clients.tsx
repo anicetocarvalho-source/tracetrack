@@ -24,9 +24,11 @@ import {
 import { Plus, Pencil, X, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import type { Client } from '@/types/database';
 
 export default function Clients() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -63,11 +65,11 @@ export default function Clients() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
-      toast.success(editingClient ? 'Client updated' : 'Client created');
+      toast.success(editingClient ? t('clients.clientUpdated') : t('clients.clientCreated'));
       closeDialog();
     },
     onError: (error) => {
-      toast.error('Failed to save client: ' + error.message);
+      toast.error(t('clients.failedToSaveClient') + ': ' + error.message);
     },
   });
 
@@ -110,7 +112,7 @@ export default function Clients() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      toast.error('Client name is required');
+      toast.error(t('clients.clientNameRequired'));
       return;
     }
     saveMutation.mutate({
@@ -125,12 +127,12 @@ export default function Clients() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Clients</h1>
-            <p className="text-muted-foreground">Manage client organizations and notification settings</p>
+            <h1 className="text-2xl font-bold">{t('clients.title')}</h1>
+            <p className="text-muted-foreground">{t('clients.subtitle')}</p>
           </div>
           <Button onClick={openCreate}>
             <Plus className="w-4 h-4 mr-2" />
-            Add Client
+            {t('clients.addClient')}
           </Button>
         </div>
 
@@ -138,23 +140,23 @@ export default function Clients() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Notification Emails</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="w-[80px]">Actions</TableHead>
+                <TableHead>{t('common.name')}</TableHead>
+                <TableHead>{t('clients.notificationEmails')}</TableHead>
+                <TableHead>{t('shipments.createdAt')}</TableHead>
+                <TableHead className="w-[80px]">{t('common.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                    Loading...
+                    {t('common.loading')}
                   </TableCell>
                 </TableRow>
               ) : clients?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                    No clients found
+                    {t('clients.noClients')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -175,7 +177,7 @@ export default function Clients() {
                             </Badge>
                           ))
                         ) : (
-                          <span className="text-muted-foreground text-sm">No emails configured</span>
+                          <span className="text-muted-foreground text-sm">{t('clients.noEmailsConfigured')}</span>
                         )}
                       </div>
                     </TableCell>
@@ -198,26 +200,26 @@ export default function Clients() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingClient ? 'Edit Client' : 'Add Client'}</DialogTitle>
+            <DialogTitle>{editingClient ? t('clients.editClient') : t('clients.addClient')}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Client Name *</Label>
+              <Label htmlFor="name">{t('clients.clientName')} *</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter client name"
+                placeholder={t('clients.clientName')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Notification Emails</Label>
+              <Label>{t('clients.notificationEmails')}</Label>
               <div className="flex gap-2">
                 <Input
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
-                  placeholder="Add email address"
+                  placeholder={t('clients.addEmailAddress')}
                   type="email"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -227,7 +229,7 @@ export default function Clients() {
                   }}
                 />
                 <Button type="button" variant="secondary" onClick={addEmail}>
-                  Add
+                  {t('common.add')}
                 </Button>
               </div>
               {emails.length > 0 && (
@@ -247,16 +249,16 @@ export default function Clients() {
                 </div>
               )}
               <p className="text-xs text-muted-foreground">
-                These emails will receive notifications for shipment updates
+                {t('clients.emailNotificationHint')}
               </p>
             </div>
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={closeDialog}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={saveMutation.isPending}>
-                {saveMutation.isPending ? 'Saving...' : editingClient ? 'Update' : 'Create'}
+                {saveMutation.isPending ? t('common.saving') : editingClient ? t('common.update') : t('common.create')}
               </Button>
             </DialogFooter>
           </form>

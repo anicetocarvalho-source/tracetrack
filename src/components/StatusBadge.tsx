@@ -1,5 +1,6 @@
-import { ShipmentStatus, STATUS_LABELS, STATUS_CLASSES } from '@/lib/constants';
+import { ShipmentStatus, STATUS_CLASSES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface StatusBadgeProps {
   status: ShipmentStatus;
@@ -7,9 +8,11 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
+  const { t } = useTranslation();
+  
   return (
     <span className={cn('status-badge', STATUS_CLASSES[status], className)}>
-      {STATUS_LABELS[status]}
+      {t(`status.${status}`)}
     </span>
   );
 }

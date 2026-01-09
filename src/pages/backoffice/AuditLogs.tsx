@@ -23,12 +23,13 @@ import {
 } from '@/components/ui/select';
 import { FileText, Filter, X } from 'lucide-react';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import type { AuditLog, Profile } from '@/types/database';
 
 const ENTITY_TYPES = ['shipment', 'tracking_event', 'client', 'user', 'login'];
-const ACTION_TYPES = ['create', 'update', 'delete', 'login_success', 'login_failure'];
 
 const AuditLogs = () => {
+  const { t } = useTranslation();
   const [entityFilter, setEntityFilter] = useState<string>('all');
   const [userFilter, setUserFilter] = useState<string>('all');
   const [dateFrom, setDateFrom] = useState<string>('');
@@ -84,9 +85,9 @@ const AuditLogs = () => {
   const hasActiveFilters = entityFilter !== 'all' || userFilter !== 'all' || dateFrom || dateTo;
 
   const getUserName = (userId: string | null) => {
-    if (!userId) return 'System';
+    if (!userId) return t('common.system');
     const user = users.find((u) => u.id === userId);
-    return user?.name || user?.email || 'Unknown';
+    return user?.name || user?.email || t('common.unknown');
   };
 
   const getActionBadgeVariant = (action: string) => {
@@ -117,31 +118,31 @@ const AuditLogs = () => {
     <BackofficeLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Audit Logs</h1>
-          <p className="text-muted-foreground">Track all system activity and changes</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('auditLogs.title')}</h1>
+          <p className="text-muted-foreground">{t('auditLogs.subtitle')}</p>
         </div>
 
         {/* Filters */}
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center gap-2 mb-4">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">Filters</span>
+            <span className="font-medium">{t('common.filters')}</span>
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={clearFilters} className="ml-auto">
                 <X className="h-4 w-4 mr-1" />
-                Clear
+                {t('common.clear')}
               </Button>
             )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label>Entity Type</Label>
+              <Label>{t('auditLogs.entityType')}</Label>
               <Select value={entityFilter} onValueChange={setEntityFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All entities" />
+                  <SelectValue placeholder={t('auditLogs.allEntities')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All entities</SelectItem>
+                  <SelectItem value="all">{t('auditLogs.allEntities')}</SelectItem>
                   {ENTITY_TYPES.map((type) => (
                     <SelectItem key={type} value={type}>
                       {type.charAt(0).toUpperCase() + type.slice(1).replace('_', ' ')}
@@ -151,13 +152,13 @@ const AuditLogs = () => {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>User</Label>
+              <Label>{t('auditLogs.user')}</Label>
               <Select value={userFilter} onValueChange={setUserFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All users" />
+                  <SelectValue placeholder={t('auditLogs.allUsers')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All users</SelectItem>
+                  <SelectItem value="all">{t('auditLogs.allUsers')}</SelectItem>
                   {users.map((user) => (
                     <SelectItem key={user.id} value={user.id}>
                       {user.name || user.email}
@@ -167,7 +168,7 @@ const AuditLogs = () => {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>From Date</Label>
+              <Label>{t('auditLogs.fromDate')}</Label>
               <Input
                 type="date"
                 value={dateFrom}
@@ -175,7 +176,7 @@ const AuditLogs = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label>To Date</Label>
+              <Label>{t('auditLogs.toDate')}</Label>
               <Input
                 type="date"
                 value={dateTo}
@@ -190,12 +191,12 @@ const AuditLogs = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Timestamp</TableHead>
-                <TableHead>Entity</TableHead>
-                <TableHead>Action</TableHead>
-                <TableHead>User</TableHead>
-                <TableHead>Entity ID</TableHead>
-                <TableHead>Details</TableHead>
+                <TableHead>{t('auditLogs.timestamp')}</TableHead>
+                <TableHead>{t('auditLogs.entity')}</TableHead>
+                <TableHead>{t('auditLogs.action')}</TableHead>
+                <TableHead>{t('auditLogs.user')}</TableHead>
+                <TableHead>{t('auditLogs.entityId')}</TableHead>
+                <TableHead>{t('common.details')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -204,14 +205,14 @@ const AuditLogs = () => {
                   <TableCell colSpan={6} className="text-center py-8">
                     <div className="flex items-center justify-center gap-2">
                       <FileText className="h-5 w-5 animate-pulse" />
-                      <span>Loading logs...</span>
+                      <span>{t('auditLogs.loadingLogs')}</span>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : logs.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No audit logs found
+                    {t('auditLogs.noLogsFound')}
                   </TableCell>
                 </TableRow>
               ) : (
