@@ -514,6 +514,10 @@
     "target": "Target",
     "overage": "Overage",
     "noBreaches": "No SLA breaches found matching your filters",
-    "breachDetails": "Breach Details"
+    "breachDetails": "Breach Details",
+    "breaches": "Breaches",
+    "breachTrend": "Breach Trend",
+    "last30Days": "Last 30 days",
+    "breachesByStatus": "Breaches by Status"
   }
 }
