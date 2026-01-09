@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.send-tracking-notification]
 verify_jwt = false
+
+[functions.rate-limited-login]
+verify_jwt = false
+
+[functions.shipment-lookup]
+verify_jwt = false
