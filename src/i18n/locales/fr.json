@@ -210,6 +210,16 @@
     "shipmentCreated": "Expédition créée avec succès",
     "failedToCreate": "Échec de la création de l'expédition"
   },
+  "editShipment": {
+    "title": "Modifier l'Expédition",
+    "description": "Mettre à jour les détails de l'expédition pour",
+    "justification": "Justification",
+    "justificationPlaceholder": "Expliquez pourquoi cette modification est effectuée (minimum 10 caractères)...",
+    "sensitiveField": "sensible",
+    "saveChanges": "Enregistrer les Modifications",
+    "shipmentUpdated": "Expédition mise à jour avec succès",
+    "noChanges": "Aucune modification détectée"
+  },
   "profile": {
     "title": "Mon Profil",
     "subtitle": "Consultez les informations de votre compte",

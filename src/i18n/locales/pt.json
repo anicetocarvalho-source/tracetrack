@@ -210,6 +210,16 @@
     "shipmentCreated": "Envio criado com sucesso",
     "failedToCreate": "Falha ao criar envio"
   },
+  "editShipment": {
+    "title": "Editar Envio",
+    "description": "Atualizar detalhes do envio para",
+    "justification": "Justificação",
+    "justificationPlaceholder": "Explique porque esta alteração está a ser feita (mínimo 10 caracteres)...",
+    "sensitiveField": "sensível",
+    "saveChanges": "Guardar Alterações",
+    "shipmentUpdated": "Envio atualizado com sucesso",
+    "noChanges": "Nenhuma alteração detectada"
+  },
   "profile": {
     "title": "Meu Perfil",
     "subtitle": "Visualize as informações da sua conta",
