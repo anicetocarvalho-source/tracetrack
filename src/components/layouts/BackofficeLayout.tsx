@@ -9,7 +9,9 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  AlertTriangle,
+  Settings2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -32,9 +34,11 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
 
   const navItems = [
     { path: '/backoffice', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { path: '/backoffice/action-required', label: t('exceptions.title'), icon: AlertTriangle, highlight: true },
     { path: '/backoffice/shipments', label: t('nav.shipments'), icon: Package },
     { path: '/backoffice/clients', label: t('nav.clients'), icon: Building2, roles: ['MANAGER'] },
     { path: '/backoffice/users', label: t('nav.users'), icon: Users, roles: ['MANAGER'] },
+    { path: '/backoffice/exception-rules', label: t('exceptions.rulesTitle'), icon: Settings2, roles: ['MANAGER'] },
     { path: '/backoffice/audit-logs', label: t('nav.auditLogs'), icon: FileText, roles: ['MANAGER'] },
     { path: '/backoffice/settings', label: t('nav.settings'), icon: Settings, roles: ['MANAGER'] },
   ];

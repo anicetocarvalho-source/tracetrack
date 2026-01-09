@@ -62,3 +62,27 @@ export const CONTAINER_TYPES = [
   '20FR',
   '40FR',
 ] as const;
+
+export const EXCEPTION_SEVERITIES = ['P1', 'P2', 'P3'] as const;
+export type ExceptionSeverity = typeof EXCEPTION_SEVERITIES[number];
+
+export const SEVERITY_LABELS: Record<ExceptionSeverity, string> = {
+  P1: 'Critical',
+  P2: 'High',
+  P3: 'Medium',
+};
+
+export const SEVERITY_CLASSES: Record<ExceptionSeverity, string> = {
+  P1: 'bg-destructive text-destructive-foreground',
+  P2: 'bg-orange-500 text-white',
+  P3: 'bg-yellow-500 text-black',
+};
+
+export const EXCEPTION_STATUSES = ['OPEN', 'ACKNOWLEDGED', 'RESOLVED'] as const;
+export type ExceptionStatus = typeof EXCEPTION_STATUSES[number];
+
+export const EXCEPTION_STATUS_LABELS: Record<ExceptionStatus, string> = {
+  OPEN: 'Open',
+  ACKNOWLEDGED: 'Acknowledged',
+  RESOLVED: 'Resolved',
+};
