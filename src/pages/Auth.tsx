@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Package, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import dhlLogo from '@/assets/dhl-logo.png';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -98,14 +99,14 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-dhl-yellow p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-xl mb-4">
-            <Package className="w-8 h-8 text-primary-foreground" />
+          <div className="inline-block mb-4">
+            <img src={dhlLogo} alt="DHL" className="h-16 w-auto" />
           </div>
-          <h1 className="text-2xl font-bold">Tracking Trace</h1>
-          <p className="text-muted-foreground">B2B Shipment Tracking System</p>
+          <h1 className="text-2xl font-bold text-foreground">Shipment Tracking</h1>
+          <p className="text-foreground/70">Excellence. Simply delivered.</p>
         </div>
 
         <Card>
