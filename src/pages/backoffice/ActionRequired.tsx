@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertTriangle, Clock, CheckCircle, Eye, MessageSquare, RefreshCw } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
@@ -23,13 +23,24 @@ import type { ExceptionSeverity, ExceptionStatus } from '@/lib/constants';
 export default function ActionRequired() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, role: userRole } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [severityFilter, setSeverityFilter] = useState<string>('all');
-  const [clientFilter, setClientFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('OPEN');
+  // Initialize filters from URL params
+  const [severityFilter, setSeverityFilter] = useState<string>(searchParams.get('severity') || 'all');
+  const [clientFilter, setClientFilter] = useState<string>(searchParams.get('client') || 'all');
+  const [statusFilter, setStatusFilter] = useState<string>(searchParams.get('status') || 'OPEN');
+
+  // Sync URL params when filters change
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (severityFilter !== 'all') params.set('severity', severityFilter);
+    if (clientFilter !== 'all') params.set('client', clientFilter);
+    if (statusFilter !== 'OPEN') params.set('status', statusFilter);
+    setSearchParams(params, { replace: true });
+  }, [severityFilter, clientFilter, statusFilter, setSearchParams]);
   
   const [resolveDialog, setResolveDialog] = useState<{ open: boolean; exception: ShipmentException | null }>({
     open: false,
