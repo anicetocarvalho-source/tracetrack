@@ -46,12 +46,18 @@ const STATUS_COLORS: Record<string, string> = {
   CANCELLED: '#71717a',
 };
 
-// SLA targets in hours by severity
-const SLA_TARGETS = {
+// Default SLA targets in hours by severity (will be overridden by system settings)
+const DEFAULT_SLA_TARGETS = {
   P1: 4,  // 4 hours for critical
   P2: 24, // 24 hours for high
   P3: 72, // 72 hours for medium
 };
+
+interface SLATargetsConfig {
+  P1: number;
+  P2: number;
+  P3: number;
+}
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -293,9 +299,27 @@ export default function Dashboard() {
     },
   });
 
+  // Fetch SLA targets from system settings
+  const { data: slaTargets } = useQuery({
+    queryKey: ['sla-targets'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'sla_targets')
+        .single();
+      
+      if (error || !data) return DEFAULT_SLA_TARGETS;
+      const value = data.value as unknown as SLATargetsConfig;
+      return value;
+    },
+  });
+
+  const activeSLATargets = slaTargets || DEFAULT_SLA_TARGETS;
+
   // Fetch SLA compliance data
   const { data: slaComplianceData, isLoading: isLoadingSLA } = useQuery({
-    queryKey: ['dashboard-sla-compliance', dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
+    queryKey: ['dashboard-sla-compliance', dateRange?.from?.toISOString(), dateRange?.to?.toISOString(), activeSLATargets],
     queryFn: async () => {
       const { data: resolvedExceptions } = await supabase
         .from('shipment_exceptions')
@@ -327,13 +351,13 @@ export default function Dashboard() {
             withinSLA: 0,
             breached: 0,
             compliancePercent: 0,
-            targetHours: SLA_TARGETS[severity],
+            targetHours: activeSLATargets[severity],
           };
         }
 
         const withinSLA = severityExceptions.filter(ex => {
           const resolutionHours = differenceInHours(new Date(ex.resolved_at!), new Date(ex.detected_at));
-          return resolutionHours <= SLA_TARGETS[severity];
+          return resolutionHours <= activeSLATargets[severity];
         }).length;
 
         const breached = total - withinSLA;
@@ -345,7 +369,7 @@ export default function Dashboard() {
           withinSLA,
           breached,
           compliancePercent,
-          targetHours: SLA_TARGETS[severity],
+          targetHours: activeSLATargets[severity],
         };
       });
 
@@ -881,15 +905,15 @@ export default function Dashboard() {
                   <div className="flex flex-wrap justify-center gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">P1:</span>
-                      <span className="text-muted-foreground">{SLA_TARGETS.P1}h {t('dashboard.target')}</span>
+                      <span className="text-muted-foreground">{activeSLATargets.P1}h {t('dashboard.target')}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-medium">P2:</span>
-                      <span className="text-muted-foreground">{SLA_TARGETS.P2}h {t('dashboard.target')}</span>
+                      <span className="text-muted-foreground">{activeSLATargets.P2}h {t('dashboard.target')}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-medium">P3:</span>
-                      <span className="text-muted-foreground">{SLA_TARGETS.P3}h {t('dashboard.target')}</span>
+                      <span className="text-muted-foreground">{activeSLATargets.P3}h {t('dashboard.target')}</span>
                     </div>
                   </div>
                 </>

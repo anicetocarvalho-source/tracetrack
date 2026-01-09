@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Plus, X, Ship, Package, MapPin, Users, Clock, AlertTriangle, Loader2, TrendingUp } from 'lucide-react';
+import { Plus, X, Ship, Package, MapPin, Users, Clock, AlertTriangle, Loader2, TrendingUp, Target } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 interface SystemSetting {
   id: string;
   key: string;
-  value: string[] | string | EscalationConfig;
+  value: string[] | string | EscalationConfig | SLATargetsConfig;
   description: string | null;
   updated_at: string;
 }
@@ -26,6 +26,12 @@ interface EscalationConfig {
   p2_to_p1_hours: number;
   p3_to_p2_hours: number;
   enabled: boolean;
+}
+
+interface SLATargetsConfig {
+  P1: number;
+  P2: number;
+  P3: number;
 }
 
 type CronFrequency = '30min' | '1hour' | '4hours';
@@ -41,6 +47,18 @@ const ESCALATION_HOURS_OPTIONS = [
   { value: 24, label: '24 hours' },
   { value: 48, label: '48 hours' },
   { value: 72, label: '72 hours' },
+];
+
+const SLA_HOURS_OPTIONS = [
+  { value: 2, label: '2 hours' },
+  { value: 4, label: '4 hours' },
+  { value: 8, label: '8 hours' },
+  { value: 12, label: '12 hours' },
+  { value: 24, label: '24 hours' },
+  { value: 48, label: '48 hours' },
+  { value: 72, label: '72 hours' },
+  { value: 96, label: '96 hours' },
+  { value: 168, label: '168 hours (1 week)' },
 ];
 
 const Settings = () => {
@@ -103,6 +121,14 @@ const Settings = () => {
     enabled: true,
   };
 
+  // Get current SLA targets
+  const slaSetting = settings.find(s => s.key === 'sla_targets');
+  const currentSLATargets: SLATargetsConfig = (slaSetting?.value as SLATargetsConfig) || {
+    P1: 4,
+    P2: 24,
+    P3: 72,
+  };
+
   const updateEscalationMutation = useMutation({
     mutationFn: async (config: EscalationConfig) => {
       const { error } = await supabase
@@ -117,6 +143,24 @@ const Settings = () => {
     },
     onError: (error: Error) => {
       toast({ title: t('settings.errorUpdatingEscalation'), description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const updateSLAMutation = useMutation({
+    mutationFn: async (config: SLATargetsConfig) => {
+      const { error } = await supabase
+        .from('system_settings')
+        .update({ value: config as unknown as string, updated_by: user?.id })
+        .eq('key', 'sla_targets');
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-sla-compliance'] });
+      toast({ title: t('settings.slaUpdated') });
+    },
+    onError: (error: Error) => {
+      toast({ title: t('settings.errorUpdatingSLA'), description: error.message, variant: 'destructive' });
     },
   });
 
@@ -362,6 +406,125 @@ const Settings = () => {
                   </div>
                 </>
               )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* SLA Targets Settings */}
+        {role === 'MANAGER' && (
+          <Card className="border-green-500/20">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-green-500" />
+                <CardTitle className="text-lg">{t('settings.slaTargets')}</CardTitle>
+              </div>
+              <CardDescription>{t('settings.slaTargetsDesc')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* P1 SLA Target */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Badge variant="destructive" className="text-xs">P1</Badge>
+                  {t('settings.slaTargetHours')}
+                </Label>
+                <div className="flex gap-2">
+                  <Select
+                    value={currentSLATargets.P1.toString()}
+                    onValueChange={(value) => 
+                      updateSLAMutation.mutate({ 
+                        ...currentSLATargets, 
+                        P1: parseInt(value) 
+                      })
+                    }
+                    disabled={updateSLAMutation.isPending}
+                  >
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SLA_HOURS_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value.toString()}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {updateSLAMutation.isPending && (
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t('settings.p1SlaDesc')}
+                </p>
+              </div>
+
+              {/* P2 SLA Target */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">P2</Badge>
+                  {t('settings.slaTargetHours')}
+                </Label>
+                <div className="flex gap-2">
+                  <Select
+                    value={currentSLATargets.P2.toString()}
+                    onValueChange={(value) => 
+                      updateSLAMutation.mutate({ 
+                        ...currentSLATargets, 
+                        P2: parseInt(value) 
+                      })
+                    }
+                    disabled={updateSLAMutation.isPending}
+                  >
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SLA_HOURS_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value.toString()}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t('settings.p2SlaDesc')}
+                </p>
+              </div>
+
+              {/* P3 SLA Target */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs bg-yellow-100 text-yellow-800">P3</Badge>
+                  {t('settings.slaTargetHours')}
+                </Label>
+                <div className="flex gap-2">
+                  <Select
+                    value={currentSLATargets.P3.toString()}
+                    onValueChange={(value) => 
+                      updateSLAMutation.mutate({ 
+                        ...currentSLATargets, 
+                        P3: parseInt(value) 
+                      })
+                    }
+                    disabled={updateSLAMutation.isPending}
+                  >
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SLA_HOURS_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value.toString()}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t('settings.p3SlaDesc')}
+                </p>
+              </div>
             </CardContent>
           </Card>
         )}
