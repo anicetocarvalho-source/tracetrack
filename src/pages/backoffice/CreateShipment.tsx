@@ -4,6 +4,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, Plus, Trash2, Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -65,19 +66,20 @@ const shipmentSchema = z.object({
 
 type ShipmentFormData = z.infer<typeof shipmentSchema>;
 
-const steps = [
-  { id: 1, title: 'Identification', description: 'Reference numbers' },
-  { id: 2, title: 'Client', description: 'Client & operator' },
-  { id: 3, title: 'Transport', description: 'Shipping details' },
-  { id: 4, title: 'Containers', description: 'Container list' },
-  { id: 5, title: 'Dates', description: 'Forecasts & dates' },
-  { id: 6, title: 'Notes', description: 'Initial event' },
-];
-
 export default function CreateShipment() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
+
+  const steps = [
+    { id: 1, title: t('createShipment.steps.identification'), description: t('createShipment.steps.identificationDesc') },
+    { id: 2, title: t('createShipment.steps.client'), description: t('createShipment.steps.clientDesc') },
+    { id: 3, title: t('createShipment.steps.transport'), description: t('createShipment.steps.transportDesc') },
+    { id: 4, title: t('createShipment.steps.containers'), description: t('createShipment.steps.containersDesc') },
+    { id: 5, title: t('createShipment.steps.dates'), description: t('createShipment.steps.datesDesc') },
+    { id: 6, title: t('createShipment.steps.notes'), description: t('createShipment.steps.notesDesc') },
+  ];
 
   const { data: clients } = useQuery({
     queryKey: ['clients'],
@@ -204,11 +206,11 @@ export default function CreateShipment() {
       return shipment;
     },
     onSuccess: (shipment) => {
-      toast.success('Shipment created successfully');
+      toast.success(t('createShipment.shipmentCreated'));
       navigate(`/backoffice/shipments/${shipment.id}`);
     },
     onError: (error) => {
-      toast.error('Failed to create shipment: ' + error.message);
+      toast.error(t('createShipment.failedToCreate') + ': ' + error.message);
     },
   });
 
@@ -252,8 +254,8 @@ export default function CreateShipment() {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">Create Shipment</h1>
-            <p className="text-muted-foreground">Add a new shipment to the system</p>
+            <h1 className="text-2xl font-bold">{t('createShipment.title')}</h1>
+            <p className="text-muted-foreground">{t('createShipment.subtitle')}</p>
           </div>
         </div>
 
@@ -315,7 +317,7 @@ export default function CreateShipment() {
                       name="shipment_ref"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Shipment Reference *</FormLabel>
+                          <FormLabel>{t('createShipment.shipmentReference')} *</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., SH-2025-001" {...field} />
                           </FormControl>
@@ -328,7 +330,7 @@ export default function CreateShipment() {
                       name="client_ref"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Client Reference *</FormLabel>
+                          <FormLabel>{t('createShipment.clientReference')} *</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., CI-001234" {...field} />
                           </FormControl>
@@ -341,7 +343,7 @@ export default function CreateShipment() {
                       name="file_number"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>File Number</FormLabel>
+                          <FormLabel>{t('createShipment.fileNumber')}</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., FILE-2025-001" {...field} />
                           </FormControl>
@@ -360,11 +362,11 @@ export default function CreateShipment() {
                       name="client_id"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Client *</FormLabel>
+                          <FormLabel>{t('shipments.client')} *</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select a client" />
+                                <SelectValue placeholder={t('createShipment.selectClient')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -384,11 +386,11 @@ export default function CreateShipment() {
                       name="assigned_operator"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Assigned Operator</FormLabel>
+                          <FormLabel>{t('shipments.assignedOperator')}</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value || ''}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select operator" />
+                                <SelectValue placeholder={t('createShipment.selectOperator')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -399,7 +401,7 @@ export default function CreateShipment() {
                               ))}
                             </SelectContent>
                           </Select>
-                          <FormDescription>Internal operator handling this shipment</FormDescription>
+                          <FormDescription>{t('createShipment.operatorHint')}</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -415,11 +417,11 @@ export default function CreateShipment() {
                       name="shipping_line"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Shipping Line *</FormLabel>
+                          <FormLabel>{t('shipments.shippingLine')} *</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select shipping line" />
+                                <SelectValue placeholder={t('createShipment.selectShippingLine')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -439,7 +441,7 @@ export default function CreateShipment() {
                       name="bl_reference"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Bill of Lading Reference *</FormLabel>
+                          <FormLabel>{t('createShipment.billOfLading')} *</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., MSKU1234567" {...field} />
                           </FormControl>
@@ -462,7 +464,7 @@ export default function CreateShipment() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className={index > 0 ? 'sr-only' : ''}>
-                                  Container Number *
+                                  {t('createShipment.containerNumber')} *
                                 </FormLabel>
                                 <FormControl>
                                   <Input placeholder="e.g., MSKU1234567" {...field} />
@@ -477,12 +479,12 @@ export default function CreateShipment() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className={index > 0 ? 'sr-only' : ''}>
-                                  Container Type *
+                                  {t('createShipment.containerType')} *
                                 </FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Select type" />
+                                      <SelectValue placeholder={t('createShipment.selectType')} />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -517,7 +519,7 @@ export default function CreateShipment() {
                       onClick={() => append({ container_number: '', container_type: '' })}
                     >
                       <Plus className="w-4 h-4 mr-2" />
-                      Add Container
+                      {t('createShipment.addContainer')}
                     </Button>
                   </div>
                 )}
@@ -530,7 +532,7 @@ export default function CreateShipment() {
                       name="forecast_shipping_line"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Forecast Shipping Line</FormLabel>
+                          <FormLabel>{t('createShipment.forecastShippingLine')}</FormLabel>
                           <FormControl>
                             <Input type="date" {...field} />
                           </FormControl>
@@ -543,7 +545,7 @@ export default function CreateShipment() {
                       name="forecast_terminal"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Forecast Terminal</FormLabel>
+                          <FormLabel>{t('createShipment.forecastTerminal')}</FormLabel>
                           <FormControl>
                             <Input type="date" {...field} />
                           </FormControl>
@@ -556,7 +558,7 @@ export default function CreateShipment() {
                       name="discharge_date"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Discharge Date</FormLabel>
+                          <FormLabel>{t('createShipment.dischargeDate')}</FormLabel>
                           <FormControl>
                             <Input type="date" {...field} />
                           </FormControl>
@@ -569,7 +571,7 @@ export default function CreateShipment() {
                       name="service_request_date"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Service Request Date</FormLabel>
+                          <FormLabel>{t('createShipment.serviceRequestDate')}</FormLabel>
                           <FormControl>
                             <Input type="date" {...field} />
                           </FormControl>
@@ -582,11 +584,11 @@ export default function CreateShipment() {
                       name="docs_received_date"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Docs Received Date</FormLabel>
+                          <FormLabel>{t('createShipment.docsReceivedDate')}</FormLabel>
                           <FormControl>
                             <Input type="date" {...field} />
                           </FormControl>
-                          <FormDescription>Internal only</FormDescription>
+                          <FormDescription>{t('createShipment.internalOnly')}</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -602,16 +604,16 @@ export default function CreateShipment() {
                       name="initial_note"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Initial Note</FormLabel>
+                          <FormLabel>{t('createShipment.initialNote')}</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="Optional note for the initial tracking event..."
+                              placeholder={t('createShipment.initialNotePlaceholder')}
                               className="min-h-[100px]"
                               {...field}
                             />
                           </FormControl>
                           <FormDescription>
-                            This will be added to the first tracking event (status: Registered)
+                            {t('createShipment.initialNoteHint')}
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -624,9 +626,9 @@ export default function CreateShipment() {
                         render={({ field }) => (
                           <FormItem className="flex items-center justify-between rounded-lg border p-3">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-base">Visible to Client</FormLabel>
+                              <FormLabel className="text-base">{t('createShipment.visibleToClient')}</FormLabel>
                               <FormDescription>
-                                Customer can see this event in their portal
+                                {t('createShipment.visibleToClientDesc')}
                               </FormDescription>
                             </div>
                             <FormControl>
@@ -641,9 +643,9 @@ export default function CreateShipment() {
                         render={({ field }) => (
                           <FormItem className="flex items-center justify-between rounded-lg border p-3">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-base">Notify Client</FormLabel>
+                              <FormLabel className="text-base">{t('createShipment.notifyClient')}</FormLabel>
                               <FormDescription>
-                                Send email notification to client
+                                {t('createShipment.notifyClientDesc')}
                               </FormDescription>
                             </div>
                             <FormControl>
@@ -667,11 +669,11 @@ export default function CreateShipment() {
                 disabled={currentStep === 1}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
+                {t('common.back')}
               </Button>
               {currentStep < 6 ? (
                 <Button type="button" onClick={handleNext}>
-                  Next
+                  {t('common.next')}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               ) : (
@@ -679,7 +681,7 @@ export default function CreateShipment() {
                   {createShipmentMutation.isPending && (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   )}
-                  Create Shipment
+                  {t('createShipment.createShipment')}
                 </Button>
               )}
             </div>

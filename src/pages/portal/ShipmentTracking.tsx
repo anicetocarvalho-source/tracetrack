@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { ArrowLeft, Ship, Package, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ import { Shipment, TrackingEvent, ShipmentContainer } from '@/types/database';
 import { ShipmentStatus } from '@/lib/constants';
 
 export default function ShipmentTracking() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -90,9 +92,9 @@ export default function ShipmentTracking() {
     return (
       <CustomerLayout>
         <div className="text-center py-12">
-          <h2 className="text-xl font-semibold">Shipment not found</h2>
+          <h2 className="text-xl font-semibold">{t('shipments.shipmentNotFound')}</h2>
           <Button variant="link" onClick={() => navigate('/portal')}>
-            Back to my shipments
+            {t('shipments.backToMyShipments')}
           </Button>
         </div>
       </CustomerLayout>
@@ -112,7 +114,7 @@ export default function ShipmentTracking() {
               <h1 className="text-2xl font-bold">{shipment.shipment_ref}</h1>
               <StatusBadge status={shipment.current_status as ShipmentStatus} />
             </div>
-            <p className="text-muted-foreground">Client Ref: {shipment.client_ref}</p>
+            <p className="text-muted-foreground">{t('shipments.clientRef')}: {shipment.client_ref}</p>
           </div>
         </div>
 
@@ -124,17 +126,17 @@ export default function ShipmentTracking() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Ship className="w-5 h-5" />
-                  Shipment Details
+                  {t('shipments.shipmentDetails')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Shipping Line</p>
+                    <p className="text-sm text-muted-foreground">{t('shipments.shippingLine')}</p>
                     <p className="font-medium">{shipment.shipping_line}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">BL Reference</p>
+                    <p className="text-sm text-muted-foreground">{t('shipments.blReference')}</p>
                     <p className="font-medium font-mono">{shipment.bl_reference}</p>
                   </div>
                 </div>
@@ -146,13 +148,13 @@ export default function ShipmentTracking() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  Forecasts
+                  {t('shipments.forecasts')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Forecast SL</p>
+                    <p className="text-sm text-muted-foreground">{t('shipments.forecastShippingLine')}</p>
                     <p className="font-medium">
                       {shipment.forecast_shipping_line
                         ? format(new Date(shipment.forecast_shipping_line), 'MMM d, yyyy')
@@ -160,7 +162,7 @@ export default function ShipmentTracking() {
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Forecast Terminal</p>
+                    <p className="text-sm text-muted-foreground">{t('shipments.forecastTerminal')}</p>
                     <p className="font-medium">
                       {shipment.forecast_terminal
                         ? format(new Date(shipment.forecast_terminal), 'MMM d, yyyy')
@@ -168,7 +170,7 @@ export default function ShipmentTracking() {
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Discharge Date</p>
+                    <p className="text-sm text-muted-foreground">{t('shipments.dischargeDate')}</p>
                     <p className="font-medium">
                       {shipment.discharge_date
                         ? format(new Date(shipment.discharge_date), 'MMM d, yyyy')
@@ -184,12 +186,12 @@ export default function ShipmentTracking() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Package className="w-5 h-5" />
-                  Containers ({containers?.length || 0})
+                  {t('shipments.containers')} ({containers?.length || 0})
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {!containers || containers.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">No containers</p>
+                  <p className="text-muted-foreground text-sm">{t('shipments.noContainers')}</p>
                 ) : (
                   <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     {containers.map((container) => (
@@ -213,7 +215,7 @@ export default function ShipmentTracking() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Tracking History</CardTitle>
+                <CardTitle>{t('shipments.trackingHistory')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <TrackingTimeline events={trackingEvents || []} showVisibility={false} />
