@@ -15,7 +15,8 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
-import dhlLogo from '@/assets/dhl-logo.png';
+import dhlLogoWhite from '@/assets/dhl-logo-white.svg';
+import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 interface BackofficeLayoutProps {
   children: ReactNode;
@@ -66,7 +67,7 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border bg-dhl-yellow">
           <div className="flex items-center gap-2">
-            <img src={dhlLogo} alt="DHL" className="h-8 w-auto" />
+            <img src={dhlLogoRed} alt="DHL" className="h-6 w-auto" />
           </div>
           <Button 
             variant="ghost" 

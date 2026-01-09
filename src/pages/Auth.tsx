@@ -10,7 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import dhlLogo from '@/assets/dhl-logo.png';
+import dhlLogoWhite from '@/assets/dhl-logo-white.svg';
+import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -74,7 +75,7 @@ export default function Auth() {
         
         <div className="relative z-10 flex flex-col justify-center px-12 text-white">
           <div className="bg-dhl-yellow inline-block p-4 rounded-lg mb-8 w-fit">
-            <img src={dhlLogo} alt="DHL" className="h-12 w-auto" />
+            <img src={dhlLogoRed} alt="DHL" className="h-10 w-auto" />
           </div>
           <h1 className="text-4xl font-bold mb-4">
             Shipment Tracking Portal
@@ -113,8 +114,8 @@ export default function Auth() {
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
-            <div className="inline-block bg-dhl-red p-4 rounded-lg mb-4">
-              <img src={dhlLogo} alt="DHL" className="h-10 w-auto" />
+            <div className="inline-block mb-4">
+              <img src={dhlLogoRed} alt="DHL" className="h-10 w-auto" />
             </div>
             <h1 className="text-xl font-bold text-foreground">Shipment Tracking Portal</h1>
           </div>
