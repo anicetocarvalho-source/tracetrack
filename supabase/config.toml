@@ -20,3 +20,12 @@ verify_jwt = false
 
 [functions.update-cron-schedule]
 verify_jwt = false
+
+[functions.weekly-exception-report]
+verify_jwt = false
+
+[functions.seed-shipments]
+verify_jwt = false
+
+[functions.seed-users]
+verify_jwt = false
