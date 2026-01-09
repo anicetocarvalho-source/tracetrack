@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Package, TrendingUp, AlertTriangle, CheckCircle, CalendarIcon, ShieldAlert } from 'lucide-react';
+import { Package, TrendingUp, AlertTriangle, CheckCircle, CalendarIcon, ShieldAlert, Target } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -44,6 +44,13 @@ const STATUS_COLORS: Record<string, string> = {
   DELIVERED: '#22c55e',
   ON_HOLD_INCIDENT: '#ef4444',
   CANCELLED: '#71717a',
+};
+
+// SLA targets in hours by severity
+const SLA_TARGETS = {
+  P1: 4,  // 4 hours for critical
+  P2: 24, // 24 hours for high
+  P3: 72, // 72 hours for medium
 };
 
 export default function Dashboard() {
@@ -283,6 +290,76 @@ export default function Dashboard() {
       });
 
       return resolutionData;
+    },
+  });
+
+  // Fetch SLA compliance data
+  const { data: slaComplianceData, isLoading: isLoadingSLA } = useQuery({
+    queryKey: ['dashboard-sla-compliance', dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
+    queryFn: async () => {
+      const { data: resolvedExceptions } = await supabase
+        .from('shipment_exceptions')
+        .select('severity, detected_at, resolved_at')
+        .eq('status', 'RESOLVED')
+        .not('resolved_at', 'is', null);
+
+      // Filter by date range
+      const exceptions = dateRange?.from && dateRange?.to
+        ? resolvedExceptions?.filter(ex => {
+            const resolvedDate = new Date(ex.resolved_at!);
+            return isWithinInterval(resolvedDate, {
+              start: startOfDay(dateRange.from!),
+              end: endOfDay(dateRange.to!),
+            });
+          })
+        : resolvedExceptions;
+
+      // Calculate SLA compliance by severity
+      const severities = ['P1', 'P2', 'P3'] as const;
+      const complianceData = severities.map(severity => {
+        const severityExceptions = exceptions?.filter(ex => ex.severity === severity) || [];
+        const total = severityExceptions.length;
+        
+        if (total === 0) {
+          return {
+            severity,
+            total: 0,
+            withinSLA: 0,
+            breached: 0,
+            compliancePercent: 0,
+            targetHours: SLA_TARGETS[severity],
+          };
+        }
+
+        const withinSLA = severityExceptions.filter(ex => {
+          const resolutionHours = differenceInHours(new Date(ex.resolved_at!), new Date(ex.detected_at));
+          return resolutionHours <= SLA_TARGETS[severity];
+        }).length;
+
+        const breached = total - withinSLA;
+        const compliancePercent = Math.round((withinSLA / total) * 100);
+
+        return {
+          severity,
+          total,
+          withinSLA,
+          breached,
+          compliancePercent,
+          targetHours: SLA_TARGETS[severity],
+        };
+      });
+
+      // Calculate overall compliance
+      const totalResolved = complianceData.reduce((sum, d) => sum + d.total, 0);
+      const totalWithinSLA = complianceData.reduce((sum, d) => sum + d.withinSLA, 0);
+      const overallCompliance = totalResolved > 0 ? Math.round((totalWithinSLA / totalResolved) * 100) : 0;
+
+      return {
+        bySeverity: complianceData,
+        overall: overallCompliance,
+        totalResolved,
+        totalWithinSLA,
+      };
     },
   });
 
@@ -701,6 +778,123 @@ export default function Dashboard() {
                 </ResponsiveContainer>
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
+                  {t('dashboard.noResolvedExceptions')}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* SLA Compliance Tracking */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-primary" />
+              {t('dashboard.slaCompliance')}
+            </CardTitle>
+            <CardDescription>{t('dashboard.slaComplianceDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {isLoadingSLA ? (
+                <div className="flex items-center justify-center h-[200px] text-muted-foreground">
+                  {t('common.loading')}
+                </div>
+              ) : slaComplianceData?.totalResolved ? (
+                <>
+                  {/* Overall compliance indicator */}
+                  <div className="flex items-center justify-center gap-4 p-4 bg-muted/50 rounded-lg">
+                    <div className="text-center">
+                      <div className={cn(
+                        "text-4xl font-bold",
+                        slaComplianceData.overall >= 90 ? "text-green-600" :
+                        slaComplianceData.overall >= 70 ? "text-yellow-600" : "text-destructive"
+                      )}>
+                        {slaComplianceData.overall}%
+                      </div>
+                      <div className="text-sm text-muted-foreground">{t('dashboard.overallCompliance')}</div>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {slaComplianceData.totalWithinSLA} / {slaComplianceData.totalResolved} {t('dashboard.resolvedWithinSLA')}
+                    </div>
+                  </div>
+
+                  {/* Compliance by severity */}
+                  <div className="h-[250px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={slaComplianceData.bySeverity} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
+                        <XAxis 
+                          type="number"
+                          domain={[0, 100]}
+                          tick={{ fontSize: 12 }}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(value) => `${value}%`}
+                        />
+                        <YAxis 
+                          type="category"
+                          dataKey="severity" 
+                          tick={{ fontSize: 12 }}
+                          tickLine={false}
+                          axisLine={false}
+                          width={50}
+                        />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'hsl(var(--card))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px',
+                          }}
+                          formatter={(value: number, name: string, props: any) => {
+                            const item = props.payload;
+                            return [
+                              `${value}% (${item.withinSLA}/${item.total})`,
+                              t('dashboard.complianceRate')
+                            ];
+                          }}
+                          labelFormatter={(label) => {
+                            const item = slaComplianceData.bySeverity.find(d => d.severity === label);
+                            return `${label} - ${t('dashboard.target')}: ${item?.targetHours}h`;
+                          }}
+                        />
+                        <Bar 
+                          dataKey="compliancePercent" 
+                          radius={[0, 4, 4, 0]}
+                          name={t('dashboard.complianceRate')}
+                        >
+                          {slaComplianceData.bySeverity.map((entry, index) => (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={
+                                entry.compliancePercent >= 90 ? '#22c55e' :
+                                entry.compliancePercent >= 70 ? '#eab308' : '#ef4444'
+                              } 
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* SLA targets legend */}
+                  <div className="flex flex-wrap justify-center gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">P1:</span>
+                      <span className="text-muted-foreground">{SLA_TARGETS.P1}h {t('dashboard.target')}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">P2:</span>
+                      <span className="text-muted-foreground">{SLA_TARGETS.P2}h {t('dashboard.target')}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">P3:</span>
+                      <span className="text-muted-foreground">{SLA_TARGETS.P3}h {t('dashboard.target')}</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-[200px] text-muted-foreground">
                   {t('dashboard.noResolvedExceptions')}
                 </div>
               )}

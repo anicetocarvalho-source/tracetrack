@@ -115,7 +115,13 @@
     "avgTime": "Avg Time",
     "min": "Min",
     "max": "Max",
-    "resolved": "resolved"
+    "resolved": "resolved",
+    "slaCompliance": "SLA Compliance",
+    "slaComplianceDesc": "Percentage of exceptions resolved within target time by severity",
+    "overallCompliance": "Overall Compliance",
+    "resolvedWithinSLA": "resolved within SLA",
+    "complianceRate": "Compliance Rate",
+    "target": "Target"
   },
   "shipments": {
     "title": "Shipments",

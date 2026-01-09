@@ -115,7 +115,13 @@
     "avgTime": "Tempo Médio",
     "min": "Mín",
     "max": "Máx",
-    "resolved": "resolvidas"
+    "resolved": "resolvidas",
+    "slaCompliance": "Conformidade SLA",
+    "slaComplianceDesc": "Percentual de exceções resolvidas dentro do tempo alvo por severidade",
+    "overallCompliance": "Conformidade Geral",
+    "resolvedWithinSLA": "resolvidas dentro do SLA",
+    "complianceRate": "Taxa de Conformidade",
+    "target": "Meta"
   },
   "shipments": {
     "title": "Envios",
