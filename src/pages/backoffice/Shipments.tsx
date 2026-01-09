@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, ChevronDown, Upload } from 'lucide-react';
+import { Plus, Search, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
@@ -13,8 +13,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { SHIPMENT_STATUSES, STATUS_LABELS, ShipmentStatus } from '@/lib/constants';
 import { format } from 'date-fns';
 import { CSVImportDialog } from '@/components/shipments/CSVImportDialog';
+import { useTranslation } from 'react-i18next';
 
 export default function Shipments() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -51,17 +53,17 @@ export default function Shipments() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Shipments</h1>
-            <p className="text-muted-foreground">Manage and track all shipments</p>
+            <h1 className="text-2xl font-bold">{t('shipments.title')}</h1>
+            <p className="text-muted-foreground">{t('shipments.noShipments').replace('No shipments found', 'Manage and track all shipments')}</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowImportDialog(true)}>
               <Upload className="w-4 h-4 mr-2" />
-              Import CSV
+              {t('shipments.importCSV')}
             </Button>
             <Button onClick={() => navigate('/backoffice/shipments/new')}>
               <Plus className="w-4 h-4 mr-2" />
-              New Shipment
+              {t('shipments.newShipment')}
             </Button>
           </div>
         </div>
@@ -75,7 +77,7 @@ export default function Shipments() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by reference, BL, client..."
+                  placeholder={t('shipments.searchPlaceholder')}
                   className="pl-10"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -83,13 +85,13 @@ export default function Shipments() {
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue placeholder="All statuses" />
+                  <SelectValue placeholder={t('common.all')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="all">{t('common.all')}</SelectItem>
                   {SHIPMENT_STATUSES.map((status) => (
                     <SelectItem key={status} value={status}>
-                      {STATUS_LABELS[status]}
+                      {t(`status.${status}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -105,26 +107,26 @@ export default function Shipments() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Reference</TableHead>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Shipping Line</TableHead>
-                    <TableHead>BL Reference</TableHead>
-                    <TableHead>Containers</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
+                    <TableHead>{t('shipments.shipmentRef')}</TableHead>
+                    <TableHead>{t('shipments.client')}</TableHead>
+                    <TableHead>{t('shipments.shippingLine')}</TableHead>
+                    <TableHead>{t('shipments.blReference')}</TableHead>
+                    <TableHead>{t('shipments.containers')}</TableHead>
+                    <TableHead>{t('common.status')}</TableHead>
+                    <TableHead>{t('shipments.createdAt')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8">
-                        Loading shipments...
+                        {t('common.loading')}
                       </TableCell>
                     </TableRow>
                   ) : shipments?.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                        No shipments found
+                        {t('shipments.noShipments')}
                       </TableCell>
                     </TableRow>
                   ) : (

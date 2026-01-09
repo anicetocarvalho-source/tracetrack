@@ -10,7 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import dhlLogoWhite from '@/assets/dhl-logo-white.svg';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 const loginSchema = z.object({
@@ -21,6 +22,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Auth() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { signIn, isInternalUser, role } = useAuth();
   const { toast } = useToast();
@@ -39,7 +41,7 @@ export default function Auth() {
     if (error) {
       toast({
         variant: 'destructive',
-        title: 'Login Failed',
+        title: t('auth.invalidCredentials'),
         description: error.message,
       });
       return;
@@ -81,30 +83,30 @@ export default function Auth() {
             Shipment Tracking Portal
           </h1>
           <p className="text-xl text-white/80 mb-8 max-w-md">
-            Track your shipments in real-time with complete visibility from origin to destination.
+            {t('portal.trackShipments')}
           </p>
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
                 <Package className="w-5 h-5" />
               </div>
-              <span className="text-lg">Real-time shipment tracking</span>
+              <span className="text-lg">{t('portal.realTimeTracking')}</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
                 <MapPin className="w-5 h-5" />
               </div>
-              <span className="text-lg">Complete transit visibility</span>
+              <span className="text-lg">{t('portal.completeVisibility')}</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
                 <Truck className="w-5 h-5" />
               </div>
-              <span className="text-lg">Delivery status updates</span>
+              <span className="text-lg">{t('portal.deliveryUpdates')}</span>
             </div>
           </div>
           <p className="mt-12 text-sm text-white/60">
-            Excellence. Simply delivered.
+            {t('portal.tagline')}
           </p>
         </div>
       </div>
@@ -112,6 +114,11 @@ export default function Auth() {
       {/* Right side - Login form */}
       <div className="flex-1 flex items-center justify-center bg-dhl-yellow p-6">
         <div className="w-full max-w-md">
+          {/* Language switcher */}
+          <div className="absolute top-4 right-4">
+            <LanguageSwitcher variant="outline" />
+          </div>
+
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
             <div className="inline-block mb-4">
@@ -122,9 +129,9 @@ export default function Auth() {
 
           <Card className="border-0 shadow-2xl">
             <CardHeader className="text-center pb-2">
-              <CardTitle className="text-2xl">Welcome</CardTitle>
+              <CardTitle className="text-2xl">{t('auth.welcome')}</CardTitle>
               <CardDescription>
-                Sign in to access your shipment tracking dashboard
+                {t('auth.signInDescription')}
               </CardDescription>
             </CardHeader>
 
@@ -136,11 +143,11 @@ export default function Auth() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>{t('auth.email')}</FormLabel>
                         <FormControl>
                           <Input 
                             type="email" 
-                            placeholder="you@company.com" 
+                            placeholder={t('auth.emailPlaceholder')} 
                             className="h-12"
                             {...field} 
                           />
@@ -154,7 +161,7 @@ export default function Auth() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Password</FormLabel>
+                        <FormLabel>{t('auth.password')}</FormLabel>
                         <FormControl>
                           <Input 
                             type="password" 
@@ -173,21 +180,21 @@ export default function Auth() {
                     disabled={isLoading}
                   >
                     {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                    Sign In
+                    {isLoading ? t('auth.signingIn') : t('auth.signIn')}
                   </Button>
                 </form>
               </Form>
 
               <div className="mt-6 pt-6 border-t text-center">
                 <p className="text-sm text-muted-foreground">
-                  Need access? Contact your DHL representative.
+                  {t('auth.needAccess')}
                 </p>
               </div>
             </CardContent>
           </Card>
 
           <p className="text-center text-sm text-foreground/60 mt-6">
-            © {new Date().getFullYear()} DHL International GmbH. All rights reserved.
+            {t('footer.copyright')}
           </p>
         </div>
       </div>

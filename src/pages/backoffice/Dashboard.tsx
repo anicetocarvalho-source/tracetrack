@@ -11,6 +11,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { ShipmentStatus, STATUS_LABELS } from '@/lib/constants';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 import {
   BarChart,
   Bar,
@@ -26,7 +27,6 @@ import {
   Line,
 } from 'recharts';
 import { format, subDays, startOfDay, eachDayOfInterval, isWithinInterval, endOfDay } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { DateRange } from 'react-day-picker';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -43,14 +43,16 @@ const STATUS_COLORS: Record<string, string> = {
   CANCELLED: '#71717a',
 };
 
-const PRESET_RANGES = [
-  { label: 'Last 7 days', days: 7 },
-  { label: 'Last 30 days', days: 30 },
-  { label: 'Last 90 days', days: 90 },
-  { label: 'All time', days: null },
-];
-
 export default function Dashboard() {
+  const { t } = useTranslation();
+  
+  const PRESET_RANGES = [
+    { label: t('dashboard.last7Days'), days: 7 },
+    { label: t('dashboard.last30Days'), days: 30 },
+    { label: t('dashboard.last90Days'), days: 90 },
+    { label: t('dashboard.allTime'), days: null },
+  ];
+
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subDays(new Date(), 29),
     to: new Date(),
@@ -163,15 +165,15 @@ export default function Dashboard() {
 
   const dateRangeLabel = dateRange?.from && dateRange?.to
     ? `${format(dateRange.from, 'dd/MM/yyyy')} - ${format(dateRange.to, 'dd/MM/yyyy')}`
-    : 'All time';
+    : t('dashboard.allTime');
 
   return (
     <BackofficeLayout>
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">Overview of your shipment operations</p>
+            <h1 className="text-2xl font-bold">{t('dashboard.title')}</h1>
+            <p className="text-muted-foreground">{t('dashboard.inSelectedPeriod')}</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -194,7 +196,7 @@ export default function Dashboard() {
                   className={cn('justify-start text-left font-normal', !dateRange && 'text-muted-foreground')}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  Custom
+                  {t('dashboard.customRange')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="end">
@@ -213,60 +215,60 @@ export default function Dashboard() {
 
         {/* Active filter indicator */}
         <div className="text-sm text-muted-foreground">
-          Showing data for: <span className="font-medium text-foreground">{dateRangeLabel}</span>
+          {t('dashboard.dateRange')}: <span className="font-medium text-foreground">{dateRangeLabel}</span>
         </div>
 
         {/* Stats cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Shipments</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard.totalShipments')}</CardTitle>
               <Package className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
                 {isLoading ? '...' : stats?.totalShipments}
               </div>
-              <p className="text-xs text-muted-foreground">In selected period</p>
+              <p className="text-xs text-muted-foreground">{t('dashboard.inSelectedPeriod')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Active Shipments</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard.activeShipments')}</CardTitle>
               <TrendingUp className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
                 {isLoading ? '...' : stats?.activeShipments}
               </div>
-              <p className="text-xs text-muted-foreground">In progress</p>
+              <p className="text-xs text-muted-foreground">{t('dashboard.inTransitOrProcessing')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">On Hold</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard.onHold')}</CardTitle>
               <AlertTriangle className="w-4 h-4 text-destructive" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-destructive">
                 {isLoading ? '...' : stats?.onHoldCount}
               </div>
-              <p className="text-xs text-muted-foreground">Require attention</p>
+              <p className="text-xs text-muted-foreground">{t('dashboard.awaitingResolution')}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Delivered</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard.delivered')}</CardTitle>
               <CheckCircle className="w-4 h-4 text-green-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
                 {isLoading ? '...' : stats?.deliveredCount}
               </div>
-              <p className="text-xs text-muted-foreground">Completed</p>
+              <p className="text-xs text-muted-foreground">{t('dashboard.completedSuccessfully')}</p>
             </CardContent>
           </Card>
         </div>
@@ -276,14 +278,14 @@ export default function Dashboard() {
           {/* Shipments over time */}
           <Card>
             <CardHeader>
-              <CardTitle>Shipments Over Time</CardTitle>
-              <CardDescription>New shipments in selected period</CardDescription>
+              <CardTitle>{t('dashboard.shipmentsOverTime')}</CardTitle>
+              <CardDescription>{t('dashboard.inSelectedPeriod')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
                 {isLoading ? (
                   <div className="flex items-center justify-center h-full text-muted-foreground">
-                    Loading chart...
+                    {t('common.loading')}
                   </div>
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
@@ -327,14 +329,14 @@ export default function Dashboard() {
           {/* Status distribution pie chart */}
           <Card>
             <CardHeader>
-              <CardTitle>Status Distribution</CardTitle>
-              <CardDescription>Current shipment status breakdown</CardDescription>
+              <CardTitle>{t('dashboard.shipmentsByStatus')}</CardTitle>
+              <CardDescription>{t('dashboard.inSelectedPeriod')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
                 {isLoading ? (
                   <div className="flex items-center justify-center h-full text-muted-foreground">
-                    Loading chart...
+                    {t('common.loading')}
                   </div>
                 ) : stats?.pieData?.length ? (
                   <ResponsiveContainer width="100%" height="100%">
@@ -368,7 +370,7 @@ export default function Dashboard() {
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex items-center justify-center h-full text-muted-foreground">
-                    No data yet
+                    {t('shipments.noShipments')}
                   </div>
                 )}
               </div>
@@ -379,14 +381,14 @@ export default function Dashboard() {
         {/* Client shipments bar chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Shipments by Client</CardTitle>
-            <CardDescription>Top clients by shipment volume</CardDescription>
+            <CardTitle>{t('dashboard.shipmentsByClient')}</CardTitle>
+            <CardDescription>{t('dashboard.inSelectedPeriod')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
               {isLoading ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
-                  Loading chart...
+                  {t('common.loading')}
                 </div>
               ) : stats?.clientShipmentCounts?.length ? (
                 <ResponsiveContainer width="100%" height="100%">
@@ -423,7 +425,7 @@ export default function Dashboard() {
                 </ResponsiveContainer>
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
-                  No client data yet
+                  {t('clients.noClients')}
                 </div>
               )}
             </div>
@@ -434,14 +436,14 @@ export default function Dashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Recent Shipments</CardTitle>
-              <CardDescription>Latest shipments in the system</CardDescription>
+              <CardTitle>{t('dashboard.recentShipments')}</CardTitle>
+              <CardDescription>{t('dashboard.inSelectedPeriod')}</CardDescription>
             </div>
             <Link 
               to="/backoffice/shipments" 
               className="text-sm text-primary hover:underline"
             >
-              View all
+              {t('shipments.viewDetails')}
             </Link>
           </CardHeader>
           <CardContent>
@@ -461,9 +463,9 @@ export default function Dashboard() {
                   <StatusBadge status={shipment.current_status} />
                 </Link>
               ))}
-              {isLoading && <p className="text-muted-foreground">Loading...</p>}
+              {isLoading && <p className="text-muted-foreground">{t('common.loading')}</p>}
               {!isLoading && !stats?.recentShipments?.length && (
-                <p className="text-muted-foreground">No shipments yet</p>
+                <p className="text-muted-foreground text-center py-4">{t('shipments.noShipments')}</p>
               )}
             </div>
           </CardContent>
