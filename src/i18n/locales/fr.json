@@ -379,6 +379,11 @@
     "ruleDeleted": "Règle d'exception supprimée",
     "failedToDeleteRule": "Échec de la suppression de la règle",
     "confirmDeleteRule": "Êtes-vous sûr de vouloir supprimer cette règle?",
-    "ruleFormDesc": "Définissez quand une exception doit être levée"
+    "ruleFormDesc": "Définissez quand une exception doit être levée",
+    "runDetection": "Lancer la Détection",
+    "runningDetection": "En cours...",
+    "detectionComplete": "Détection terminée",
+    "exceptionsCreated": "{{count}} nouvelles exceptions créées",
+    "detectionFailed": "Échec de la détection"
   }
 }
