@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import {
   Sheet,
@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { SHIPMENT_STATUSES, STATUS_LABELS, ShipmentStatus } from '@/lib/constants';
+import { SHIPMENT_STATUSES, ShipmentStatus } from '@/lib/constants';
 import { toast } from 'sonner';
 
 const trackingEventSchema = z.object({
@@ -60,6 +60,7 @@ export function AddTrackingEventDrawer({
   shipmentId,
   currentStatus,
 }: AddTrackingEventDrawerProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
@@ -130,7 +131,7 @@ export function AddTrackingEventDrawer({
       }
     },
     onSuccess: () => {
-      toast.success('Tracking event added successfully');
+      toast.success(t('tracking.eventAdded'));
       queryClient.invalidateQueries({ queryKey: ['shipment', shipmentId] });
       queryClient.invalidateQueries({ queryKey: ['tracking-events', shipmentId] });
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
@@ -145,7 +146,7 @@ export function AddTrackingEventDrawer({
       onOpenChange(false);
     },
     onError: (error) => {
-      toast.error('Failed to add tracking event: ' + error.message);
+      toast.error(t('tracking.failedToAdd') + ': ' + error.message);
     },
   });
 
@@ -157,9 +158,9 @@ export function AddTrackingEventDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>Add Tracking Event</SheetTitle>
+          <SheetTitle>{t('tracking.addEvent')}</SheetTitle>
           <SheetDescription>
-            Create a new event in the shipment timeline. Events are immutable.
+            {t('tracking.addEventDesc')}
           </SheetDescription>
         </SheetHeader>
 
@@ -170,17 +171,17 @@ export function AddTrackingEventDrawer({
               name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Status *</FormLabel>
+                  <FormLabel>{t('common.status')} *</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
+                        <SelectValue placeholder={t('tracking.selectStatus')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {SHIPMENT_STATUSES.map((status) => (
                         <SelectItem key={status} value={status}>
-                          {STATUS_LABELS[status]}
+                          {t(`status.${status}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -195,10 +196,10 @@ export function AddTrackingEventDrawer({
               name="note"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Note *</FormLabel>
+                  <FormLabel>{t('tracking.note')} *</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Describe the event..."
+                      placeholder={t('tracking.notePlaceholder')}
                       className="min-h-[100px]"
                       {...field}
                     />
@@ -213,9 +214,9 @@ export function AddTrackingEventDrawer({
               name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Location</FormLabel>
+                  <FormLabel>{t('tracking.location')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Port of Rotterdam" {...field} />
+                    <Input placeholder={t('tracking.locationPlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -227,7 +228,7 @@ export function AddTrackingEventDrawer({
               name="event_datetime"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Event Date & Time</FormLabel>
+                  <FormLabel>{t('tracking.eventDateTime')}</FormLabel>
                   <FormControl>
                     <Input type="datetime-local" {...field} />
                   </FormControl>
@@ -243,9 +244,9 @@ export function AddTrackingEventDrawer({
                 render={({ field }) => (
                   <FormItem className="flex items-center justify-between rounded-lg border p-3">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">Visible to Client</FormLabel>
+                      <FormLabel className="text-base">{t('tracking.visibleToClient')}</FormLabel>
                       <FormDescription>
-                        Customer can see this event in their portal
+                        {t('tracking.visibleToClientDesc')}
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -261,9 +262,9 @@ export function AddTrackingEventDrawer({
                 render={({ field }) => (
                   <FormItem className="flex items-center justify-between rounded-lg border p-3">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">Notify Client</FormLabel>
+                      <FormLabel className="text-base">{t('tracking.notifyClient')}</FormLabel>
                       <FormDescription>
-                        Send email notification to client
+                        {t('tracking.notifyClientDesc')}
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -281,7 +282,7 @@ export function AddTrackingEventDrawer({
                 className="flex-1"
                 onClick={() => onOpenChange(false)}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 type="submit"
@@ -291,7 +292,7 @@ export function AddTrackingEventDrawer({
                 {createEventMutation.isPending && (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 )}
-                Add Event
+                {t('shipments.addEvent')}
               </Button>
             </div>
           </form>

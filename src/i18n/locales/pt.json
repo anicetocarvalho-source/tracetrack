@@ -144,10 +144,22 @@
     "currentStatus": "Estado Atual",
     "timeline": "Cronologia",
     "eventDate": "Data do Evento",
+    "eventDateTime": "Data e Hora do Evento",
     "location": "Localização",
+    "locationPlaceholder": "ex: Porto de Lisboa",
     "note": "Nota",
+    "notePlaceholder": "Descreva o evento...",
     "visibleToClient": "Visível para Cliente",
-    "notifyClient": "Notificar Cliente"
+    "visibleToClientDesc": "O cliente pode ver este evento no seu portal",
+    "notifyClient": "Notificar Cliente",
+    "notifyClientDesc": "Enviar notificação por email ao cliente",
+    "noEvents": "Sem eventos de rastreamento",
+    "internalOnly": "Apenas interno",
+    "addEvent": "Adicionar Evento de Rastreamento",
+    "addEventDesc": "Criar um novo evento na cronologia do envio. Os eventos são imutáveis.",
+    "selectStatus": "Selecionar estado",
+    "eventAdded": "Evento de rastreamento adicionado com sucesso",
+    "failedToAdd": "Falha ao adicionar evento de rastreamento"
   },
   "createShipment": {
     "title": "Criar Envio",
