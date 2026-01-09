@@ -94,7 +94,7 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                   isActive 
                     ? "bg-sidebar-primary text-sidebar-primary-foreground" 
-                    : "hover:bg-sidebar-accent text-sidebar-foreground"
+                    : "text-white hover:bg-white/10"
                 )}
               >
                 <item.icon className="w-5 h-5" />
