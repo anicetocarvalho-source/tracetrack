@@ -25,6 +25,9 @@ import {
   Cell,
   LineChart,
   Line,
+  AreaChart,
+  Area,
+  Legend,
 } from 'recharts';
 import { format, subDays, startOfDay, eachDayOfInterval, isWithinInterval, endOfDay } from 'date-fns';
 import { DateRange } from 'react-day-picker';
@@ -178,6 +181,51 @@ export default function Dashboard() {
         counts.total++;
       });
       return counts;
+    },
+  });
+
+  // Fetch exception trends over time
+  const { data: exceptionTrends, isLoading: isLoadingTrends } = useQuery({
+    queryKey: ['dashboard-exception-trends', dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
+    queryFn: async () => {
+      const { data: allExceptions } = await supabase
+        .from('shipment_exceptions')
+        .select('severity, detected_at, status');
+
+      // Filter exceptions by date range
+      const rangeStart = dateRange?.from || subDays(new Date(), 29);
+      const rangeEnd = dateRange?.to || new Date();
+      
+      const exceptions = dateRange?.from && dateRange?.to
+        ? allExceptions?.filter(ex => {
+            const detectedDate = new Date(ex.detected_at);
+            return isWithinInterval(detectedDate, {
+              start: startOfDay(dateRange.from!),
+              end: endOfDay(dateRange.to!),
+            });
+          })
+        : allExceptions;
+
+      // Calculate exceptions over time based on selected range
+      const daysInRange = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
+
+      const trendsData = daysInRange.map(day => {
+        const dayStart = startOfDay(day);
+        const dayExceptions = exceptions?.filter(ex => {
+          const detectedDate = startOfDay(new Date(ex.detected_at));
+          return detectedDate.getTime() === dayStart.getTime();
+        }) || [];
+
+        return {
+          date: format(day, 'dd/MM'),
+          P1: dayExceptions.filter(ex => ex.severity === 'P1').length,
+          P2: dayExceptions.filter(ex => ex.severity === 'P2').length,
+          P3: dayExceptions.filter(ex => ex.severity === 'P3').length,
+          total: dayExceptions.length,
+        };
+      });
+
+      return trendsData;
     },
   });
 
@@ -453,6 +501,84 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Exception trends chart */}
+        <Card className="border-destructive/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5 text-destructive" />
+              {t('dashboard.exceptionTrends')}
+            </CardTitle>
+            <CardDescription>{t('dashboard.exceptionsOverTime')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              {isLoadingTrends ? (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  {t('common.loading')}
+                </div>
+              ) : exceptionTrends?.some(d => d.total > 0) ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={exceptionTrends}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                      interval="preserveStartEnd"
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                      allowDecimals={false}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                    />
+                    <Legend />
+                    <Area 
+                      type="monotone" 
+                      dataKey="P1" 
+                      stackId="1"
+                      stroke="#ef4444" 
+                      fill="#ef4444"
+                      fillOpacity={0.8}
+                      name="P1 Critical"
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="P2" 
+                      stackId="1"
+                      stroke="#f97316" 
+                      fill="#f97316"
+                      fillOpacity={0.7}
+                      name="P2 High"
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="P3" 
+                      stackId="1"
+                      stroke="#eab308" 
+                      fill="#eab308"
+                      fillOpacity={0.6}
+                      name="P3 Medium"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  {t('dashboard.noExceptions')}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Client shipments bar chart */}
         <Card>
