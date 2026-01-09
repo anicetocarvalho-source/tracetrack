@@ -91,10 +91,10 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-white",
                   isActive 
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground" 
-                    : "text-white hover:bg-white/10"
+                    ? "bg-dhl-yellow !text-black" 
+                    : "hover:bg-white/10"
                 )}
               >
                 <item.icon className="w-5 h-5" />
