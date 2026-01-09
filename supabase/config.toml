@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.detect-exceptions]
 verify_jwt = false
+
+[functions.send-exception-alert]
+verify_jwt = false

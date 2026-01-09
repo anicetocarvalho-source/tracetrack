@@ -28,6 +28,16 @@ interface TrackingEvent {
   event_datetime: string;
 }
 
+interface P1ExceptionAlert {
+  shipment_ref: string;
+  client_name: string;
+  rule_name: string;
+  severity: string;
+  hours_in_status: number;
+  max_hours: number;
+  current_status: string;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -55,12 +65,13 @@ Deno.serve(async (req) => {
     console.log(`[detect-exceptions] Found ${rules?.length || 0} active rules`);
 
     let exceptionsCreated = 0;
+    const p1Alerts: P1ExceptionAlert[] = [];
 
     for (const rule of (rules as ExceptionRule[]) || []) {
-      // Fetch shipments matching the status trigger
+      // Fetch shipments matching the status trigger with client info
       let shipmentsQuery = supabase
         .from('shipments')
-        .select('id, shipment_ref, client_id, current_status')
+        .select('id, shipment_ref, client_id, current_status, client:clients(name)')
         .eq('current_status', rule.status_trigger);
 
       // Apply client filter if specified
@@ -139,6 +150,20 @@ Deno.serve(async (req) => {
 
           exceptionsCreated++;
 
+          // Collect P1 alerts for email notification
+          if (rule.severity === 'P1') {
+            const clientName = (shipment as any).client?.name || 'Unknown Client';
+            p1Alerts.push({
+              shipment_ref: shipment.shipment_ref,
+              client_name: clientName,
+              rule_name: rule.name,
+              severity: rule.severity,
+              hours_in_status: Math.round(hoursInStatus),
+              max_hours: rule.max_hours_in_status,
+              current_status: shipment.current_status,
+            });
+          }
+
           // Log to audit
           await supabase.from('audit_log').insert({
             entity_type: 'SHIPMENT_EXCEPTION',
@@ -160,11 +185,37 @@ Deno.serve(async (req) => {
 
     console.log(`[detect-exceptions] Scan complete. Created ${exceptionsCreated} new exceptions.`);
 
+    // Send P1 email alerts if any were created
+    if (p1Alerts.length > 0) {
+      console.log(`[detect-exceptions] Sending email alerts for ${p1Alerts.length} P1 exceptions`);
+      
+      try {
+        const alertResponse = await fetch(`${supabaseUrl}/functions/v1/send-exception-alert`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({ exceptions: p1Alerts }),
+        });
+        
+        if (!alertResponse.ok) {
+          console.error('[detect-exceptions] Failed to send P1 alerts:', await alertResponse.text());
+        } else {
+          const alertResult = await alertResponse.json();
+          console.log('[detect-exceptions] P1 alerts sent:', alertResult);
+        }
+      } catch (alertError) {
+        console.error('[detect-exceptions] Error sending P1 alerts:', alertError);
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         exceptions_created: exceptionsCreated,
         rules_processed: rules?.length || 0,
+        p1_alerts_sent: p1Alerts.length,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
