@@ -111,6 +111,23 @@ export function AddTrackingEventDrawer({
           notify_client: data.notify_client,
         },
       });
+
+      // Send email notification if enabled
+      if (data.notify_client && data.visible_to_client) {
+        try {
+          await supabase.functions.invoke('send-tracking-notification', {
+            body: {
+              shipment_id: shipmentId,
+              status: data.status,
+              note: data.note,
+              location: data.location || null,
+            },
+          });
+        } catch (notifyError) {
+          console.error('Failed to send notification:', notifyError);
+          // Don't fail the whole operation if notification fails
+        }
+      }
     },
     onSuccess: () => {
       toast.success('Tracking event added successfully');

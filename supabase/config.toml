@@ -1,1 +1,7 @@
 project_id = "dcaoeagpjswnjgmoqkfu"
+
+[functions.create-user]
+verify_jwt = false
+
+[functions.send-tracking-notification]
+verify_jwt = false
