@@ -14,6 +14,7 @@ interface ExceptionAlert {
   hours_in_status: number;
   max_hours: number;
   current_status: string;
+  escalated_from?: string;
 }
 
 interface ResolutionAlert {
@@ -25,12 +26,13 @@ interface ResolutionAlert {
   resolution_note: string;
 }
 
-type AlertType = 'detection' | 'resolution';
+type AlertType = 'detection' | 'resolution' | 'escalation';
 
 interface AlertPayload {
   type: AlertType;
   exceptions?: ExceptionAlert[];
   resolutions?: ResolutionAlert[];
+  escalations?: ExceptionAlert[];
 }
 
 function getSeverityColor(severity: string): string {
@@ -73,6 +75,7 @@ Deno.serve(async (req) => {
     const alertType = payload.type || 'detection';
     const exceptions = payload.exceptions || (Array.isArray(payload) ? payload : []);
     const resolutions = payload.resolutions || [];
+    const escalations = payload.escalations || [];
 
     if (alertType === 'detection' && (!exceptions || exceptions.length === 0)) {
       return new Response(
@@ -84,6 +87,13 @@ Deno.serve(async (req) => {
     if (alertType === 'resolution' && (!resolutions || resolutions.length === 0)) {
       return new Response(
         JSON.stringify({ success: true, message: 'No resolutions to notify' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (alertType === 'escalation' && (!escalations || escalations.length === 0)) {
+      return new Response(
+        JSON.stringify({ success: true, message: 'No escalations to notify' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -138,7 +148,81 @@ Deno.serve(async (req) => {
     let emailHtml: string;
     let subject: string;
 
-    if (alertType === 'detection') {
+    if (alertType === 'escalation') {
+      // Escalation-specific email
+      const p1Escalations = escalations.filter(e => e.severity === 'P1');
+      const p2Escalations = escalations.filter(e => e.severity === 'P2');
+
+      const hasP1 = p1Escalations.length > 0;
+      const headerColor = hasP1 ? '#dc2626' : '#f97316';
+
+      const escalationRows = escalations.map(e => `
+        <tr>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
+            <span style="display: inline-block; padding: 2px 8px; background: #6b7280; color: white; border-radius: 4px; font-size: 11px; text-decoration: line-through;">${e.escalated_from}</span>
+            <span style="margin: 0 4px;">→</span>
+            ${getSeverityBadge(e.severity)}
+          </td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${e.shipment_ref}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${e.client_name}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${e.rule_name}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${e.current_status}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: ${getSeverityColor(e.severity)}; font-weight: bold;">${e.hours_in_status}h open</td>
+        </tr>
+      `).join('');
+
+      subject = hasP1 
+        ? `🔺 ESCALATION: ${p1Escalations.length} Exception${p1Escalations.length > 1 ? 's' : ''} Upgraded to P1 Critical`
+        : `🔺 ESCALATION: ${escalations.length} Exception${escalations.length > 1 ? 's' : ''} Upgraded`;
+
+      emailHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Exception Escalation</title>
+          </head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background-color: #f3f4f6;">
+            <div style="max-width: 800px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+              <div style="background: ${headerColor}; padding: 24px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 24px;">🔺 Exception Escalation</h1>
+                <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 14px;">Priority automatically upgraded due to unresolved status</p>
+              </div>
+              <div style="padding: 24px;">
+                <p style="color: #374151; font-size: 16px; margin-bottom: 20px;">
+                  <strong>${escalations.length}</strong> exception${escalations.length > 1 ? 's have' : ' has'} been escalated due to exceeding resolution time limits:
+                </p>
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                  <thead>
+                    <tr style="background: #f9fafb;">
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Escalation</th>
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Shipment</th>
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Client</th>
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Rule</th>
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Status</th>
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Time Open</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${escalationRows}
+                  </tbody>
+                </table>
+                <div style="margin-top: 24px; padding: 16px; background: #fef2f2; border-radius: 6px; border-left: 4px solid #dc2626;">
+                  <p style="margin: 0; color: #991b1b; font-size: 14px;">
+                    <strong>⚠️ Escalation Notice:</strong> These exceptions were not resolved within the configured timeframe and have been automatically upgraded to a higher priority level. Immediate action is required.
+                  </p>
+                </div>
+              </div>
+              <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
+                <p style="margin: 0; color: #6b7280; font-size: 12px;">
+                  DHL Shipment Tracking System • Automated Escalation Alert
+                </p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `;
+    } else if (alertType === 'detection') {
       // Group exceptions by severity
       const p1Exceptions = exceptions.filter(e => e.severity === 'P1');
       const p2Exceptions = exceptions.filter(e => e.severity === 'P2');
@@ -299,31 +383,45 @@ Deno.serve(async (req) => {
     console.log(`[send-exception-alert] Successfully sent ${alertType} alerts to ${recipientEmails.length} recipients`);
 
     // Log to audit
-    const auditData = alertType === 'detection'
-      ? {
-          exception_count: exceptions.length,
-          recipient_count: recipientEmails.length,
-          shipment_refs: exceptions.map(e => e.shipment_ref),
-          severities: { P1: exceptions.filter(e => e.severity === 'P1').length, P2: exceptions.filter(e => e.severity === 'P2').length, P3: exceptions.filter(e => e.severity === 'P3').length },
-        }
-      : {
-          resolution_count: resolutions.length,
-          recipient_count: recipientEmails.length,
-          shipment_refs: resolutions.map(r => r.shipment_ref),
-        };
+    let auditData;
+    if (alertType === 'detection') {
+      auditData = {
+        exception_count: exceptions.length,
+        recipient_count: recipientEmails.length,
+        shipment_refs: exceptions.map(e => e.shipment_ref),
+        severities: { P1: exceptions.filter(e => e.severity === 'P1').length, P2: exceptions.filter(e => e.severity === 'P2').length, P3: exceptions.filter(e => e.severity === 'P3').length },
+      };
+    } else if (alertType === 'escalation') {
+      auditData = {
+        escalation_count: escalations.length,
+        recipient_count: recipientEmails.length,
+        shipment_refs: escalations.map(e => e.shipment_ref),
+        escalations: escalations.map(e => ({ from: e.escalated_from, to: e.severity })),
+      };
+    } else {
+      auditData = {
+        resolution_count: resolutions.length,
+        recipient_count: recipientEmails.length,
+        shipment_refs: resolutions.map(r => r.shipment_ref),
+      };
+    }
+
+    const actionType = alertType === 'detection' ? 'EXCEPTION_ALERT_SENT' : alertType === 'escalation' ? 'ESCALATION_ALERT_SENT' : 'RESOLUTION_ALERT_SENT';
 
     await supabase.from('audit_log').insert({
       entity_type: 'EXCEPTION_ALERT',
       entity_id: null,
-      action: alertType === 'detection' ? 'EXCEPTION_ALERT_SENT' : 'RESOLUTION_ALERT_SENT',
+      action: actionType,
       metadata_json: auditData,
     });
+
+    const count = alertType === 'detection' ? exceptions.length : alertType === 'escalation' ? escalations.length : resolutions.length;
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         type: alertType,
-        count: alertType === 'detection' ? exceptions.length : resolutions.length,
+        count,
         recipients: recipientEmails.length 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

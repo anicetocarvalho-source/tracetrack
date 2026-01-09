@@ -298,12 +298,10 @@ Deno.serve(async (req) => {
 
     console.log(`[detect-exceptions] Escalation complete. Escalated ${exceptionsEscalated} exceptions.`);
 
-    // Combine alerts
-    const allAlerts = [...p1Alerts, ...escalationAlerts];
-
-    // Send email alerts if any exceptions were created or escalated
-    if (allAlerts.length > 0) {
-      console.log(`[detect-exceptions] Sending email alerts for ${allAlerts.length} exceptions`);
+    // Send email alerts for new exceptions (excluding escalations)
+    const newExceptionAlerts = p1Alerts.filter(a => !a.escalated_from);
+    if (newExceptionAlerts.length > 0) {
+      console.log(`[detect-exceptions] Sending email alerts for ${newExceptionAlerts.length} new exceptions`);
       
       try {
         const alertResponse = await fetch(`${supabaseUrl}/functions/v1/send-exception-alert`, {
@@ -312,17 +310,42 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${supabaseServiceKey}`,
           },
-          body: JSON.stringify({ type: 'detection', exceptions: allAlerts }),
+          body: JSON.stringify({ type: 'detection', exceptions: newExceptionAlerts }),
         });
         
         if (!alertResponse.ok) {
-          console.error('[detect-exceptions] Failed to send alerts:', await alertResponse.text());
+          console.error('[detect-exceptions] Failed to send detection alerts:', await alertResponse.text());
         } else {
           const alertResult = await alertResponse.json();
-          console.log('[detect-exceptions] Alerts sent:', alertResult);
+          console.log('[detect-exceptions] Detection alerts sent:', alertResult);
         }
       } catch (alertError) {
-        console.error('[detect-exceptions] Error sending alerts:', alertError);
+        console.error('[detect-exceptions] Error sending detection alerts:', alertError);
+      }
+    }
+
+    // Send separate escalation email
+    if (escalationAlerts.length > 0) {
+      console.log(`[detect-exceptions] Sending escalation alerts for ${escalationAlerts.length} escalated exceptions`);
+      
+      try {
+        const escalationResponse = await fetch(`${supabaseUrl}/functions/v1/send-exception-alert`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({ type: 'escalation', escalations: escalationAlerts }),
+        });
+        
+        if (!escalationResponse.ok) {
+          console.error('[detect-exceptions] Failed to send escalation alerts:', await escalationResponse.text());
+        } else {
+          const escalationResult = await escalationResponse.json();
+          console.log('[detect-exceptions] Escalation alerts sent:', escalationResult);
+        }
+      } catch (escalationError) {
+        console.error('[detect-exceptions] Error sending escalation alerts:', escalationError);
       }
     }
 
@@ -332,7 +355,8 @@ Deno.serve(async (req) => {
         exceptions_created: exceptionsCreated,
         exceptions_escalated: exceptionsEscalated,
         rules_processed: rules?.length || 0,
-        alerts_sent: allAlerts.length,
+        detection_alerts_sent: newExceptionAlerts.length,
+        escalation_alerts_sent: escalationAlerts.length,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
