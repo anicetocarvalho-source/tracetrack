@@ -102,7 +102,9 @@
     "inSelectedPeriod": "no período selecionado",
     "inTransitOrProcessing": "em trânsito ou processamento",
     "awaitingResolution": "aguardando resolução",
-    "completedSuccessfully": "concluídos com sucesso"
+    "completedSuccessfully": "concluídos com sucesso",
+    "openExceptions": "Exceções Abertas",
+    "exceptionsRequiringAttention": "Exceções ativas que requerem atenção"
   },
   "shipments": {
     "title": "Envios",
