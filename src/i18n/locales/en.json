@@ -144,10 +144,22 @@
     "currentStatus": "Current Status",
     "timeline": "Timeline",
     "eventDate": "Event Date",
+    "eventDateTime": "Event Date & Time",
     "location": "Location",
+    "locationPlaceholder": "e.g., Port of Rotterdam",
     "note": "Note",
+    "notePlaceholder": "Describe the event...",
     "visibleToClient": "Visible to Client",
-    "notifyClient": "Notify Client"
+    "visibleToClientDesc": "Customer can see this event in their portal",
+    "notifyClient": "Notify Client",
+    "notifyClientDesc": "Send email notification to client",
+    "noEvents": "No tracking events yet",
+    "internalOnly": "Internal only",
+    "addEvent": "Add Tracking Event",
+    "addEventDesc": "Create a new event in the shipment timeline. Events are immutable.",
+    "selectStatus": "Select status",
+    "eventAdded": "Tracking event added successfully",
+    "failedToAdd": "Failed to add tracking event"
   },
   "createShipment": {
     "title": "Create Shipment",

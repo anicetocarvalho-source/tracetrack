@@ -144,10 +144,22 @@
     "currentStatus": "Statut Actuel",
     "timeline": "Chronologie",
     "eventDate": "Date de l'Événement",
+    "eventDateTime": "Date et Heure de l'Événement",
     "location": "Lieu",
+    "locationPlaceholder": "ex: Port de Rotterdam",
     "note": "Note",
+    "notePlaceholder": "Décrivez l'événement...",
     "visibleToClient": "Visible pour le Client",
-    "notifyClient": "Notifier le Client"
+    "visibleToClientDesc": "Le client peut voir cet événement dans son portail",
+    "notifyClient": "Notifier le Client",
+    "notifyClientDesc": "Envoyer une notification par email au client",
+    "noEvents": "Aucun événement de suivi",
+    "internalOnly": "Interne uniquement",
+    "addEvent": "Ajouter un Événement de Suivi",
+    "addEventDesc": "Créer un nouvel événement dans la chronologie de l'expédition. Les événements sont immuables.",
+    "selectStatus": "Sélectionner le statut",
+    "eventAdded": "Événement de suivi ajouté avec succès",
+    "failedToAdd": "Échec de l'ajout de l'événement de suivi"
   },
   "createShipment": {
     "title": "Créer une Expédition",

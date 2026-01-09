@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { MapPin, User, Eye, EyeOff } from 'lucide-react';
 import { StatusBadge } from '@/components/StatusBadge';
 import { TrackingEvent } from '@/types/database';
@@ -10,10 +11,12 @@ interface TrackingTimelineProps {
 }
 
 export function TrackingTimeline({ events, showVisibility = true }: TrackingTimelineProps) {
+  const { t } = useTranslation();
+
   if (!events || events.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        No tracking events yet
+        {t('tracking.noEvents')}
       </div>
     );
   }
@@ -49,7 +52,7 @@ export function TrackingTimeline({ events, showVisibility = true }: TrackingTime
                         'flex items-center gap-1',
                         event.visible_to_client ? 'text-green-600' : 'text-muted-foreground'
                       )}
-                      title={event.visible_to_client ? 'Visible to client' : 'Internal only'}
+                      title={event.visible_to_client ? t('tracking.visibleToClient') : t('tracking.internalOnly')}
                     >
                       {event.visible_to_client ? (
                         <Eye className="w-3 h-3" />
