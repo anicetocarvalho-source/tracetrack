@@ -344,7 +344,8 @@
     "copyright": "© 2026 DHL International GmbH. Tous droits réservés."
   },
   "exceptions": {
-    "title": "Action Requise",
+    "title": "Exceptions",
+    "noExceptions": "Aucune exception pour cet envoi",
     "subtitle": "Exceptions opérationnelles nécessitant attention",
     "open": "Ouvertes",
     "acknowledgedCount": "Reconnues",

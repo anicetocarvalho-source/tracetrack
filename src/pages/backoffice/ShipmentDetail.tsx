@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import {
   ArrowLeft,
   Plus,
@@ -13,18 +13,22 @@ import {
   FileText,
   User,
   Pencil,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { TrackingTimeline } from '@/components/shipments/TrackingTimeline';
 import { AddTrackingEventDrawer } from '@/components/shipments/AddTrackingEventDrawer';
 import { EditShipmentDrawer } from '@/components/shipments/EditShipmentDrawer';
 import { supabase } from '@/integrations/supabase/client';
-import { Shipment, TrackingEvent, ShipmentContainer } from '@/types/database';
-import { ShipmentStatus } from '@/lib/constants';
+import { Shipment, TrackingEvent, ShipmentContainer, ShipmentException, ExceptionRule } from '@/types/database';
+import { ShipmentStatus, SEVERITY_LABELS, EXCEPTION_STATUS_LABELS } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function ShipmentDetail() {
@@ -94,6 +98,48 @@ export default function ShipmentDetail() {
         ...e,
         creator: profileMap.get(e.created_by) || null,
       })) as (TrackingEvent & { creator: { id: string; name: string } | null })[];
+    },
+    enabled: !!id,
+  });
+
+  const { data: exceptions } = useQuery({
+    queryKey: ['shipment-exceptions', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('shipment_exceptions')
+        .select(`
+          *,
+          exception_rule:exception_rules(id, name, description)
+        `)
+        .eq('shipment_id', id!)
+        .order('detected_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Fetch resolver/acknowledger names
+      const userIds = [
+        ...new Set([
+          ...data?.map((e) => e.resolved_by).filter(Boolean) || [],
+          ...data?.map((e) => e.acknowledged_by).filter(Boolean) || [],
+        ]),
+      ] as string[];
+
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, name')
+        .in('id', userIds);
+
+      const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
+
+      return data?.map((e) => ({
+        ...e,
+        resolved_by_profile: e.resolved_by ? profileMap.get(e.resolved_by) : null,
+        acknowledged_by_profile: e.acknowledged_by ? profileMap.get(e.acknowledged_by) : null,
+      })) as (ShipmentException & {
+        exception_rule: ExceptionRule;
+        resolved_by_profile: { id: string; name: string } | null;
+        acknowledged_by_profile: { id: string; name: string } | null;
+      })[];
     },
     enabled: !!id,
   });
@@ -278,6 +324,86 @@ export default function ShipmentDetail() {
                         <span className="text-xs text-muted-foreground px-2 py-0.5 bg-background rounded">
                           {container.container_type}
                         </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Exceptions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5" />
+                  {t('exceptions.title')} ({exceptions?.length || 0})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!exceptions || exceptions.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">{t('exceptions.noExceptions')}</p>
+                ) : (
+                  <div className="space-y-3">
+                    {exceptions.map((exception) => (
+                      <div
+                        key={exception.id}
+                        className="p-4 border rounded-lg space-y-2"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant={exception.severity === 'P1' ? 'destructive' : 'secondary'}
+                              className={
+                                exception.severity === 'P2'
+                                  ? 'bg-orange-500 text-white hover:bg-orange-600'
+                                  : exception.severity === 'P3'
+                                  ? 'bg-yellow-500 text-black hover:bg-yellow-600'
+                                  : ''
+                              }
+                            >
+                              {SEVERITY_LABELS[exception.severity]}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className={
+                                exception.status === 'OPEN'
+                                  ? 'border-destructive text-destructive'
+                                  : exception.status === 'ACKNOWLEDGED'
+                                  ? 'border-yellow-500 text-yellow-600'
+                                  : 'border-green-500 text-green-600'
+                              }
+                            >
+                              {exception.status === 'OPEN' && <AlertTriangle className="w-3 h-3 mr-1" />}
+                              {exception.status === 'ACKNOWLEDGED' && <Clock className="w-3 h-3 mr-1" />}
+                              {exception.status === 'RESOLVED' && <CheckCircle className="w-3 h-3 mr-1" />}
+                              {EXCEPTION_STATUS_LABELS[exception.status]}
+                            </Badge>
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(exception.detected_at), { addSuffix: true })}
+                          </span>
+                        </div>
+                        <p className="font-medium">{exception.exception_rule?.name}</p>
+                        {exception.exception_rule?.description && (
+                          <p className="text-sm text-muted-foreground">{exception.exception_rule.description}</p>
+                        )}
+                        {exception.status === 'ACKNOWLEDGED' && exception.acknowledged_by_profile && (
+                          <p className="text-xs text-muted-foreground">
+                            {t('exceptions.acknowledgedBy')}: {exception.acknowledged_by_profile.name}
+                            {exception.acknowledged_at && ` • ${format(new Date(exception.acknowledged_at), 'MMM d, yyyy HH:mm')}`}
+                          </p>
+                        )}
+                        {exception.status === 'RESOLVED' && (
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <p>
+                              {t('exceptions.resolvedBy')}: {exception.resolved_by_profile?.name || t('common.unknown')}
+                              {exception.resolved_at && ` • ${format(new Date(exception.resolved_at), 'MMM d, yyyy HH:mm')}`}
+                            </p>
+                            {exception.resolution_note && (
+                              <p className="italic">"{exception.resolution_note}"</p>
+                            )}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
