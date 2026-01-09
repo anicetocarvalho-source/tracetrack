@@ -107,7 +107,15 @@
     "exceptionsRequiringAttention": "Exceptions actives nécessitant une attention",
     "exceptionTrends": "Tendances des Exceptions",
     "exceptionsOverTime": "Occurrences d'exceptions par sévérité au fil du temps",
-    "noExceptions": "Aucune exception sur cette période"
+    "noExceptions": "Aucune exception sur cette période",
+    "resolutionTimeAnalysis": "Analyse du Temps de Résolution",
+    "avgResolutionTime": "Temps moyen de résolution des exceptions par sévérité",
+    "noResolvedExceptions": "Aucune exception résolue sur cette période",
+    "hours": "Heures",
+    "avgTime": "Temps Moyen",
+    "min": "Min",
+    "max": "Max",
+    "resolved": "résolues"
   },
   "shipments": {
     "title": "Expéditions",

@@ -29,7 +29,7 @@ import {
   Area,
   Legend,
 } from 'recharts';
-import { format, subDays, startOfDay, eachDayOfInterval, isWithinInterval, endOfDay } from 'date-fns';
+import { format, subDays, startOfDay, eachDayOfInterval, isWithinInterval, endOfDay, differenceInHours } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -226,6 +226,63 @@ export default function Dashboard() {
       });
 
       return trendsData;
+    },
+  });
+
+  // Fetch resolution time analysis
+  const { data: resolutionTimeData, isLoading: isLoadingResolution } = useQuery({
+    queryKey: ['dashboard-resolution-times', dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
+    queryFn: async () => {
+      const { data: resolvedExceptions } = await supabase
+        .from('shipment_exceptions')
+        .select('severity, detected_at, resolved_at')
+        .eq('status', 'RESOLVED')
+        .not('resolved_at', 'is', null);
+
+      // Filter by date range
+      const exceptions = dateRange?.from && dateRange?.to
+        ? resolvedExceptions?.filter(ex => {
+            const resolvedDate = new Date(ex.resolved_at!);
+            return isWithinInterval(resolvedDate, {
+              start: startOfDay(dateRange.from!),
+              end: endOfDay(dateRange.to!),
+            });
+          })
+        : resolvedExceptions;
+
+      // Calculate average resolution time by severity
+      const severities = ['P1', 'P2', 'P3'] as const;
+      const resolutionData = severities.map(severity => {
+        const severityExceptions = exceptions?.filter(ex => ex.severity === severity) || [];
+        
+        if (severityExceptions.length === 0) {
+          return {
+            severity,
+            avgHours: 0,
+            count: 0,
+            minHours: 0,
+            maxHours: 0,
+          };
+        }
+
+        const resolutionTimes = severityExceptions.map(ex => 
+          differenceInHours(new Date(ex.resolved_at!), new Date(ex.detected_at))
+        );
+
+        const avgHours = Math.round(resolutionTimes.reduce((a, b) => a + b, 0) / resolutionTimes.length);
+        const minHours = Math.min(...resolutionTimes);
+        const maxHours = Math.max(...resolutionTimes);
+
+        return {
+          severity,
+          avgHours,
+          count: severityExceptions.length,
+          minHours,
+          maxHours,
+        };
+      });
+
+      return resolutionData;
     },
   });
 
@@ -574,6 +631,77 @@ export default function Dashboard() {
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   {t('dashboard.noExceptions')}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Resolution Time Analysis */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              {t('dashboard.resolutionTimeAnalysis')}
+            </CardTitle>
+            <CardDescription>{t('dashboard.avgResolutionTime')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              {isLoadingResolution ? (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  {t('common.loading')}
+                </div>
+              ) : resolutionTimeData?.some(d => d.count > 0) ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={resolutionTimeData} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
+                    <XAxis 
+                      type="number"
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                      label={{ value: t('dashboard.hours'), position: 'bottom', fontSize: 12 }}
+                    />
+                    <YAxis 
+                      type="category"
+                      dataKey="severity" 
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                      width={50}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                      formatter={(value: number, name: string, props: any) => {
+                        const item = props.payload;
+                        return [
+                          `${value}h (${t('dashboard.min')}: ${item.minHours}h, ${t('dashboard.max')}: ${item.maxHours}h)`,
+                          t('dashboard.avgTime')
+                        ];
+                      }}
+                      labelFormatter={(label) => `${label} - ${resolutionTimeData?.find(d => d.severity === label)?.count || 0} ${t('dashboard.resolved')}`}
+                    />
+                    <Bar 
+                      dataKey="avgHours" 
+                      radius={[0, 4, 4, 0]}
+                    >
+                      {resolutionTimeData?.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={entry.severity === 'P1' ? '#ef4444' : entry.severity === 'P2' ? '#f97316' : '#eab308'} 
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  {t('dashboard.noResolvedExceptions')}
                 </div>
               )}
             </div>

@@ -107,7 +107,15 @@
     "exceptionsRequiringAttention": "Active exceptions requiring attention",
     "exceptionTrends": "Exception Trends",
     "exceptionsOverTime": "Exception occurrences by severity over time",
-    "noExceptions": "No exceptions in this period"
+    "noExceptions": "No exceptions in this period",
+    "resolutionTimeAnalysis": "Resolution Time Analysis",
+    "avgResolutionTime": "Average time to resolve exceptions by severity",
+    "noResolvedExceptions": "No resolved exceptions in this period",
+    "hours": "Hours",
+    "avgTime": "Avg Time",
+    "min": "Min",
+    "max": "Max",
+    "resolved": "resolved"
   },
   "shipments": {
     "title": "Shipments",
