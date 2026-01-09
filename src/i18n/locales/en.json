@@ -361,7 +361,16 @@
     "p2SlaDesc": "Maximum hours to resolve P2 (High) exceptions within SLA",
     "p3SlaDesc": "Maximum hours to resolve P3 (Medium) exceptions within SLA",
     "slaUpdated": "SLA targets updated",
-    "errorUpdatingSLA": "Error updating SLA targets"
+    "errorUpdatingSLA": "Error updating SLA targets",
+    "emailReports": "Email Reports",
+    "emailReportsDesc": "Configure and test automated email reports",
+    "weeklySLAReport": "Weekly SLA Report",
+    "weeklySLAReportDesc": "Comprehensive SLA performance summary sent to managers every Monday",
+    "sendTestReport": "Send Test Report",
+    "testReportSent": "Test report sent",
+    "testReportSentDesc": "Check your email for the SLA report",
+    "errorSendingTestReport": "Error sending test report",
+    "scheduledReportInfo": "The weekly SLA report is automatically sent every Monday at 8:00 AM UTC to all active managers."
   },
   "auditLogs": {
     "title": "Audit Logs",

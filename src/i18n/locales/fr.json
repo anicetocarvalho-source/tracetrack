@@ -361,7 +361,16 @@
     "p2SlaDesc": "Heures maximum pour résoudre les exceptions P2 (Hautes) dans le SLA",
     "p3SlaDesc": "Heures maximum pour résoudre les exceptions P3 (Moyennes) dans le SLA",
     "slaUpdated": "Objectifs SLA mis à jour",
-    "errorUpdatingSLA": "Erreur lors de la mise à jour des objectifs SLA"
+    "errorUpdatingSLA": "Erreur lors de la mise à jour des objectifs SLA",
+    "emailReports": "Rapports par Email",
+    "emailReportsDesc": "Configurez et testez les rapports automatiques par email",
+    "weeklySLAReport": "Rapport Hebdomadaire SLA",
+    "weeklySLAReportDesc": "Résumé complet des performances SLA envoyé aux managers chaque lundi",
+    "sendTestReport": "Envoyer un Rapport Test",
+    "testReportSent": "Rapport test envoyé",
+    "testReportSentDesc": "Vérifiez votre email pour le rapport SLA",
+    "errorSendingTestReport": "Erreur lors de l'envoi du rapport test",
+    "scheduledReportInfo": "Le rapport hebdomadaire SLA est envoyé automatiquement chaque lundi à 8h00 UTC à tous les managers actifs."
   },
   "auditLogs": {
     "title": "Journaux d'Audit",

@@ -361,7 +361,16 @@
     "p2SlaDesc": "Horas máximas para resolver exceções P2 (Altas) dentro do SLA",
     "p3SlaDesc": "Horas máximas para resolver exceções P3 (Médias) dentro do SLA",
     "slaUpdated": "Metas de SLA atualizadas",
-    "errorUpdatingSLA": "Erro ao atualizar metas de SLA"
+    "errorUpdatingSLA": "Erro ao atualizar metas de SLA",
+    "emailReports": "Relatórios por Email",
+    "emailReportsDesc": "Configure e teste relatórios automáticos por email",
+    "weeklySLAReport": "Relatório Semanal de SLA",
+    "weeklySLAReportDesc": "Resumo completo de desempenho SLA enviado aos gestores todas as segundas-feiras",
+    "sendTestReport": "Enviar Relatório de Teste",
+    "testReportSent": "Relatório de teste enviado",
+    "testReportSentDesc": "Verifique o seu email para o relatório SLA",
+    "errorSendingTestReport": "Erro ao enviar relatório de teste",
+    "scheduledReportInfo": "O relatório semanal de SLA é enviado automaticamente todas as segundas-feiras às 8:00 UTC para todos os gestores ativos."
   },
   "auditLogs": {
     "title": "Logs de Auditoria",
