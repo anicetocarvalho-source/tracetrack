@@ -16,6 +16,37 @@ interface ExceptionAlert {
   current_status: string;
 }
 
+interface ResolutionAlert {
+  shipment_ref: string;
+  client_name: string;
+  rule_name: string;
+  severity: string;
+  resolved_by: string;
+  resolution_note: string;
+}
+
+type AlertType = 'detection' | 'resolution';
+
+interface AlertPayload {
+  type: AlertType;
+  exceptions?: ExceptionAlert[];
+  resolutions?: ResolutionAlert[];
+}
+
+function getSeverityColor(severity: string): string {
+  switch (severity) {
+    case 'P1': return '#dc2626';
+    case 'P2': return '#f59e0b';
+    case 'P3': return '#3b82f6';
+    default: return '#6b7280';
+  }
+}
+
+function getSeverityBadge(severity: string): string {
+  const color = getSeverityColor(severity);
+  return `<span style="display: inline-block; padding: 2px 8px; background: ${color}; color: white; border-radius: 4px; font-size: 12px; font-weight: bold;">${severity}</span>`;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -36,16 +67,28 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { exceptions }: { exceptions: ExceptionAlert[] } = await req.json();
+    const payload: AlertPayload = await req.json();
+    
+    // Handle legacy format (just exceptions array)
+    const alertType = payload.type || 'detection';
+    const exceptions = payload.exceptions || (Array.isArray(payload) ? payload : []);
+    const resolutions = payload.resolutions || [];
 
-    if (!exceptions || exceptions.length === 0) {
+    if (alertType === 'detection' && (!exceptions || exceptions.length === 0)) {
       return new Response(
         JSON.stringify({ success: true, message: 'No exceptions to notify' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`[send-exception-alert] Processing ${exceptions.length} P1 exception alerts`);
+    if (alertType === 'resolution' && (!resolutions || resolutions.length === 0)) {
+      return new Response(
+        JSON.stringify({ success: true, message: 'No resolutions to notify' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[send-exception-alert] Processing ${alertType} alert`);
 
     // Fetch supervisor/manager users to notify
     const { data: supervisorRoles, error: rolesError } = await supabase
@@ -90,70 +133,161 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`[send-exception-alert] Sending alerts to ${recipientEmails.length} recipients`);
+    console.log(`[send-exception-alert] Sending ${alertType} alerts to ${recipientEmails.length} recipients`);
 
-    // Build email content
-    const exceptionRows = exceptions.map(e => `
-      <tr>
-        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${e.shipment_ref}</td>
-        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${e.client_name}</td>
-        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${e.rule_name}</td>
-        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${e.current_status}</td>
-        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #dc2626; font-weight: bold;">${e.hours_in_status}h (max ${e.max_hours}h)</td>
-      </tr>
-    `).join('');
+    let emailHtml: string;
+    let subject: string;
 
-    const emailHtml = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <title>P1 Exception Alert</title>
-        </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background-color: #f3f4f6;">
-          <div style="max-width: 700px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <div style="background: #dc2626; padding: 24px; text-align: center;">
-              <h1 style="color: white; margin: 0; font-size: 24px;">⚠️ P1 Exception Alert</h1>
-            </div>
-            <div style="padding: 24px;">
-              <p style="color: #374151; font-size: 16px; margin-bottom: 20px;">
-                <strong>${exceptions.length}</strong> critical (P1) exception${exceptions.length > 1 ? 's have' : ' has'} been detected and require${exceptions.length === 1 ? 's' : ''} immediate attention:
-              </p>
-              <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-                <thead>
-                  <tr style="background: #f9fafb;">
-                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Shipment</th>
-                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Client</th>
-                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Rule</th>
-                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Status</th>
-                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Time Overdue</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${exceptionRows}
-                </tbody>
-              </table>
-              <div style="margin-top: 24px; padding: 16px; background: #fef2f2; border-radius: 6px; border-left: 4px solid #dc2626;">
-                <p style="margin: 0; color: #991b1b; font-size: 14px;">
-                  <strong>Action Required:</strong> Please review these exceptions in the Action Required dashboard and take appropriate action.
+    if (alertType === 'detection') {
+      // Group exceptions by severity
+      const p1Exceptions = exceptions.filter(e => e.severity === 'P1');
+      const p2Exceptions = exceptions.filter(e => e.severity === 'P2');
+      const p3Exceptions = exceptions.filter(e => e.severity === 'P3');
+
+      const hasP1 = p1Exceptions.length > 0;
+      const headerColor = hasP1 ? '#dc2626' : p2Exceptions.length > 0 ? '#f59e0b' : '#3b82f6';
+      const headerIcon = hasP1 ? '🚨' : '⚠️';
+
+      const exceptionRows = exceptions.map(e => `
+        <tr>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${getSeverityBadge(e.severity)}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${e.shipment_ref}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${e.client_name}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${e.rule_name}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${e.current_status}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: ${getSeverityColor(e.severity)}; font-weight: bold;">${e.hours_in_status}h (max ${e.max_hours}h)</td>
+        </tr>
+      `).join('');
+
+      subject = hasP1 
+        ? `🚨 P1 Exception Alert: ${p1Exceptions.length} Critical Issue${p1Exceptions.length > 1 ? 's' : ''} Detected`
+        : `⚠️ Exception Alert: ${exceptions.length} Issue${exceptions.length > 1 ? 's' : ''} Detected`;
+
+      emailHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Exception Alert</title>
+          </head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background-color: #f3f4f6;">
+            <div style="max-width: 800px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+              <div style="background: ${headerColor}; padding: 24px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 24px;">${headerIcon} Exception Alert</h1>
+              </div>
+              <div style="padding: 24px;">
+                <p style="color: #374151; font-size: 16px; margin-bottom: 20px;">
+                  <strong>${exceptions.length}</strong> exception${exceptions.length > 1 ? 's have' : ' has'} been detected:
+                  ${p1Exceptions.length > 0 ? `<span style="color: #dc2626; font-weight: bold;">${p1Exceptions.length} P1</span>` : ''}
+                  ${p2Exceptions.length > 0 ? `<span style="color: #f59e0b; font-weight: bold;">${p2Exceptions.length} P2</span>` : ''}
+                  ${p3Exceptions.length > 0 ? `<span style="color: #3b82f6; font-weight: bold;">${p3Exceptions.length} P3</span>` : ''}
+                </p>
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                  <thead>
+                    <tr style="background: #f9fafb;">
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Severity</th>
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Shipment</th>
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Client</th>
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Rule</th>
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Status</th>
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Time Overdue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${exceptionRows}
+                  </tbody>
+                </table>
+                ${hasP1 ? `
+                <div style="margin-top: 24px; padding: 16px; background: #fef2f2; border-radius: 6px; border-left: 4px solid #dc2626;">
+                  <p style="margin: 0; color: #991b1b; font-size: 14px;">
+                    <strong>Immediate Action Required:</strong> P1 exceptions require urgent attention. Please review and resolve these issues immediately.
+                  </p>
+                </div>
+                ` : `
+                <div style="margin-top: 24px; padding: 16px; background: #fffbeb; border-radius: 6px; border-left: 4px solid #f59e0b;">
+                  <p style="margin: 0; color: #92400e; font-size: 14px;">
+                    <strong>Action Required:</strong> Please review these exceptions in the Action Required dashboard.
+                  </p>
+                </div>
+                `}
+              </div>
+              <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
+                <p style="margin: 0; color: #6b7280; font-size: 12px;">
+                  DHL Shipment Tracking System • Automated Alert
                 </p>
               </div>
             </div>
-            <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
-              <p style="margin: 0; color: #6b7280; font-size: 12px;">
-                DHL Shipment Tracking System • Automated Alert
-              </p>
+          </body>
+        </html>
+      `;
+    } else {
+      // Resolution notification
+      const resolutionRows = resolutions.map(r => `
+        <tr>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${getSeverityBadge(r.severity)}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${r.shipment_ref}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${r.client_name}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${r.rule_name}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${r.resolved_by}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${r.resolution_note || '-'}</td>
+        </tr>
+      `).join('');
+
+      subject = `✅ Exception${resolutions.length > 1 ? 's' : ''} Resolved: ${resolutions.length} Issue${resolutions.length > 1 ? 's' : ''} Fixed`;
+
+      emailHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Exception Resolved</title>
+          </head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background-color: #f3f4f6;">
+            <div style="max-width: 800px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+              <div style="background: #16a34a; padding: 24px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 24px;">✅ Exception${resolutions.length > 1 ? 's' : ''} Resolved</h1>
+              </div>
+              <div style="padding: 24px;">
+                <p style="color: #374151; font-size: 16px; margin-bottom: 20px;">
+                  <strong>${resolutions.length}</strong> exception${resolutions.length > 1 ? 's have' : ' has'} been resolved:
+                </p>
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                  <thead>
+                    <tr style="background: #f9fafb;">
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Severity</th>
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Shipment</th>
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Client</th>
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Rule</th>
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Resolved By</th>
+                      <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Resolution Note</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${resolutionRows}
+                  </tbody>
+                </table>
+                <div style="margin-top: 24px; padding: 16px; background: #f0fdf4; border-radius: 6px; border-left: 4px solid #16a34a;">
+                  <p style="margin: 0; color: #166534; font-size: 14px;">
+                    These exceptions have been successfully resolved and closed.
+                  </p>
+                </div>
+              </div>
+              <div style="background: #f9fafb; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
+                <p style="margin: 0; color: #6b7280; font-size: 12px;">
+                  DHL Shipment Tracking System • Automated Alert
+                </p>
+              </div>
             </div>
-          </div>
-        </body>
-      </html>
-    `;
+          </body>
+        </html>
+      `;
+    }
 
     // Send email to all recipients
     const { error: emailError } = await resend.emails.send({
       from: 'DHL Alerts <onboarding@resend.dev>',
       to: recipientEmails,
-      subject: `🚨 P1 Exception Alert: ${exceptions.length} Critical Issue${exceptions.length > 1 ? 's' : ''} Detected`,
+      subject,
       html: emailHtml,
     });
 
@@ -162,24 +296,34 @@ Deno.serve(async (req) => {
       throw emailError;
     }
 
-    console.log(`[send-exception-alert] Successfully sent alerts to ${recipientEmails.length} recipients`);
+    console.log(`[send-exception-alert] Successfully sent ${alertType} alerts to ${recipientEmails.length} recipients`);
 
     // Log to audit
+    const auditData = alertType === 'detection'
+      ? {
+          exception_count: exceptions.length,
+          recipient_count: recipientEmails.length,
+          shipment_refs: exceptions.map(e => e.shipment_ref),
+          severities: { P1: exceptions.filter(e => e.severity === 'P1').length, P2: exceptions.filter(e => e.severity === 'P2').length, P3: exceptions.filter(e => e.severity === 'P3').length },
+        }
+      : {
+          resolution_count: resolutions.length,
+          recipient_count: recipientEmails.length,
+          shipment_refs: resolutions.map(r => r.shipment_ref),
+        };
+
     await supabase.from('audit_log').insert({
       entity_type: 'EXCEPTION_ALERT',
       entity_id: null,
-      action: 'P1_ALERT_SENT',
-      metadata_json: {
-        exception_count: exceptions.length,
-        recipient_count: recipientEmails.length,
-        shipment_refs: exceptions.map(e => e.shipment_ref),
-      },
+      action: alertType === 'detection' ? 'EXCEPTION_ALERT_SENT' : 'RESOLUTION_ALERT_SENT',
+      metadata_json: auditData,
     });
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        alerts_sent: exceptions.length,
+        type: alertType,
+        count: alertType === 'detection' ? exceptions.length : resolutions.length,
         recipients: recipientEmails.length 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

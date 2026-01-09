@@ -40,7 +40,7 @@ export default function ShipmentDetail() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user, role } = useAuth();
+  const { user, role, profile } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showAddEvent, setShowAddEvent] = useState(false);
@@ -223,6 +223,25 @@ export default function ShipmentDetail() {
           resolution_note: note,
         },
       });
+
+      // Send resolution email notification
+      try {
+        await supabase.functions.invoke('send-exception-alert', {
+          body: {
+            type: 'resolution',
+            resolutions: [{
+              shipment_ref: shipment?.shipment_ref || 'Unknown',
+              client_name: shipment?.client?.name || 'Unknown Client',
+              rule_name: exception?.exception_rule?.name || 'Unknown Rule',
+              severity: exception?.severity || 'P3',
+              resolved_by: profile?.name || 'Unknown User',
+              resolution_note: note,
+            }],
+          },
+        });
+      } catch (notifyError) {
+        console.error('Failed to send resolution notification:', notifyError);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipment-exceptions', id] });
