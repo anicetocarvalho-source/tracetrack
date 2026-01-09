@@ -1,0 +1,134 @@
+import { ReactNode } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Package, User, LogOut, Menu, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { useState } from 'react';
+
+interface CustomerLayoutProps {
+  children: ReactNode;
+}
+
+const navItems = [
+  { path: '/portal', label: 'My Shipments', icon: Package },
+  { path: '/portal/profile', label: 'Profile', icon: User },
+];
+
+export function CustomerLayout({ children }: CustomerLayoutProps) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { profile, signOut } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-card border-b">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
+              <Package className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <span className="font-bold text-lg hidden sm:inline">Tracking Trace</span>
+          </div>
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                    isActive 
+                      ? "bg-primary text-primary-foreground" 
+                      : "hover:bg-muted"
+                  )}
+                >
+                  <item.icon className="w-4 h-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2 mr-2">
+              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                <span className="text-sm font-medium">
+                  {profile?.name?.charAt(0).toUpperCase() || 'U'}
+                </span>
+              </div>
+              <span className="text-sm font-medium">{profile?.name}</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="hidden md:flex"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setMenuOpen(!menuOpen)}
+            >
+              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </Button>
+          </div>
+        </div>
+
+        {/* Mobile menu */}
+        {menuOpen && (
+          <div className="md:hidden border-t bg-card">
+            <div className="px-4 py-3 space-y-1">
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                      isActive 
+                        ? "bg-primary text-primary-foreground" 
+                        : "hover:bg-muted"
+                    )}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={handleSignOut}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* Main content */}
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        {children}
+      </main>
+    </div>
+  );
+}
