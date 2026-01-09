@@ -309,7 +309,14 @@
     "addOperator": "Ajouter un opérateur...",
     "settingsSaved": "Paramètres enregistrés",
     "errorSavingSettings": "Erreur lors de l'enregistrement des paramètres",
-    "loadingSettings": "Chargement des paramètres..."
+    "loadingSettings": "Chargement des paramètres...",
+    "automationSettings": "Paramètres d'Automatisation",
+    "automationSettingsDesc": "Configurer les processus automatiques en arrière-plan",
+    "exceptionDetectionFrequency": "Fréquence de Détection des Exceptions",
+    "exceptionDetectionFrequencyDesc": "À quelle fréquence le système recherche les exceptions d'expédition",
+    "selectFrequency": "Sélectionner la fréquence",
+    "cronUpdated": "Planification mise à jour",
+    "errorUpdatingCron": "Erreur lors de la mise à jour de la planification"
   },
   "auditLogs": {
     "title": "Journaux d'Audit",

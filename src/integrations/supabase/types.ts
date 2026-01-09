@@ -484,6 +484,16 @@ export type Database = {
         Args: { p_action: string; p_identifier: string }
         Returns: undefined
       }
+      schedule_cron_job: {
+        Args: {
+          p_auth_key: string
+          p_job_name: string
+          p_schedule: string
+          p_url: string
+        }
+        Returns: number
+      }
+      unschedule_cron_job: { Args: { job_name: string }; Returns: undefined }
     }
     Enums: {
       app_role: "TECHNICIAN" | "SUPERVISOR" | "MANAGER" | "CUSTOMER"

@@ -309,7 +309,14 @@
     "addOperator": "Add operator...",
     "settingsSaved": "Settings saved",
     "errorSavingSettings": "Error saving settings",
-    "loadingSettings": "Loading settings..."
+    "loadingSettings": "Loading settings...",
+    "automationSettings": "Automation Settings",
+    "automationSettingsDesc": "Configure automated background processes",
+    "exceptionDetectionFrequency": "Exception Detection Frequency",
+    "exceptionDetectionFrequencyDesc": "How often the system scans for shipment exceptions",
+    "selectFrequency": "Select frequency",
+    "cronUpdated": "Schedule updated",
+    "errorUpdatingCron": "Error updating schedule"
   },
   "auditLogs": {
     "title": "Audit Logs",
