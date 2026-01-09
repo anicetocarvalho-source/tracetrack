@@ -21,14 +21,7 @@ interface Shipment {
   current_status: string;
 }
 
-interface TrackingEvent {
-  id: string;
-  shipment_id: string;
-  status: string;
-  event_datetime: string;
-}
-
-interface P1ExceptionAlert {
+interface ExceptionAlert {
   shipment_ref: string;
   client_name: string;
   rule_name: string;
@@ -36,6 +29,27 @@ interface P1ExceptionAlert {
   hours_in_status: number;
   max_hours: number;
   current_status: string;
+  escalated_from?: string;
+}
+
+interface EscalationConfig {
+  p2_to_p1_hours: number;
+  p3_to_p2_hours: number;
+  enabled: boolean;
+}
+
+interface ShipmentException {
+  id: string;
+  shipment_id: string;
+  severity: string;
+  detected_at: string;
+  status: string;
+  shipment: {
+    shipment_ref: string;
+    current_status: string;
+    client: { name: string } | null;
+  };
+  exception_rule: { name: string };
 }
 
 Deno.serve(async (req) => {
@@ -65,7 +79,7 @@ Deno.serve(async (req) => {
     console.log(`[detect-exceptions] Found ${rules?.length || 0} active rules`);
 
     let exceptionsCreated = 0;
-    const p1Alerts: P1ExceptionAlert[] = [];
+    const p1Alerts: ExceptionAlert[] = [];
 
     for (const rule of (rules as ExceptionRule[]) || []) {
       // Fetch shipments matching the status trigger with client info
@@ -183,9 +197,113 @@ Deno.serve(async (req) => {
 
     console.log(`[detect-exceptions] Scan complete. Created ${exceptionsCreated} new exceptions.`);
 
-    // Send email alerts if any exceptions were created
-    if (p1Alerts.length > 0) {
-      console.log(`[detect-exceptions] Sending email alerts for ${p1Alerts.length} exceptions`);
+    // ===== ESCALATION LOGIC =====
+    let exceptionsEscalated = 0;
+    const escalationAlerts: ExceptionAlert[] = [];
+
+    // Fetch escalation config
+    const { data: escalationSetting } = await supabase
+      .from('system_settings')
+      .select('value')
+      .eq('key', 'exception_escalation')
+      .maybeSingle();
+
+    const escalationConfig: EscalationConfig = escalationSetting?.value as EscalationConfig || {
+      p2_to_p1_hours: 24,
+      p3_to_p2_hours: 48,
+      enabled: true,
+    };
+
+    if (escalationConfig.enabled) {
+      console.log(`[detect-exceptions] Checking for escalations (P2→P1: ${escalationConfig.p2_to_p1_hours}h, P3→P2: ${escalationConfig.p3_to_p2_hours}h)`);
+
+      // Find OPEN exceptions eligible for escalation
+      const { data: openExceptions, error: exceptionsError } = await supabase
+        .from('shipment_exceptions')
+        .select(`
+          id,
+          shipment_id,
+          severity,
+          detected_at,
+          status,
+          shipment:shipments(shipment_ref, current_status, client:clients(name)),
+          exception_rule:exception_rules(name)
+        `)
+        .in('status', ['OPEN', 'ACKNOWLEDGED'])
+        .in('severity', ['P2', 'P3']);
+
+      if (exceptionsError) {
+        console.error('[detect-exceptions] Error fetching exceptions for escalation:', exceptionsError);
+      } else {
+        const now = new Date();
+
+        for (const exception of (openExceptions as unknown as ShipmentException[]) || []) {
+          const detectedAt = new Date(exception.detected_at);
+          const hoursOpen = (now.getTime() - detectedAt.getTime()) / (1000 * 60 * 60);
+
+          let newSeverity: string | null = null;
+
+          if (exception.severity === 'P2' && hoursOpen > escalationConfig.p2_to_p1_hours) {
+            newSeverity = 'P1';
+          } else if (exception.severity === 'P3' && hoursOpen > escalationConfig.p3_to_p2_hours) {
+            newSeverity = 'P2';
+          }
+
+          if (newSeverity) {
+            // Update exception severity
+            const { error: updateError } = await supabase
+              .from('shipment_exceptions')
+              .update({ severity: newSeverity })
+              .eq('id', exception.id);
+
+            if (updateError) {
+              console.error(`[detect-exceptions] Error escalating exception ${exception.id}:`, updateError);
+              continue;
+            }
+
+            exceptionsEscalated++;
+
+            const shipment = exception.shipment;
+            const clientName = shipment?.client?.name || 'Unknown Client';
+
+            escalationAlerts.push({
+              shipment_ref: shipment?.shipment_ref || 'Unknown',
+              client_name: clientName,
+              rule_name: exception.exception_rule?.name || 'Unknown Rule',
+              severity: newSeverity,
+              hours_in_status: Math.round(hoursOpen),
+              max_hours: exception.severity === 'P2' ? escalationConfig.p2_to_p1_hours : escalationConfig.p3_to_p2_hours,
+              current_status: shipment?.current_status || 'Unknown',
+              escalated_from: exception.severity,
+            });
+
+            // Log to audit
+            await supabase.from('audit_log').insert({
+              entity_type: 'SHIPMENT_EXCEPTION',
+              entity_id: exception.id,
+              action: 'EXCEPTION_ESCALATED',
+              metadata_json: {
+                shipment_id: exception.shipment_id,
+                from_severity: exception.severity,
+                to_severity: newSeverity,
+                hours_open: Math.round(hoursOpen),
+              },
+            });
+
+            console.log(`[detect-exceptions] Escalated exception ${exception.id} from ${exception.severity} to ${newSeverity} (open for ${Math.round(hoursOpen)}h)`);
+          }
+        }
+      }
+    }
+
+    console.log(`[detect-exceptions] Escalation complete. Escalated ${exceptionsEscalated} exceptions.`);
+
+    // Combine alerts
+    const allAlerts = [...p1Alerts, ...escalationAlerts];
+
+    // Send email alerts if any exceptions were created or escalated
+    if (allAlerts.length > 0) {
+      console.log(`[detect-exceptions] Sending email alerts for ${allAlerts.length} exceptions`);
       
       try {
         const alertResponse = await fetch(`${supabaseUrl}/functions/v1/send-exception-alert`, {
@@ -194,7 +312,7 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${supabaseServiceKey}`,
           },
-          body: JSON.stringify({ type: 'detection', exceptions: p1Alerts }),
+          body: JSON.stringify({ type: 'detection', exceptions: allAlerts }),
         });
         
         if (!alertResponse.ok) {
@@ -212,8 +330,9 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         exceptions_created: exceptionsCreated,
+        exceptions_escalated: exceptionsEscalated,
         rules_processed: rules?.length || 0,
-        p1_alerts_sent: p1Alerts.length,
+        alerts_sent: allAlerts.length,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -316,7 +316,17 @@
     "exceptionDetectionFrequencyDesc": "À quelle fréquence le système recherche les exceptions d'expédition",
     "selectFrequency": "Sélectionner la fréquence",
     "cronUpdated": "Planification mise à jour",
-    "errorUpdatingCron": "Erreur lors de la mise à jour de la planification"
+    "errorUpdatingCron": "Erreur lors de la mise à jour de la planification",
+    "escalationSettings": "Escalade des Exceptions",
+    "escalationSettingsDesc": "Augmenter automatiquement la sévérité si non résolue à temps",
+    "enableEscalation": "Activer l'Escalade Automatique",
+    "enableEscalationDesc": "Augmenter automatiquement la priorité si non résolue",
+    "p2ToP1Hours": "Escalader après",
+    "p2ToP1HoursDesc": "Les exceptions P2 passeront en P1 si non résolues dans ce délai",
+    "p3ToP2Hours": "Escalader après",
+    "p3ToP2HoursDesc": "Les exceptions P3 passeront en P2 si non résolues dans ce délai",
+    "escalationUpdated": "Paramètres d'escalade mis à jour",
+    "errorUpdatingEscalation": "Erreur lors de la mise à jour des paramètres"
   },
   "auditLogs": {
     "title": "Journaux d'Audit",

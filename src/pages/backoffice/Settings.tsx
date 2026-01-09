@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, X, Ship, Package, MapPin, Users, Clock, AlertTriangle, Loader2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Plus, X, Ship, Package, MapPin, Users, Clock, AlertTriangle, Loader2, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
@@ -16,9 +17,15 @@ import { useTranslation } from 'react-i18next';
 interface SystemSetting {
   id: string;
   key: string;
-  value: string[] | string;
+  value: string[] | string | EscalationConfig;
   description: string | null;
   updated_at: string;
+}
+
+interface EscalationConfig {
+  p2_to_p1_hours: number;
+  p3_to_p2_hours: number;
+  enabled: boolean;
 }
 
 type CronFrequency = '30min' | '1hour' | '4hours';
@@ -27,6 +34,13 @@ const FREQUENCY_OPTIONS: { value: CronFrequency; label: string }[] = [
   { value: '30min', label: 'Every 30 minutes' },
   { value: '1hour', label: 'Every hour' },
   { value: '4hours', label: 'Every 4 hours' },
+];
+
+const ESCALATION_HOURS_OPTIONS = [
+  { value: 12, label: '12 hours' },
+  { value: 24, label: '24 hours' },
+  { value: 48, label: '48 hours' },
+  { value: 72, label: '72 hours' },
 ];
 
 const Settings = () => {
@@ -80,6 +94,31 @@ const Settings = () => {
 
   // Get current frequency setting
   const currentFrequency = settings.find(s => s.key === 'exception_detection_frequency')?.value as CronFrequency | undefined;
+
+  // Get current escalation settings
+  const escalationSetting = settings.find(s => s.key === 'exception_escalation');
+  const currentEscalation: EscalationConfig = (escalationSetting?.value as EscalationConfig) || {
+    p2_to_p1_hours: 24,
+    p3_to_p2_hours: 48,
+    enabled: true,
+  };
+
+  const updateEscalationMutation = useMutation({
+    mutationFn: async (config: EscalationConfig) => {
+      const { error } = await supabase
+        .from('system_settings')
+        .update({ value: config as unknown as string, updated_by: user?.id })
+        .eq('key', 'exception_escalation');
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-settings'] });
+      toast({ title: t('settings.escalationUpdated') });
+    },
+    onError: (error: Error) => {
+      toast({ title: t('settings.errorUpdatingEscalation'), description: error.message, variant: 'destructive' });
+    },
+  });
 
   const updateCronMutation = useMutation({
     mutationFn: async (frequency: CronFrequency) => {
@@ -219,6 +258,110 @@ const Settings = () => {
                   {t('settings.exceptionDetectionFrequencyDesc')}
                 </p>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Exception Escalation Settings */}
+        {role === 'MANAGER' && (
+          <Card className="border-amber-500/20">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-amber-500" />
+                <CardTitle className="text-lg">{t('settings.escalationSettings')}</CardTitle>
+              </div>
+              <CardDescription>{t('settings.escalationSettingsDesc')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Enable/Disable escalation */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>{t('settings.enableEscalation')}</Label>
+                  <p className="text-xs text-muted-foreground">{t('settings.enableEscalationDesc')}</p>
+                </div>
+                <Switch
+                  checked={currentEscalation.enabled}
+                  onCheckedChange={(enabled) => 
+                    updateEscalationMutation.mutate({ ...currentEscalation, enabled })
+                  }
+                  disabled={updateEscalationMutation.isPending}
+                />
+              </div>
+
+              {currentEscalation.enabled && (
+                <>
+                  {/* P2 to P1 escalation */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Badge variant="destructive" className="text-xs">P2 → P1</Badge>
+                      {t('settings.p2ToP1Hours')}
+                    </Label>
+                    <div className="flex gap-2">
+                      <Select
+                        value={currentEscalation.p2_to_p1_hours.toString()}
+                        onValueChange={(value) => 
+                          updateEscalationMutation.mutate({ 
+                            ...currentEscalation, 
+                            p2_to_p1_hours: parseInt(value) 
+                          })
+                        }
+                        disabled={updateEscalationMutation.isPending}
+                      >
+                        <SelectTrigger className="w-[200px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ESCALATION_HOURS_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value.toString()}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {updateEscalationMutation.isPending && (
+                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {t('settings.p2ToP1HoursDesc')}
+                    </p>
+                  </div>
+
+                  {/* P3 to P2 escalation */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800">P3 → P2</Badge>
+                      {t('settings.p3ToP2Hours')}
+                    </Label>
+                    <div className="flex gap-2">
+                      <Select
+                        value={currentEscalation.p3_to_p2_hours.toString()}
+                        onValueChange={(value) => 
+                          updateEscalationMutation.mutate({ 
+                            ...currentEscalation, 
+                            p3_to_p2_hours: parseInt(value) 
+                          })
+                        }
+                        disabled={updateEscalationMutation.isPending}
+                      >
+                        <SelectTrigger className="w-[200px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ESCALATION_HOURS_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value.toString()}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {t('settings.p3ToP2HoursDesc')}
+                    </p>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         )}

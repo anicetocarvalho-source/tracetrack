@@ -316,7 +316,17 @@
     "exceptionDetectionFrequencyDesc": "Com que frequência o sistema procura exceções de envio",
     "selectFrequency": "Selecionar frequência",
     "cronUpdated": "Agendamento atualizado",
-    "errorUpdatingCron": "Erro ao atualizar agendamento"
+    "errorUpdatingCron": "Erro ao atualizar agendamento",
+    "escalationSettings": "Escalação de Exceções",
+    "escalationSettingsDesc": "Aumentar automaticamente a severidade se não resolvida a tempo",
+    "enableEscalation": "Ativar Escalação Automática",
+    "enableEscalationDesc": "Aumentar automaticamente a prioridade quando não resolvida",
+    "p2ToP1Hours": "Escalar após",
+    "p2ToP1HoursDesc": "Exceções P2 serão elevadas a P1 se não resolvidas neste período",
+    "p3ToP2Hours": "Escalar após",
+    "p3ToP2HoursDesc": "Exceções P3 serão elevadas a P2 se não resolvidas neste período",
+    "escalationUpdated": "Configurações de escalação atualizadas",
+    "errorUpdatingEscalation": "Erro ao atualizar configurações de escalação"
   },
   "auditLogs": {
     "title": "Logs de Auditoria",
