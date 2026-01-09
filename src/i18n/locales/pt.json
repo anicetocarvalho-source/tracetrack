@@ -343,7 +343,15 @@
     "p3ToP2Hours": "Escalar após",
     "p3ToP2HoursDesc": "Exceções P3 serão elevadas a P2 se não resolvidas neste período",
     "escalationUpdated": "Configurações de escalação atualizadas",
-    "errorUpdatingEscalation": "Erro ao atualizar configurações de escalação"
+    "errorUpdatingEscalation": "Erro ao atualizar configurações de escalação",
+    "slaTargets": "Metas de SLA",
+    "slaTargetsDesc": "Configure os tempos de resolução alvo para acompanhamento de conformidade SLA",
+    "slaTargetHours": "Tempo de resolução alvo",
+    "p1SlaDesc": "Horas máximas para resolver exceções P1 (Críticas) dentro do SLA",
+    "p2SlaDesc": "Horas máximas para resolver exceções P2 (Altas) dentro do SLA",
+    "p3SlaDesc": "Horas máximas para resolver exceções P3 (Médias) dentro do SLA",
+    "slaUpdated": "Metas de SLA atualizadas",
+    "errorUpdatingSLA": "Erro ao atualizar metas de SLA"
   },
   "auditLogs": {
     "title": "Logs de Auditoria",

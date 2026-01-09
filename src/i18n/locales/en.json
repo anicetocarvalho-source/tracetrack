@@ -343,7 +343,15 @@
     "p3ToP2Hours": "Escalate after",
     "p3ToP2HoursDesc": "P3 exceptions will upgrade to P2 if not resolved within this time",
     "escalationUpdated": "Escalation settings updated",
-    "errorUpdatingEscalation": "Error updating escalation settings"
+    "errorUpdatingEscalation": "Error updating escalation settings",
+    "slaTargets": "SLA Targets",
+    "slaTargetsDesc": "Configure target resolution times for SLA compliance tracking",
+    "slaTargetHours": "Target resolution time",
+    "p1SlaDesc": "Maximum hours to resolve P1 (Critical) exceptions within SLA",
+    "p2SlaDesc": "Maximum hours to resolve P2 (High) exceptions within SLA",
+    "p3SlaDesc": "Maximum hours to resolve P3 (Medium) exceptions within SLA",
+    "slaUpdated": "SLA targets updated",
+    "errorUpdatingSLA": "Error updating SLA targets"
   },
   "auditLogs": {
     "title": "Audit Logs",
