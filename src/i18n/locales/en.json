@@ -316,7 +316,17 @@
     "exceptionDetectionFrequencyDesc": "How often the system scans for shipment exceptions",
     "selectFrequency": "Select frequency",
     "cronUpdated": "Schedule updated",
-    "errorUpdatingCron": "Error updating schedule"
+    "errorUpdatingCron": "Error updating schedule",
+    "escalationSettings": "Exception Escalation",
+    "escalationSettingsDesc": "Automatically upgrade exception severity if not resolved in time",
+    "enableEscalation": "Enable Automatic Escalation",
+    "enableEscalationDesc": "Automatically upgrade exception priority when unresolved",
+    "p2ToP1Hours": "Escalate after",
+    "p2ToP1HoursDesc": "P2 exceptions will upgrade to P1 if not resolved within this time",
+    "p3ToP2Hours": "Escalate after",
+    "p3ToP2HoursDesc": "P3 exceptions will upgrade to P2 if not resolved within this time",
+    "escalationUpdated": "Escalation settings updated",
+    "errorUpdatingEscalation": "Error updating escalation settings"
   },
   "auditLogs": {
     "title": "Audit Logs",
