@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
@@ -9,11 +9,13 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { AlertTriangle, FileWarning, Clock, Building2, Filter, X, Download, Eye } from 'lucide-react';
+import { AlertTriangle, FileWarning, Clock, Building2, Filter, X, Download, Eye, TrendingUp, BarChart3 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { STATUS_LABELS, ShipmentStatus } from '@/lib/constants';
-import { format } from 'date-fns';
+import { format, subDays, eachDayOfInterval, parseISO } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { AreaChart, Area, XAxis, YAxis, BarChart, Bar, Cell } from 'recharts';
 
 interface SLABreachRecord {
   id: string;
@@ -238,6 +240,88 @@ const SLABreachReport = () => {
     URL.revokeObjectURL(url);
   };
 
+  // Fetch trend data for charts (last 30 days)
+  const { data: trendData } = useQuery({
+    queryKey: ['sla-breach-trends'],
+    queryFn: async () => {
+      const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
+      
+      const { data, error } = await supabase
+        .from('shipment_sla')
+        .select('exited_at, shipment_status, elapsed_hours, sla_config:sla_config(max_hours)')
+        .eq('breached', true)
+        .gte('exited_at', thirtyDaysAgo)
+        .order('exited_at', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Process trend data for charts
+  const chartData = useMemo(() => {
+    if (!trendData?.length) return { daily: [], byStatus: [] };
+
+    // Daily breach count
+    const last30Days = eachDayOfInterval({
+      start: subDays(new Date(), 29),
+      end: new Date(),
+    });
+
+    const dailyCounts: Record<string, number> = {};
+    last30Days.forEach(day => {
+      dailyCounts[format(day, 'yyyy-MM-dd')] = 0;
+    });
+
+    trendData.forEach((breach: any) => {
+      if (breach.exited_at) {
+        const dayKey = format(parseISO(breach.exited_at), 'yyyy-MM-dd');
+        if (dailyCounts[dayKey] !== undefined) {
+          dailyCounts[dayKey]++;
+        }
+      }
+    });
+
+    const daily = Object.entries(dailyCounts).map(([date, count]) => ({
+      date,
+      displayDate: format(parseISO(date), 'MMM d'),
+      breaches: count,
+    }));
+
+    // Breaches by status
+    const statusCounts: Record<string, number> = {};
+    trendData.forEach((breach: any) => {
+      const status = breach.shipment_status;
+      statusCounts[status] = (statusCounts[status] || 0) + 1;
+    });
+
+    const statusColors: Record<string, string> = {
+      received: 'hsl(var(--chart-1))',
+      customs_held: 'hsl(var(--chart-2))',
+      in_transit: 'hsl(var(--chart-3))',
+      out_for_delivery: 'hsl(var(--chart-4))',
+      pending: 'hsl(var(--chart-5))',
+    };
+
+    const byStatus = Object.entries(statusCounts)
+      .map(([status, count]) => ({
+        status,
+        statusLabel: STATUS_LABELS[status as ShipmentStatus] || status,
+        count,
+        fill: statusColors[status] || 'hsl(var(--muted-foreground))',
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    return { daily, byStatus };
+  }, [trendData]);
+
+  const chartConfig = {
+    breaches: {
+      label: t('slaBreachReport.breaches'),
+      color: 'hsl(var(--destructive))',
+    },
+  };
+
   return (
     <BackofficeLayout>
       <div className="space-y-6">
@@ -279,6 +363,91 @@ const SLABreachReport = () => {
                 {stats?.worstStatus ? STATUS_LABELS[stats.worstStatus as ShipmentStatus] : '-'}
               </CardTitle>
             </CardHeader>
+          </Card>
+        </div>
+
+        {/* Trend Charts */}
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Daily Breach Trend */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <TrendingUp className="h-5 w-5 text-destructive" />
+                {t('slaBreachReport.breachTrend')}
+              </CardTitle>
+              <CardDescription>{t('slaBreachReport.last30Days')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                <AreaChart data={chartData.daily} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="breachGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis
+                    dataKey="displayDate"
+                    tick={{ fontSize: 11 }}
+                    tickLine={false}
+                    axisLine={false}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11 }}
+                    tickLine={false}
+                    axisLine={false}
+                    allowDecimals={false}
+                  />
+                  <ChartTooltip
+                    content={<ChartTooltipContent />}
+                    cursor={{ strokeDasharray: '3 3' }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="breaches"
+                    stroke="hsl(var(--destructive))"
+                    strokeWidth={2}
+                    fill="url(#breachGradient)"
+                  />
+                </AreaChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+
+          {/* Breaches by Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                {t('slaBreachReport.breachesByStatus')}
+              </CardTitle>
+              <CardDescription>{t('slaBreachReport.last30Days')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                <BarChart data={chartData.byStatus} layout="vertical" margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <XAxis type="number" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
+                  <YAxis
+                    type="category"
+                    dataKey="statusLabel"
+                    tick={{ fontSize: 11 }}
+                    tickLine={false}
+                    axisLine={false}
+                    width={100}
+                  />
+                  <ChartTooltip
+                    content={<ChartTooltipContent />}
+                    cursor={{ fill: 'hsl(var(--muted))' }}
+                  />
+                  <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                    {chartData.byStatus.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
           </Card>
         </div>
 

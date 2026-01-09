@@ -514,6 +514,10 @@
     "target": "Cible",
     "overage": "Dépassement",
     "noBreaches": "Aucune violation SLA trouvée avec les filtres appliqués",
-    "breachDetails": "Détails de la Violation"
+    "breachDetails": "Détails de la Violation",
+    "breaches": "Violations",
+    "breachTrend": "Tendance des Violations",
+    "last30Days": "30 derniers jours",
+    "breachesByStatus": "Violations par Statut"
   }
 }
