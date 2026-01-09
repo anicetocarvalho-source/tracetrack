@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.send-exception-alert]
 verify_jwt = false
+
+[functions.update-cron-schedule]
+verify_jwt = false
