@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Package, TrendingUp, AlertTriangle, CheckCircle, CalendarIcon, ShieldAlert, Target, Clock } from 'lucide-react';
+import { Package, TrendingUp, AlertTriangle, CheckCircle, CalendarIcon, ShieldAlert, Target, Clock, Timer } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -461,6 +461,93 @@ export default function Dashboard() {
     enabled: !!activeSLATargets,
   });
 
+  // Fetch at-risk shipments (approaching SLA limits)
+  const { data: atRiskShipments, isLoading: isLoadingAtRisk } = useQuery({
+    queryKey: ['dashboard-at-risk-shipments'],
+    queryFn: async () => {
+      const { data: activeSlaRecords, error } = await supabase
+        .from('shipment_sla')
+        .select(`
+          id,
+          shipment_id,
+          shipment_status,
+          entered_at,
+          sla_config:sla_config(max_hours),
+          shipment:shipments(
+            id,
+            shipment_ref,
+            client:clients(name)
+          )
+        `)
+        .is('exited_at', null)
+        .eq('breached', false);
+
+      if (error) {
+        console.error('Error fetching at-risk shipments:', error);
+        return { critical: [], warning: [], criticalCount: 0, warningCount: 0, total: 0 };
+      }
+
+      const now = new Date();
+      const CRITICAL_THRESHOLD = 0.90;
+      const WARNING_THRESHOLD = 0.75;
+
+      const atRisk: {
+        id: string;
+        shipmentId: string;
+        shipmentRef: string;
+        clientName: string;
+        status: string;
+        percentUsed: number;
+        hoursRemaining: number;
+        riskLevel: 'critical' | 'warning';
+      }[] = [];
+
+      for (const record of activeSlaRecords || []) {
+        const maxHours = (record.sla_config as any)?.max_hours;
+        if (!maxHours) continue;
+
+        const enteredAt = new Date(record.entered_at);
+        const elapsedMs = now.getTime() - enteredAt.getTime();
+        const elapsedHours = elapsedMs / (1000 * 60 * 60);
+        const percentUsed = elapsedHours / maxHours;
+
+        if (percentUsed >= WARNING_THRESHOLD && percentUsed < 1.0) {
+          atRisk.push({
+            id: record.id,
+            shipmentId: record.shipment_id,
+            shipmentRef: (record.shipment as any)?.shipment_ref || 'Unknown',
+            clientName: (record.shipment as any)?.client?.name || 'Unknown',
+            status: STATUS_LABELS[record.shipment_status as ShipmentStatus] || record.shipment_status,
+            percentUsed: Math.round(percentUsed * 100),
+            hoursRemaining: Math.round((maxHours - elapsedHours) * 10) / 10,
+            riskLevel: percentUsed >= CRITICAL_THRESHOLD ? 'critical' : 'warning',
+          });
+        }
+      }
+
+      // Sort by risk level and percent used
+      atRisk.sort((a, b) => {
+        if (a.riskLevel !== b.riskLevel) {
+          return a.riskLevel === 'critical' ? -1 : 1;
+        }
+        return b.percentUsed - a.percentUsed;
+      });
+
+      const critical = atRisk.filter(s => s.riskLevel === 'critical');
+      const warning = atRisk.filter(s => s.riskLevel === 'warning');
+
+      return {
+        critical,
+        warning,
+        criticalCount: critical.length,
+        warningCount: warning.length,
+        total: atRisk.length,
+        topShipments: atRisk.slice(0, 5),
+      };
+    },
+    refetchInterval: 60000, // Refresh every minute
+  });
+
   const dateRangeLabel = dateRange?.from && dateRange?.to
     ? `${format(dateRange.from, 'dd/MM/yyyy')} - ${format(dateRange.to, 'dd/MM/yyyy')}`
     : t('dashboard.allTime');
@@ -573,6 +660,102 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* At-Risk Shipments Widget */}
+        {(atRiskShipments?.total ?? 0) > 0 && (
+          <Card className="border-amber-500/30 bg-amber-500/5">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <div>
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  <Timer className="w-5 h-5 text-amber-500" />
+                  {t('dashboard.atRiskShipments')}
+                </CardTitle>
+                <CardDescription>{t('dashboard.shipmentsApproachingSLA')}</CardDescription>
+              </div>
+              <Link to="/backoffice/sla-breach-report">
+                <Button variant="outline" size="sm">
+                  {t('dashboard.viewSLAReport')}
+                </Button>
+              </Link>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="flex flex-col items-center p-3 rounded-lg bg-destructive/10">
+                  <span className="text-2xl font-bold text-destructive">
+                    {atRiskShipments?.criticalCount ?? 0}
+                  </span>
+                  <span className="text-xs font-medium text-destructive flex items-center gap-1">
+                    🚨 {t('dashboard.critical')}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">≥90% SLA</span>
+                </div>
+                <div className="flex flex-col items-center p-3 rounded-lg bg-amber-500/10">
+                  <span className="text-2xl font-bold text-amber-600">
+                    {atRiskShipments?.warningCount ?? 0}
+                  </span>
+                  <span className="text-xs font-medium text-amber-600 flex items-center gap-1">
+                    ⚠️ {t('dashboard.warning')}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">75-90% SLA</span>
+                </div>
+                <div className="flex flex-col items-center p-3 rounded-lg bg-muted">
+                  <span className="text-2xl font-bold">
+                    {atRiskShipments?.total ?? 0}
+                  </span>
+                  <span className="text-xs font-medium text-muted-foreground">{t('common.total')}</span>
+                  <span className="text-[10px] text-muted-foreground">{t('dashboard.atRisk')}</span>
+                </div>
+              </div>
+
+              {/* Top at-risk shipments */}
+              {atRiskShipments?.topShipments && atRiskShipments.topShipments.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">{t('dashboard.mostUrgent')}</p>
+                  {atRiskShipments.topShipments.map((shipment) => (
+                    <Link
+                      key={shipment.id}
+                      to={`/backoffice/shipments/${shipment.shipmentId}`}
+                      className="flex items-center justify-between p-2 rounded-lg bg-background hover:bg-muted/50 transition-colors border"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "w-2 h-2 rounded-full",
+                          shipment.riskLevel === 'critical' ? 'bg-destructive' : 'bg-amber-500'
+                        )} />
+                        <div>
+                          <p className="text-sm font-medium">{shipment.shipmentRef}</p>
+                          <p className="text-xs text-muted-foreground">{shipment.clientName}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className={cn(
+                                "h-full rounded-full",
+                                shipment.riskLevel === 'critical' ? 'bg-destructive' : 'bg-amber-500'
+                              )}
+                              style={{ width: `${Math.min(shipment.percentUsed, 100)}%` }}
+                            />
+                          </div>
+                          <span className={cn(
+                            "text-xs font-medium",
+                            shipment.riskLevel === 'critical' ? 'text-destructive' : 'text-amber-600'
+                          )}>
+                            {shipment.percentUsed}%
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">
+                          {shipment.hoursRemaining}h {t('dashboard.remaining')}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
