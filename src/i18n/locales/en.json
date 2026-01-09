@@ -121,7 +121,15 @@
     "overallCompliance": "Overall Compliance",
     "resolvedWithinSLA": "resolved within SLA",
     "complianceRate": "Compliance Rate",
-    "target": "Target"
+    "target": "Target",
+    "slowestExceptions": "Slowest Resolved Exceptions",
+    "slowestExceptionsDesc": "Top 10 exceptions that took the longest to resolve",
+    "rank": "#",
+    "resolutionTime": "Resolution Time",
+    "slaStatus": "SLA Status",
+    "resolvedBy": "Resolved By",
+    "breached": "Breached",
+    "withinSLA": "Within SLA"
   },
   "shipments": {
     "title": "Shipments",

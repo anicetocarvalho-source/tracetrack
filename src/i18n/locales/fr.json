@@ -121,7 +121,15 @@
     "overallCompliance": "Conformité Globale",
     "resolvedWithinSLA": "résolues dans le SLA",
     "complianceRate": "Taux de Conformité",
-    "target": "Cible"
+    "target": "Cible",
+    "slowestExceptions": "Exceptions Résolues les Plus Lentes",
+    "slowestExceptionsDesc": "Top 10 exceptions ayant pris le plus de temps à résoudre",
+    "rank": "#",
+    "resolutionTime": "Temps de Résolution",
+    "slaStatus": "Statut SLA",
+    "resolvedBy": "Résolu Par",
+    "breached": "Violé",
+    "withinSLA": "Dans le SLA"
   },
   "shipments": {
     "title": "Expéditions",

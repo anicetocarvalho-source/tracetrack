@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Package, TrendingUp, AlertTriangle, CheckCircle, CalendarIcon, ShieldAlert, Target } from 'lucide-react';
+import { Package, TrendingUp, AlertTriangle, CheckCircle, CalendarIcon, ShieldAlert, Target, Clock } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -385,6 +385,80 @@ export default function Dashboard() {
         totalWithinSLA,
       };
     },
+  });
+
+  // Fetch slowest resolved exceptions
+  const { data: slowestExceptions, isLoading: isLoadingSlowest } = useQuery({
+    queryKey: ['dashboard-slowest-exceptions', dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
+    queryFn: async () => {
+      const { data: resolvedExceptions, error } = await supabase
+        .from('shipment_exceptions')
+        .select(`
+          id,
+          severity,
+          detected_at,
+          resolved_at,
+          resolution_note,
+          exception_rule:exception_rules(name),
+          shipment:shipments(
+            id,
+            shipment_ref,
+            current_status,
+            client:clients(name)
+          ),
+          resolved_by_profile:profiles!shipment_exceptions_resolved_by_fkey(name)
+        `)
+        .eq('status', 'RESOLVED')
+        .not('resolved_at', 'is', null)
+        .order('resolved_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching slowest exceptions:', error);
+        return [];
+      }
+
+      // Filter by date range
+      const exceptions = dateRange?.from && dateRange?.to
+        ? resolvedExceptions?.filter(ex => {
+            const resolvedDate = new Date(ex.resolved_at!);
+            return isWithinInterval(resolvedDate, {
+              start: startOfDay(dateRange.from!),
+              end: endOfDay(dateRange.to!),
+            });
+          })
+        : resolvedExceptions;
+
+      // Calculate resolution time and sort by slowest
+      const withResolutionTime = (exceptions || []).map(ex => {
+        const detectedAt = new Date(ex.detected_at);
+        const resolvedAt = new Date(ex.resolved_at!);
+        const resolutionHours = differenceInHours(resolvedAt, detectedAt);
+        const severity = ex.severity as 'P1' | 'P2' | 'P3';
+        const slaTarget = activeSLATargets[severity];
+        const breachedSLA = resolutionHours > slaTarget;
+
+        return {
+          id: ex.id,
+          shipmentId: (ex.shipment as any)?.id,
+          shipmentRef: (ex.shipment as any)?.shipment_ref || 'Unknown',
+          clientName: (ex.shipment as any)?.client?.name || 'Unknown',
+          severity: ex.severity,
+          ruleName: (ex.exception_rule as any)?.name || 'Unknown',
+          resolutionHours,
+          slaTarget,
+          breachedSLA,
+          resolvedBy: (ex.resolved_by_profile as any)?.name || 'Unknown',
+          resolvedAt: ex.resolved_at,
+          resolutionNote: ex.resolution_note,
+        };
+      });
+
+      // Sort by resolution time (slowest first) and take top 10
+      return withResolutionTime
+        .sort((a, b) => b.resolutionHours - a.resolutionHours)
+        .slice(0, 10);
+    },
+    enabled: !!activeSLATargets,
   });
 
   const dateRangeLabel = dateRange?.from && dateRange?.to
@@ -977,6 +1051,116 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Slowest Resolved Exceptions */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-amber-500" />
+              <CardTitle>{t('dashboard.slowestExceptions')}</CardTitle>
+            </div>
+            <CardDescription>{t('dashboard.slowestExceptionsDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoadingSlowest ? (
+              <div className="flex items-center justify-center h-[200px] text-muted-foreground">
+                {t('common.loading')}
+              </div>
+            ) : slowestExceptions && slowestExceptions.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-2 font-medium text-muted-foreground">{t('dashboard.rank')}</th>
+                      <th className="text-left py-3 px-2 font-medium text-muted-foreground">{t('exceptions.severity')}</th>
+                      <th className="text-left py-3 px-2 font-medium text-muted-foreground">{t('shipments.shipmentRef')}</th>
+                      <th className="text-left py-3 px-2 font-medium text-muted-foreground">{t('shipments.client')}</th>
+                      <th className="text-left py-3 px-2 font-medium text-muted-foreground">{t('exceptions.exceptionName')}</th>
+                      <th className="text-left py-3 px-2 font-medium text-muted-foreground">{t('dashboard.resolutionTime')}</th>
+                      <th className="text-left py-3 px-2 font-medium text-muted-foreground">{t('dashboard.slaStatus')}</th>
+                      <th className="text-left py-3 px-2 font-medium text-muted-foreground">{t('dashboard.resolvedBy')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {slowestExceptions.map((ex, index) => (
+                      <tr 
+                        key={ex.id} 
+                        className={cn(
+                          "border-b hover:bg-muted/50 transition-colors",
+                          ex.breachedSLA && "bg-destructive/5"
+                        )}
+                      >
+                        <td className="py-3 px-2">
+                          <span className={cn(
+                            "inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold",
+                            index === 0 ? "bg-amber-100 text-amber-800" :
+                            index === 1 ? "bg-gray-100 text-gray-800" :
+                            index === 2 ? "bg-orange-100 text-orange-800" :
+                            "bg-muted text-muted-foreground"
+                          )}>
+                            {index + 1}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2">
+                          <span className={cn(
+                            "inline-block px-2 py-0.5 rounded text-xs font-bold text-white",
+                            ex.severity === 'P1' ? "bg-destructive" :
+                            ex.severity === 'P2' ? "bg-orange-500" :
+                            "bg-blue-500"
+                          )}>
+                            {ex.severity}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2">
+                          <Link 
+                            to={`/backoffice/shipments/${ex.shipmentId}`}
+                            className="font-medium text-primary hover:underline"
+                          >
+                            {ex.shipmentRef}
+                          </Link>
+                        </td>
+                        <td className="py-3 px-2 text-muted-foreground">{ex.clientName}</td>
+                        <td className="py-3 px-2">{ex.ruleName}</td>
+                        <td className="py-3 px-2">
+                          <span className={cn(
+                            "font-semibold",
+                            ex.breachedSLA ? "text-destructive" : "text-foreground"
+                          )}>
+                            {ex.resolutionHours < 24 
+                              ? `${ex.resolutionHours.toFixed(1)}h` 
+                              : `${Math.floor(ex.resolutionHours / 24)}d ${Math.round(ex.resolutionHours % 24)}h`
+                            }
+                          </span>
+                          <span className="text-xs text-muted-foreground ml-1">
+                            / {ex.slaTarget}h
+                          </span>
+                        </td>
+                        <td className="py-3 px-2">
+                          {ex.breachedSLA ? (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-destructive">
+                              <AlertTriangle className="h-3 w-3" />
+                              {t('dashboard.breached')}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
+                              <CheckCircle className="h-3 w-3" />
+                              {t('dashboard.withinSLA')}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-2 text-muted-foreground">{ex.resolvedBy}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-[200px] text-muted-foreground">
+                {t('dashboard.noResolvedExceptions')}
+              </div>
+            )}
           </CardContent>
         </Card>
 
