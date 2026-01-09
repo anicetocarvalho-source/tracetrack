@@ -3,12 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Package, Truck, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import dhlLogo from '@/assets/dhl-logo.png';
@@ -18,33 +17,17 @@ const loginSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-const signupSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
-
 type LoginFormData = z.infer<typeof loginSchema>;
-type SignupFormData = z.infer<typeof signupSchema>;
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { signIn, signUp, isInternalUser, role } = useAuth();
+  const { signIn, isInternalUser, role } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  const loginForm = useForm<LoginFormData>({
+  const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
-  });
-
-  const signupForm = useForm<SignupFormData>({
-    resolver: zodResolver(signupSchema),
-    defaultValues: { name: '', email: '', password: '', confirmPassword: '' },
   });
 
   const handleLogin = async (data: LoginFormData) => {
@@ -60,32 +43,6 @@ export default function Auth() {
       });
       return;
     }
-
-    // Will redirect based on role in useEffect
-  };
-
-  const handleSignup = async (data: SignupFormData) => {
-    setIsLoading(true);
-    const { error } = await signUp(data.email, data.password, data.name);
-    setIsLoading(false);
-
-    if (error) {
-      let message = error.message;
-      if (error.message.includes('already registered')) {
-        message = 'This email is already registered. Please sign in instead.';
-      }
-      toast({
-        variant: 'destructive',
-        title: 'Sign Up Failed',
-        description: message,
-      });
-      return;
-    }
-
-    toast({
-      title: 'Account Created',
-      description: 'Your account has been created. Please wait for role assignment by an administrator.',
-    });
   };
 
   // Redirect if already logged in with role
@@ -99,161 +56,139 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-dhl-yellow p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-block mb-4">
-            <img src={dhlLogo} alt="DHL" className="h-16 w-auto" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">Shipment Tracking</h1>
-          <p className="text-foreground/70">Excellence. Simply delivered.</p>
+    <div className="min-h-screen flex">
+      {/* Left side - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-dhl-red relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-dhl-red via-dhl-red to-red-900" />
+        
+        {/* Decorative elements */}
+        <div className="absolute top-20 left-10 opacity-10">
+          <Package className="w-32 h-32 text-white" />
         </div>
+        <div className="absolute bottom-32 right-10 opacity-10">
+          <Truck className="w-40 h-40 text-white" />
+        </div>
+        <div className="absolute top-1/2 left-1/3 opacity-10">
+          <MapPin className="w-24 h-24 text-white" />
+        </div>
+        
+        <div className="relative z-10 flex flex-col justify-center px-12 text-white">
+          <div className="bg-dhl-yellow inline-block p-4 rounded-lg mb-8 w-fit">
+            <img src={dhlLogo} alt="DHL" className="h-12 w-auto" />
+          </div>
+          <h1 className="text-4xl font-bold mb-4">
+            Shipment Tracking Portal
+          </h1>
+          <p className="text-xl text-white/80 mb-8 max-w-md">
+            Track your shipments in real-time with complete visibility from origin to destination.
+          </p>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                <Package className="w-5 h-5" />
+              </div>
+              <span className="text-lg">Real-time shipment tracking</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <span className="text-lg">Complete transit visibility</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                <Truck className="w-5 h-5" />
+              </div>
+              <span className="text-lg">Delivery status updates</span>
+            </div>
+          </div>
+          <p className="mt-12 text-sm text-white/60">
+            Excellence. Simply delivered.
+          </p>
+        </div>
+      </div>
 
-        <Card>
-          <Tabs defaultValue="login">
-            <CardHeader>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              </TabsList>
+      {/* Right side - Login form */}
+      <div className="flex-1 flex items-center justify-center bg-dhl-yellow p-6">
+        <div className="w-full max-w-md">
+          {/* Mobile logo */}
+          <div className="lg:hidden text-center mb-8">
+            <div className="inline-block bg-dhl-red p-4 rounded-lg mb-4">
+              <img src={dhlLogo} alt="DHL" className="h-10 w-auto" />
+            </div>
+            <h1 className="text-xl font-bold text-foreground">Shipment Tracking Portal</h1>
+          </div>
+
+          <Card className="border-0 shadow-2xl">
+            <CardHeader className="text-center pb-2">
+              <CardTitle className="text-2xl">Welcome</CardTitle>
+              <CardDescription>
+                Sign in to access your shipment tracking dashboard
+              </CardDescription>
             </CardHeader>
 
-            <CardContent>
-              <TabsContent value="login" className="mt-0">
-                <CardTitle className="text-lg mb-1">Welcome back</CardTitle>
-                <CardDescription className="mb-4">
-                  Enter your credentials to access your account
-                </CardDescription>
+            <CardContent className="pt-4">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-5">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="email" 
+                            placeholder="you@company.com" 
+                            className="h-12"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="password" 
+                            placeholder="••••••••" 
+                            className="h-12"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button 
+                    type="submit" 
+                    className="w-full h-12 text-base font-semibold" 
+                    disabled={isLoading}
+                  >
+                    {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Sign In
+                  </Button>
+                </form>
+              </Form>
 
-                <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
-                    <FormField
-                      control={loginForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="email" 
-                              placeholder="you@example.com" 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={loginForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="password" 
-                              placeholder="••••••••" 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                      Sign In
-                    </Button>
-                  </form>
-                </Form>
-              </TabsContent>
-
-              <TabsContent value="signup" className="mt-0">
-                <CardTitle className="text-lg mb-1">Create account</CardTitle>
-                <CardDescription className="mb-4">
-                  Sign up to request access to the system
-                </CardDescription>
-
-                <Form {...signupForm}>
-                  <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-4">
-                    <FormField
-                      control={signupForm.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Full Name</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="John Doe" 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signupForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="email" 
-                              placeholder="you@example.com" 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signupForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="password" 
-                              placeholder="••••••••" 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signupForm.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Confirm Password</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="password" 
-                              placeholder="••••••••" 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                      Create Account
-                    </Button>
-                  </form>
-                </Form>
-              </TabsContent>
+              <div className="mt-6 pt-6 border-t text-center">
+                <p className="text-sm text-muted-foreground">
+                  Need access? Contact your DHL representative.
+                </p>
+              </div>
             </CardContent>
-          </Tabs>
-        </Card>
+          </Card>
+
+          <p className="text-center text-sm text-foreground/60 mt-6">
+            © {new Date().getFullYear()} DHL International GmbH. All rights reserved.
+          </p>
+        </div>
       </div>
     </div>
   );
