@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.shipment-lookup]
 verify_jwt = false
+
+[functions.detect-exceptions]
+verify_jwt = false
