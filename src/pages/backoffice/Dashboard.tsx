@@ -1,11 +1,16 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Package, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Package, TrendingUp, AlertTriangle, CheckCircle, CalendarIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { supabase } from '@/integrations/supabase/client';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { ShipmentStatus, STATUS_LABELS } from '@/lib/constants';
 import { Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import {
   BarChart,
   Bar,
@@ -19,31 +24,74 @@ import {
   Cell,
   LineChart,
   Line,
-  Legend,
 } from 'recharts';
-import { format, subDays, startOfDay, eachDayOfInterval } from 'date-fns';
+import { format, subDays, startOfDay, eachDayOfInterval, isWithinInterval, endOfDay } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { DateRange } from 'react-day-picker';
 
 const STATUS_COLORS: Record<string, string> = {
   REGISTERED: '#6b7280',
   RECEIVED: '#3b82f6',
+  DOCS_VALIDATION: '#a855f7',
   PROCESSING: '#8b5cf6',
   IN_TRANSIT: '#0ea5e9',
   AT_TERMINAL: '#f59e0b',
-  CUSTOMS_CLEARANCE: '#ec4899',
+  CLEARANCE: '#ec4899',
   OUT_FOR_DELIVERY: '#14b8a6',
   DELIVERED: '#22c55e',
   ON_HOLD_INCIDENT: '#ef4444',
   CANCELLED: '#71717a',
 };
 
+const PRESET_RANGES = [
+  { label: 'Last 7 days', days: 7 },
+  { label: 'Last 30 days', days: 30 },
+  { label: 'Last 90 days', days: 90 },
+  { label: 'All time', days: null },
+];
+
 export default function Dashboard() {
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 29),
+    to: new Date(),
+  });
+  const [activePreset, setActivePreset] = useState<number | null>(30);
+
+  const handlePresetClick = (days: number | null) => {
+    setActivePreset(days);
+    if (days === null) {
+      setDateRange(undefined);
+    } else {
+      setDateRange({
+        from: subDays(new Date(), days - 1),
+        to: new Date(),
+      });
+    }
+  };
+
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    setDateRange(range);
+    setActivePreset(null);
+  };
+
   const { data: stats, isLoading } = useQuery({
-    queryKey: ['dashboard-stats'],
+    queryKey: ['dashboard-stats', dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
     queryFn: async () => {
       // Get all shipments with dates
-      const { data: shipments } = await supabase
+      const { data: allShipments } = await supabase
         .from('shipments')
         .select('id, current_status, created_at, client_id');
+
+      // Filter shipments by date range
+      const shipments = dateRange?.from && dateRange?.to
+        ? allShipments?.filter(s => {
+            const createdDate = new Date(s.created_at);
+            return isWithinInterval(createdDate, {
+              start: startOfDay(dateRange.from!),
+              end: endOfDay(dateRange.to!),
+            });
+          })
+        : allShipments;
 
       const statusCounts: Record<string, number> = {};
       shipments?.forEach(s => {
@@ -57,20 +105,19 @@ export default function Dashboard() {
       const onHoldCount = statusCounts['ON_HOLD_INCIDENT'] || 0;
       const deliveredCount = statusCounts['DELIVERED'] || 0;
 
-      // Get recent shipments
+      // Get recent shipments (always show recent, not filtered)
       const { data: recentShipments } = await supabase
         .from('shipments')
         .select('id, shipment_ref, client_ref, current_status, created_at, client:clients(name)')
         .order('created_at', { ascending: false })
         .limit(5);
 
-      // Calculate shipments over last 30 days
-      const last30Days = eachDayOfInterval({
-        start: subDays(new Date(), 29),
-        end: new Date(),
-      });
+      // Calculate shipments over time based on selected range
+      const rangeStart = dateRange?.from || subDays(new Date(), 29);
+      const rangeEnd = dateRange?.to || new Date();
+      const daysInRange = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
 
-      const shipmentsOverTime = last30Days.map(day => {
+      const shipmentsOverTime = daysInRange.map(day => {
         const dayStart = startOfDay(day);
         const count = shipments?.filter(s => {
           const createdDate = startOfDay(new Date(s.created_at));
@@ -78,12 +125,12 @@ export default function Dashboard() {
         }).length || 0;
 
         return {
-          date: format(day, 'MMM dd'),
+          date: format(day, 'dd/MM'),
           shipments: count,
         };
       });
 
-      // Get clients with shipment counts
+      // Get clients with shipment counts (filtered)
       const { data: clients } = await supabase
         .from('clients')
         .select('id, name');
@@ -93,7 +140,7 @@ export default function Dashboard() {
         shipments: shipments?.filter(s => s.client_id === client.id).length || 0,
       })).filter(c => c.shipments > 0).sort((a, b) => b.shipments - a.shipments).slice(0, 8) || [];
 
-      // Prepare pie chart data
+      // Prepare pie chart data (filtered)
       const pieData = Object.entries(statusCounts).map(([status, count]) => ({
         name: STATUS_LABELS[status as ShipmentStatus] || status,
         value: count,
@@ -114,12 +161,59 @@ export default function Dashboard() {
     },
   });
 
+  const dateRangeLabel = dateRange?.from && dateRange?.to
+    ? `${format(dateRange.from, 'dd/MM/yyyy')} - ${format(dateRange.to, 'dd/MM/yyyy')}`
+    : 'All time';
+
   return (
     <BackofficeLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Overview of your shipment operations</p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Dashboard</h1>
+            <p className="text-muted-foreground">Overview of your shipment operations</p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {PRESET_RANGES.map((preset) => (
+              <Button
+                key={preset.label}
+                variant={activePreset === preset.days ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handlePresetClick(preset.days)}
+              >
+                {preset.label}
+              </Button>
+            ))}
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={activePreset === null && dateRange ? 'default' : 'outline'}
+                  size="sm"
+                  className={cn('justify-start text-left font-normal', !dateRange && 'text-muted-foreground')}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  Custom
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={dateRange?.from}
+                  selected={dateRange}
+                  onSelect={handleDateRangeChange}
+                  numberOfMonths={2}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+
+        {/* Active filter indicator */}
+        <div className="text-sm text-muted-foreground">
+          Showing data for: <span className="font-medium text-foreground">{dateRangeLabel}</span>
         </div>
 
         {/* Stats cards */}
@@ -133,7 +227,7 @@ export default function Dashboard() {
               <div className="text-2xl font-bold">
                 {isLoading ? '...' : stats?.totalShipments}
               </div>
-              <p className="text-xs text-muted-foreground">All time</p>
+              <p className="text-xs text-muted-foreground">In selected period</p>
             </CardContent>
           </Card>
 
@@ -183,7 +277,7 @@ export default function Dashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Shipments Over Time</CardTitle>
-              <CardDescription>New shipments created in the last 30 days</CardDescription>
+              <CardDescription>New shipments in selected period</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
