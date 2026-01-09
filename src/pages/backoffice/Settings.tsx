@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Plus, X, Ship, Package, MapPin, Users, Clock, AlertTriangle, Loader2, TrendingUp, Target } from 'lucide-react';
+import { Plus, X, Ship, Package, MapPin, Users, Clock, AlertTriangle, Loader2, TrendingUp, Target, Mail, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
@@ -186,6 +186,27 @@ const Settings = () => {
     },
     onError: (error: Error) => {
       toast({ title: t('settings.errorUpdatingCron'), description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const sendTestReportMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('weekly-sla-report', {
+        body: {},
+      });
+      
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: t('settings.testReportSent'),
+        description: data.message || t('settings.testReportSentDesc'),
+      });
+    },
+    onError: (error: Error) => {
+      toast({ title: t('settings.errorSendingTestReport'), description: error.message, variant: 'destructive' });
     },
   });
 
@@ -525,6 +546,43 @@ const Settings = () => {
                   {t('settings.p3SlaDesc')}
                 </p>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Email Reports Settings */}
+        {role === 'MANAGER' && (
+          <Card className="border-blue-500/20">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Mail className="h-5 w-5 text-blue-500" />
+                <CardTitle className="text-lg">{t('settings.emailReports')}</CardTitle>
+              </div>
+              <CardDescription>{t('settings.emailReportsDesc')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div className="space-y-1">
+                  <p className="font-medium">{t('settings.weeklySLAReport')}</p>
+                  <p className="text-sm text-muted-foreground">{t('settings.weeklySLAReportDesc')}</p>
+                </div>
+                <Button
+                  onClick={() => sendTestReportMutation.mutate()}
+                  disabled={sendTestReportMutation.isPending}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  {sendTestReportMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                  {t('settings.sendTestReport')}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t('settings.scheduledReportInfo')}
+              </p>
             </CardContent>
           </Card>
         )}
