@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
+import dhlLogo from '@/assets/dhl-logo.png';
 
 interface BackofficeLayoutProps {
   children: ReactNode;
@@ -63,17 +64,14 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
         )}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border bg-dhl-yellow">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
-              <Package className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-lg">Tracking Trace</span>
+            <img src={dhlLogo} alt="DHL" className="h-8 w-auto" />
           </div>
           <Button 
             variant="ghost" 
             size="icon" 
-            className="lg:hidden text-sidebar-foreground hover:bg-sidebar-accent"
+            className="lg:hidden text-foreground hover:bg-white/20"
             onClick={() => setSidebarOpen(false)}
           >
             <X className="w-5 h-5" />
