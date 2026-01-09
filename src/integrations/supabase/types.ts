@@ -284,6 +284,57 @@ export type Database = {
           },
         ]
       }
+      shipment_sla: {
+        Row: {
+          breached: boolean | null
+          created_at: string
+          elapsed_hours: number | null
+          entered_at: string
+          exited_at: string | null
+          id: string
+          shipment_id: string
+          shipment_status: Database["public"]["Enums"]["shipment_status"]
+          sla_config_id: string | null
+        }
+        Insert: {
+          breached?: boolean | null
+          created_at?: string
+          elapsed_hours?: number | null
+          entered_at?: string
+          exited_at?: string | null
+          id?: string
+          shipment_id: string
+          shipment_status: Database["public"]["Enums"]["shipment_status"]
+          sla_config_id?: string | null
+        }
+        Update: {
+          breached?: boolean | null
+          created_at?: string
+          elapsed_hours?: number | null
+          entered_at?: string
+          exited_at?: string | null
+          id?: string
+          shipment_id?: string
+          shipment_status?: Database["public"]["Enums"]["shipment_status"]
+          sla_config_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipment_sla_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipment_sla_sla_config_id_fkey"
+            columns: ["sla_config_id"]
+            isOneToOne: false
+            referencedRelation: "sla_config"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shipments: {
         Row: {
           assigned_operator: string | null
@@ -345,6 +396,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "shipments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sla_config: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          max_hours: number
+          shipment_status: Database["public"]["Enums"]["shipment_status"]
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          max_hours: number
+          shipment_status: Database["public"]["Enums"]["shipment_status"]
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          max_hours?: number
+          shipment_status?: Database["public"]["Enums"]["shipment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sla_config_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
@@ -467,6 +559,16 @@ export type Database = {
         }[]
       }
       cleanup_rate_limits: { Args: never; Returns: number }
+      get_sla_config: {
+        Args: {
+          p_client_id: string
+          p_status: Database["public"]["Enums"]["shipment_status"]
+        }
+        Returns: {
+          id: string
+          max_hours: number
+        }[]
+      }
       get_user_client_id: { Args: { _user_id: string }; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
