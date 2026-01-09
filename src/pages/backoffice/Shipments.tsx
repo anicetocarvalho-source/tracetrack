@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, ChevronDown } from 'lucide-react';
+import { Plus, Search, Filter, ChevronDown, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,11 +12,13 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { SHIPMENT_STATUSES, STATUS_LABELS, ShipmentStatus } from '@/lib/constants';
 import { format } from 'date-fns';
+import { CSVImportDialog } from '@/components/shipments/CSVImportDialog';
 
 export default function Shipments() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [showImportDialog, setShowImportDialog] = useState(false);
 
   const { data: shipments, isLoading } = useQuery({
     queryKey: ['shipments', search, statusFilter],
@@ -52,11 +54,19 @@ export default function Shipments() {
             <h1 className="text-2xl font-bold">Shipments</h1>
             <p className="text-muted-foreground">Manage and track all shipments</p>
           </div>
-          <Button onClick={() => navigate('/backoffice/shipments/new')}>
-            <Plus className="w-4 h-4 mr-2" />
-            New Shipment
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setShowImportDialog(true)}>
+              <Upload className="w-4 h-4 mr-2" />
+              Import CSV
+            </Button>
+            <Button onClick={() => navigate('/backoffice/shipments/new')}>
+              <Plus className="w-4 h-4 mr-2" />
+              New Shipment
+            </Button>
+          </div>
         </div>
+
+        <CSVImportDialog open={showImportDialog} onOpenChange={setShowImportDialog} />
 
         {/* Filters */}
         <Card>
