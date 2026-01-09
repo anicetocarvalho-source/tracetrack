@@ -150,19 +150,17 @@ Deno.serve(async (req) => {
 
           exceptionsCreated++;
 
-          // Collect P1 alerts for email notification
-          if (rule.severity === 'P1') {
-            const clientName = (shipment as any).client?.name || 'Unknown Client';
-            p1Alerts.push({
-              shipment_ref: shipment.shipment_ref,
-              client_name: clientName,
-              rule_name: rule.name,
-              severity: rule.severity,
-              hours_in_status: Math.round(hoursInStatus),
-              max_hours: rule.max_hours_in_status,
-              current_status: shipment.current_status,
-            });
-          }
+          // Collect alerts for email notification (all severities)
+          const clientName = (shipment as any).client?.name || 'Unknown Client';
+          p1Alerts.push({
+            shipment_ref: shipment.shipment_ref,
+            client_name: clientName,
+            rule_name: rule.name,
+            severity: rule.severity,
+            hours_in_status: Math.round(hoursInStatus),
+            max_hours: rule.max_hours_in_status,
+            current_status: shipment.current_status,
+          });
 
           // Log to audit
           await supabase.from('audit_log').insert({
@@ -185,9 +183,9 @@ Deno.serve(async (req) => {
 
     console.log(`[detect-exceptions] Scan complete. Created ${exceptionsCreated} new exceptions.`);
 
-    // Send P1 email alerts if any were created
+    // Send email alerts if any exceptions were created
     if (p1Alerts.length > 0) {
-      console.log(`[detect-exceptions] Sending email alerts for ${p1Alerts.length} P1 exceptions`);
+      console.log(`[detect-exceptions] Sending email alerts for ${p1Alerts.length} exceptions`);
       
       try {
         const alertResponse = await fetch(`${supabaseUrl}/functions/v1/send-exception-alert`, {
@@ -196,17 +194,17 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${supabaseServiceKey}`,
           },
-          body: JSON.stringify({ exceptions: p1Alerts }),
+          body: JSON.stringify({ type: 'detection', exceptions: p1Alerts }),
         });
         
         if (!alertResponse.ok) {
-          console.error('[detect-exceptions] Failed to send P1 alerts:', await alertResponse.text());
+          console.error('[detect-exceptions] Failed to send alerts:', await alertResponse.text());
         } else {
           const alertResult = await alertResponse.json();
-          console.log('[detect-exceptions] P1 alerts sent:', alertResult);
+          console.log('[detect-exceptions] Alerts sent:', alertResult);
         }
       } catch (alertError) {
-        console.error('[detect-exceptions] Error sending P1 alerts:', alertError);
+        console.error('[detect-exceptions] Error sending alerts:', alertError);
       }
     }
 
