@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
-import dhlLogo from '@/assets/dhl-logo.png';
+import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 interface CustomerLayoutProps {
   children: ReactNode;
@@ -33,7 +33,7 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
       <header className="sticky top-0 z-50 bg-dhl-yellow border-b border-yellow-500">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={dhlLogo} alt="DHL" className="h-8 w-auto" />
+            <img src={dhlLogoRed} alt="DHL" className="h-6 w-auto" />
           </div>
 
           {/* Desktop nav */}
