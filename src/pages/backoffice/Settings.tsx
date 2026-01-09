@@ -210,6 +210,29 @@ const Settings = () => {
     },
   });
 
+  const sendRiskAlertMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('daily-sla-risk-alert', {
+        body: {},
+      });
+      
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: t('settings.riskAlertSent'),
+        description: data.atRiskCount > 0 
+          ? t('settings.riskAlertSentDesc', { count: data.atRiskCount }) 
+          : t('settings.noAtRiskShipments'),
+      });
+    },
+    onError: (error: Error) => {
+      toast({ title: t('settings.errorSendingRiskAlert'), description: error.message, variant: 'destructive' });
+    },
+  });
+
   const updateSettingMutation = useMutation({
     mutationFn: async ({ key, value }: { key: string; value: string[] }) => {
       const { error } = await supabase
@@ -580,6 +603,27 @@ const Settings = () => {
                   {t('settings.sendTestReport')}
                 </Button>
               </div>
+
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div className="space-y-1">
+                  <p className="font-medium">{t('settings.dailyRiskAlert')}</p>
+                  <p className="text-sm text-muted-foreground">{t('settings.dailyRiskAlertDesc')}</p>
+                </div>
+                <Button
+                  onClick={() => sendRiskAlertMutation.mutate()}
+                  disabled={sendRiskAlertMutation.isPending}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  {sendRiskAlertMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                  {t('settings.sendRiskAlert')}
+                </Button>
+              </div>
+
               <p className="text-xs text-muted-foreground">
                 {t('settings.scheduledReportInfo')}
               </p>
