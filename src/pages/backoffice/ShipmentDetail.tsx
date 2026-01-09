@@ -12,6 +12,7 @@ import {
   Building2,
   FileText,
   User,
+  Pencil,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,15 +21,21 @@ import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { TrackingTimeline } from '@/components/shipments/TrackingTimeline';
 import { AddTrackingEventDrawer } from '@/components/shipments/AddTrackingEventDrawer';
+import { EditShipmentDrawer } from '@/components/shipments/EditShipmentDrawer';
 import { supabase } from '@/integrations/supabase/client';
 import { Shipment, TrackingEvent, ShipmentContainer } from '@/types/database';
 import { ShipmentStatus } from '@/lib/constants';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function ShipmentDetail() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { role } = useAuth();
   const [showAddEvent, setShowAddEvent] = useState(false);
+  const [showEditShipment, setShowEditShipment] = useState(false);
+
+  const canEdit = role === 'SUPERVISOR' || role === 'MANAGER';
 
   const { data: shipment, isLoading: loadingShipment } = useQuery({
     queryKey: ['shipment', id],
@@ -136,10 +143,18 @@ export default function ShipmentDetail() {
               </p>
             </div>
           </div>
-          <Button onClick={() => setShowAddEvent(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            {t('shipments.addEvent')}
-          </Button>
+          <div className="flex gap-2">
+            {canEdit && (
+              <Button variant="outline" onClick={() => setShowEditShipment(true)}>
+                <Pencil className="w-4 h-4 mr-2" />
+                {t('common.edit')}
+              </Button>
+            )}
+            <Button onClick={() => setShowAddEvent(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              {t('shipments.addEvent')}
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -294,6 +309,14 @@ export default function ShipmentDetail() {
         shipmentId={id!}
         currentStatus={shipment.current_status as ShipmentStatus}
       />
+
+      {canEdit && shipment && (
+        <EditShipmentDrawer
+          open={showEditShipment}
+          onOpenChange={setShowEditShipment}
+          shipment={shipment}
+        />
+      )}
     </BackofficeLayout>
   );
 }

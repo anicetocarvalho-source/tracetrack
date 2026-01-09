@@ -210,6 +210,16 @@
     "shipmentCreated": "Shipment created successfully",
     "failedToCreate": "Failed to create shipment"
   },
+  "editShipment": {
+    "title": "Edit Shipment",
+    "description": "Update shipment details for",
+    "justification": "Justification",
+    "justificationPlaceholder": "Explain why this change is being made (minimum 10 characters)...",
+    "sensitiveField": "sensitive",
+    "saveChanges": "Save Changes",
+    "shipmentUpdated": "Shipment updated successfully",
+    "noChanges": "No changes detected"
+  },
   "profile": {
     "title": "My Profile",
     "subtitle": "View your account information",
