@@ -17,6 +17,8 @@ import Clients from "./pages/backoffice/Clients";
 import Users from "./pages/backoffice/Users";
 import AuditLogs from "./pages/backoffice/AuditLogs";
 import Settings from "./pages/backoffice/Settings";
+import ActionRequired from "./pages/backoffice/ActionRequired";
+import ExceptionRules from "./pages/backoffice/ExceptionRules";
 import MyShipments from "./pages/portal/MyShipments";
 import ShipmentTracking from "./pages/portal/ShipmentTracking";
 import Profile from "./pages/portal/Profile";
@@ -73,6 +75,16 @@ const App = () => (
             <Route path="/backoffice/settings" element={
               <ProtectedRoute requireInternal>
                 <Settings />
+              </ProtectedRoute>
+            } />
+            <Route path="/backoffice/action-required" element={
+              <ProtectedRoute requireInternal>
+                <ActionRequired />
+              </ProtectedRoute>
+            } />
+            <Route path="/backoffice/exception-rules" element={
+              <ProtectedRoute requireInternal>
+                <ExceptionRules />
               </ProtectedRoute>
             } />
 

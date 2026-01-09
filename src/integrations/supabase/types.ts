@@ -71,6 +71,56 @@ export type Database = {
         }
         Relationships: []
       }
+      exception_rules: {
+        Row: {
+          applies_to_client_id: string | null
+          applies_to_service_type: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          max_hours_in_status: number
+          name: string
+          severity: Database["public"]["Enums"]["exception_severity"]
+          status_trigger: Database["public"]["Enums"]["shipment_status"]
+          updated_at: string
+        }
+        Insert: {
+          applies_to_client_id?: string | null
+          applies_to_service_type?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_hours_in_status: number
+          name: string
+          severity?: Database["public"]["Enums"]["exception_severity"]
+          status_trigger: Database["public"]["Enums"]["shipment_status"]
+          updated_at?: string
+        }
+        Update: {
+          applies_to_client_id?: string | null
+          applies_to_service_type?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_hours_in_status?: number
+          name?: string
+          severity?: Database["public"]["Enums"]["exception_severity"]
+          status_trigger?: Database["public"]["Enums"]["shipment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exception_rules_applies_to_client_id_fkey"
+            columns: ["applies_to_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           client_id: string | null
@@ -167,6 +217,66 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "shipment_containers_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shipment_exceptions: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          created_at: string
+          detected_at: string
+          exception_rule_id: string
+          id: string
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: Database["public"]["Enums"]["exception_severity"]
+          shipment_id: string
+          status: Database["public"]["Enums"]["exception_status"]
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          created_at?: string
+          detected_at?: string
+          exception_rule_id: string
+          id?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: Database["public"]["Enums"]["exception_severity"]
+          shipment_id: string
+          status?: Database["public"]["Enums"]["exception_status"]
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          created_at?: string
+          detected_at?: string
+          exception_rule_id?: string
+          id?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: Database["public"]["Enums"]["exception_severity"]
+          shipment_id?: string
+          status?: Database["public"]["Enums"]["exception_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipment_exceptions_exception_rule_id_fkey"
+            columns: ["exception_rule_id"]
+            isOneToOne: false
+            referencedRelation: "exception_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipment_exceptions_shipment_id_fkey"
             columns: ["shipment_id"]
             isOneToOne: false
             referencedRelation: "shipments"
@@ -377,6 +487,8 @@ export type Database = {
     }
     Enums: {
       app_role: "TECHNICIAN" | "SUPERVISOR" | "MANAGER" | "CUSTOMER"
+      exception_severity: "P1" | "P2" | "P3"
+      exception_status: "OPEN" | "ACKNOWLEDGED" | "RESOLVED"
       shipment_status:
         | "RECEIVED"
         | "REGISTERED"
@@ -517,6 +629,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["TECHNICIAN", "SUPERVISOR", "MANAGER", "CUSTOMER"],
+      exception_severity: ["P1", "P2", "P3"],
+      exception_status: ["OPEN", "ACKNOWLEDGED", "RESOLVED"],
       shipment_status: [
         "RECEIVED",
         "REGISTERED",

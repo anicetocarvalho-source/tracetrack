@@ -1,5 +1,8 @@
 import { ShipmentStatus, AppRole } from '@/lib/constants';
 
+export type ExceptionSeverity = 'P1' | 'P2' | 'P3';
+export type ExceptionStatus = 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED';
+
 export interface Client {
   id: string;
   name: string;
@@ -88,4 +91,40 @@ export interface AuditLog {
 
 export interface UserWithRole extends Profile {
   role: AppRole;
+}
+
+export interface ExceptionRule {
+  id: string;
+  name: string;
+  description: string | null;
+  status_trigger: ShipmentStatus;
+  max_hours_in_status: number;
+  applies_to_client_id: string | null;
+  applies_to_service_type: string | null;
+  severity: ExceptionSeverity;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  // Joined fields
+  client?: Client;
+}
+
+export interface ShipmentException {
+  id: string;
+  shipment_id: string;
+  exception_rule_id: string;
+  detected_at: string;
+  severity: ExceptionSeverity;
+  status: ExceptionStatus;
+  resolved_at: string | null;
+  resolved_by: string | null;
+  resolution_note: string | null;
+  acknowledged_at: string | null;
+  acknowledged_by: string | null;
+  created_at: string;
+  // Joined fields
+  shipment?: Shipment;
+  exception_rule?: ExceptionRule;
+  resolver?: Profile;
+  acknowledger?: Profile;
 }
