@@ -1,0 +1,267 @@
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Plus, Pencil, X, Building2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
+import type { Client } from '@/types/database';
+
+export default function Clients() {
+  const queryClient = useQueryClient();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [name, setName] = useState('');
+  const [emailInput, setEmailInput] = useState('');
+  const [emails, setEmails] = useState<string[]>([]);
+
+  const { data: clients, isLoading } = useQuery({
+    queryKey: ['clients'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('name');
+      if (error) throw error;
+      return data as Client[];
+    },
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: async (client: { id?: string; name: string; notification_emails: string[] }) => {
+      if (client.id) {
+        const { error } = await supabase
+          .from('clients')
+          .update({ name: client.name, notification_emails: client.notification_emails })
+          .eq('id', client.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('clients')
+          .insert({ name: client.name, notification_emails: client.notification_emails });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      toast.success(editingClient ? 'Client updated' : 'Client created');
+      closeDialog();
+    },
+    onError: (error) => {
+      toast.error('Failed to save client: ' + error.message);
+    },
+  });
+
+  const openCreate = () => {
+    setEditingClient(null);
+    setName('');
+    setEmails([]);
+    setEmailInput('');
+    setDialogOpen(true);
+  };
+
+  const openEdit = (client: Client) => {
+    setEditingClient(client);
+    setName(client.name);
+    setEmails(client.notification_emails || []);
+    setEmailInput('');
+    setDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setEditingClient(null);
+    setName('');
+    setEmails([]);
+    setEmailInput('');
+  };
+
+  const addEmail = () => {
+    const email = emailInput.trim().toLowerCase();
+    if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !emails.includes(email)) {
+      setEmails([...emails, email]);
+      setEmailInput('');
+    }
+  };
+
+  const removeEmail = (email: string) => {
+    setEmails(emails.filter((e) => e !== email));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      toast.error('Client name is required');
+      return;
+    }
+    saveMutation.mutate({
+      id: editingClient?.id,
+      name: name.trim(),
+      notification_emails: emails,
+    });
+  };
+
+  return (
+    <BackofficeLayout>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Clients</h1>
+            <p className="text-muted-foreground">Manage client organizations and notification settings</p>
+          </div>
+          <Button onClick={openCreate}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Client
+          </Button>
+        </div>
+
+        <div className="border rounded-lg">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Notification Emails</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead className="w-[80px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) : clients?.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                    No clients found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                clients?.map((client) => (
+                  <TableRow key={client.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4 text-muted-foreground" />
+                        <span className="font-medium">{client.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {client.notification_emails?.length ? (
+                          client.notification_emails.map((email) => (
+                            <Badge key={email} variant="secondary" className="text-xs">
+                              {email}
+                            </Badge>
+                          ))
+                        ) : (
+                          <span className="text-muted-foreground text-sm">No emails configured</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {format(new Date(client.created_at), 'MMM d, yyyy')}
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(client)}>
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingClient ? 'Edit Client' : 'Add Client'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Client Name *</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter client name"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Notification Emails</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  placeholder="Add email address"
+                  type="email"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addEmail();
+                    }
+                  }}
+                />
+                <Button type="button" variant="secondary" onClick={addEmail}>
+                  Add
+                </Button>
+              </div>
+              {emails.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {emails.map((email) => (
+                    <Badge key={email} variant="secondary" className="pr-1">
+                      {email}
+                      <button
+                        type="button"
+                        onClick={() => removeEmail(email)}
+                        className="ml-1 hover:bg-muted rounded-full p-0.5"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                These emails will receive notifications for shipment updates
+              </p>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={closeDialog}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={saveMutation.isPending}>
+                {saveMutation.isPending ? 'Saving...' : editingClient ? 'Update' : 'Create'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </BackofficeLayout>
+  );
+}
