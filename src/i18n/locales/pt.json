@@ -56,7 +56,10 @@
     "lastUpdated": "Última atualização",
     "noItemsConfigured": "Nenhum item configurado",
     "itemAlreadyExists": "Item já existe",
-    "requiredField": "Campo obrigatório"
+    "requiredField": "Campo obrigatório",
+    "showing": "A mostrar",
+    "of": "de",
+    "loadMore": "Carregar mais"
   },
   "nav": {
     "dashboard": "Painel",

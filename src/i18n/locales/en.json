@@ -56,7 +56,10 @@
     "lastUpdated": "Last updated",
     "noItemsConfigured": "No items configured",
     "itemAlreadyExists": "Item already exists",
-    "requiredField": "Required field"
+    "requiredField": "Required field",
+    "showing": "Showing",
+    "of": "of",
+    "loadMore": "Load more"
   },
   "nav": {
     "dashboard": "Dashboard",

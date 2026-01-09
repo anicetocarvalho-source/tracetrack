@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Search, Upload } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Search, Upload, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,10 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
-import { SHIPMENT_STATUSES, STATUS_LABELS, ShipmentStatus } from '@/lib/constants';
+import { SHIPMENT_STATUSES, ShipmentStatus } from '@/lib/constants';
 import { format } from 'date-fns';
 import { CSVImportDialog } from '@/components/shipments/CSVImportDialog';
 import { useTranslation } from 'react-i18next';
+
+const PAGE_SIZE = 20;
 
 export default function Shipments() {
   const { t } = useTranslation();
@@ -21,9 +23,10 @@ export default function Shipments() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [page, setPage] = useState(0);
 
-  const { data: shipments, isLoading } = useQuery({
-    queryKey: ['shipments', search, statusFilter],
+  const { data, isLoading } = useQuery({
+    queryKey: ['shipments', search, statusFilter, page],
     queryFn: async () => {
       let query = supabase
         .from('shipments')
@@ -31,8 +34,9 @@ export default function Shipments() {
           *,
           client:clients(id, name),
           containers:shipment_containers(id, container_number)
-        `)
-        .order('created_at', { ascending: false });
+        `, { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
       if (statusFilter && statusFilter !== 'all') {
         query = query.eq('current_status', statusFilter as ShipmentStatus);
@@ -42,11 +46,17 @@ export default function Shipments() {
         query = query.or(`shipment_ref.ilike.%${search}%,client_ref.ilike.%${search}%,bl_reference.ilike.%${search}%`);
       }
 
-      const { data, error } = await query;
+      const { data, error, count } = await query;
       if (error) throw error;
-      return data;
+      return { shipments: data, totalCount: count || 0 };
     },
   });
+
+  const shipments = data?.shipments || [];
+  const totalCount = data?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const hasNextPage = page < totalPages - 1;
+  const hasPrevPage = page > 0;
 
   return (
     <BackofficeLayout>
@@ -54,7 +64,7 @@ export default function Shipments() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold">{t('shipments.title')}</h1>
-            <p className="text-muted-foreground">{t('shipments.noShipments').replace('No shipments found', 'Manage and track all shipments')}</p>
+            <p className="text-muted-foreground">{t('shipments.subtitle')}</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowImportDialog(true)}>
@@ -80,10 +90,19 @@ export default function Shipments() {
                   placeholder={t('shipments.searchPlaceholder')}
                   className="pl-10"
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(0);
+                  }}
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select 
+                value={statusFilter} 
+                onValueChange={(value) => {
+                  setStatusFilter(value);
+                  setPage(0);
+                }}
+              >
                 <SelectTrigger className="w-full sm:w-[200px]">
                   <SelectValue placeholder={t('common.all')} />
                 </SelectTrigger>
@@ -123,14 +142,14 @@ export default function Shipments() {
                         {t('common.loading')}
                       </TableCell>
                     </TableRow>
-                  ) : shipments?.length === 0 ? (
+                  ) : shipments.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                         {t('shipments.noShipments')}
                       </TableCell>
                     </TableRow>
                   ) : (
-                    shipments?.map((shipment: any) => (
+                    shipments.map((shipment: any) => (
                       <TableRow 
                         key={shipment.id} 
                         className="cursor-pointer hover:bg-muted/50"
@@ -158,6 +177,36 @@ export default function Shipments() {
                 </TableBody>
               </Table>
             </div>
+            
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t">
+                <span className="text-sm text-muted-foreground">
+                  {t('common.showing')} {page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, totalCount)} {t('common.of')} {totalCount}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => p - 1)}
+                    disabled={!hasPrevPage}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <span className="text-sm">
+                    {page + 1} / {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => p + 1)}
+                    disabled={!hasNextPage}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

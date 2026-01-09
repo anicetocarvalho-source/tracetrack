@@ -21,12 +21,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { FileText, Filter, X } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { FileText, Filter, X, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import type { AuditLog, Profile } from '@/types/database';
 
-const ENTITY_TYPES = ['shipment', 'tracking_event', 'client', 'user', 'login'];
+const ENTITY_TYPES = ['shipment', 'tracking_event', 'client', 'user', 'AUTH', 'EMAIL'];
+const PAGE_SIZE = 50;
 
 const AuditLogs = () => {
   const { t } = useTranslation();
@@ -34,6 +41,8 @@ const AuditLogs = () => {
   const [userFilter, setUserFilter] = useState<string>('all');
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
+  const [page, setPage] = useState(0);
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
   const { data: users = [] } = useQuery({
     queryKey: ['audit-users'],
@@ -47,14 +56,14 @@ const AuditLogs = () => {
     },
   });
 
-  const { data: logs = [], isLoading } = useQuery({
-    queryKey: ['audit-logs', entityFilter, userFilter, dateFrom, dateTo],
+  const { data, isLoading } = useQuery({
+    queryKey: ['audit-logs', entityFilter, userFilter, dateFrom, dateTo, page],
     queryFn: async () => {
       let query = supabase
         .from('audit_log')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('timestamp', { ascending: false })
-        .limit(200);
+        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
       if (entityFilter && entityFilter !== 'all') {
         query = query.eq('entity_type', entityFilter);
@@ -69,17 +78,24 @@ const AuditLogs = () => {
         query = query.lte('timestamp', `${dateTo}T23:59:59`);
       }
 
-      const { data, error } = await query;
+      const { data, error, count } = await query;
       if (error) throw error;
-      return data as AuditLog[];
+      return { logs: data as AuditLog[], totalCount: count || 0 };
     },
   });
+
+  const logs = data?.logs || [];
+  const totalCount = data?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const hasNextPage = page < totalPages - 1;
+  const hasPrevPage = page > 0;
 
   const clearFilters = () => {
     setEntityFilter('all');
     setUserFilter('all');
     setDateFrom('');
     setDateTo('');
+    setPage(0);
   };
 
   const hasActiveFilters = entityFilter !== 'all' || userFilter !== 'all' || dateFrom || dateTo;
@@ -91,24 +107,30 @@ const AuditLogs = () => {
   };
 
   const getActionBadgeVariant = (action: string) => {
-    if (action.includes('create')) return 'default';
-    if (action.includes('update')) return 'secondary';
-    if (action.includes('delete')) return 'destructive';
-    if (action.includes('success')) return 'default';
-    if (action.includes('failure')) return 'destructive';
+    const actionLower = action.toLowerCase();
+    if (actionLower.includes('create')) return 'default';
+    if (actionLower.includes('update')) return 'secondary';
+    if (actionLower.includes('delete')) return 'destructive';
+    if (actionLower.includes('success')) return 'default';
+    if (actionLower.includes('fail')) return 'destructive';
+    if (actionLower.includes('sent')) return 'outline';
     return 'outline';
   };
 
   const getEntityBadgeVariant = (entity: string) => {
-    switch (entity) {
+    switch (entity.toLowerCase()) {
       case 'shipment':
         return 'default';
       case 'tracking_event':
         return 'secondary';
       case 'client':
         return 'outline';
-      case 'login':
+      case 'auth':
         return 'secondary';
+      case 'email':
+        return 'outline';
+      case 'permission':
+        return 'destructive';
       default:
         return 'outline';
     }
@@ -137,7 +159,7 @@ const AuditLogs = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label>{t('auditLogs.entityType')}</Label>
-              <Select value={entityFilter} onValueChange={setEntityFilter}>
+              <Select value={entityFilter} onValueChange={(v) => { setEntityFilter(v); setPage(0); }}>
                 <SelectTrigger>
                   <SelectValue placeholder={t('auditLogs.allEntities')} />
                 </SelectTrigger>
@@ -153,7 +175,7 @@ const AuditLogs = () => {
             </div>
             <div className="space-y-2">
               <Label>{t('auditLogs.user')}</Label>
-              <Select value={userFilter} onValueChange={setUserFilter}>
+              <Select value={userFilter} onValueChange={(v) => { setUserFilter(v); setPage(0); }}>
                 <SelectTrigger>
                   <SelectValue placeholder={t('auditLogs.allUsers')} />
                 </SelectTrigger>
@@ -172,7 +194,7 @@ const AuditLogs = () => {
               <Input
                 type="date"
                 value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
+                onChange={(e) => { setDateFrom(e.target.value); setPage(0); }}
               />
             </div>
             <div className="space-y-2">
@@ -180,7 +202,7 @@ const AuditLogs = () => {
               <Input
                 type="date"
                 value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
+                onChange={(e) => { setDateTo(e.target.value); setPage(0); }}
               />
             </div>
           </div>
@@ -196,7 +218,7 @@ const AuditLogs = () => {
                 <TableHead>{t('auditLogs.action')}</TableHead>
                 <TableHead>{t('auditLogs.user')}</TableHead>
                 <TableHead>{t('auditLogs.entityId')}</TableHead>
-                <TableHead>{t('common.details')}</TableHead>
+                <TableHead className="w-[80px]">{t('common.details')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -235,18 +257,109 @@ const AuditLogs = () => {
                     <TableCell className="font-mono text-xs text-muted-foreground">
                       {log.entity_id ? log.entity_id.slice(0, 8) + '...' : '-'}
                     </TableCell>
-                    <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
-                      {log.metadata_json && Object.keys(log.metadata_json).length > 0
-                        ? JSON.stringify(log.metadata_json).slice(0, 50) + '...'
-                        : '-'}
+                    <TableCell>
+                      {log.metadata_json && Object.keys(log.metadata_json).length > 0 && (
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => setSelectedLog(log)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
               )}
             </TableBody>
           </Table>
+          
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t">
+              <span className="text-sm text-muted-foreground">
+                {t('common.showing')} {page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, totalCount)} {t('common.of')} {totalCount}
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(p => p - 1)}
+                  disabled={!hasPrevPage}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <span className="text-sm">
+                  {page + 1} / {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(p => p + 1)}
+                  disabled={!hasNextPage}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Details Dialog */}
+      <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t('common.details')}</DialogTitle>
+          </DialogHeader>
+          {selectedLog && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">{t('auditLogs.timestamp')}</p>
+                  <p className="font-mono">{format(new Date(selectedLog.timestamp), 'PPpp')}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">{t('auditLogs.user')}</p>
+                  <p>{getUserName(selectedLog.actor_user_id)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">{t('auditLogs.entity')}</p>
+                  <Badge variant={getEntityBadgeVariant(selectedLog.entity_type)}>
+                    {selectedLog.entity_type}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">{t('auditLogs.action')}</p>
+                  <Badge variant={getActionBadgeVariant(selectedLog.action)}>
+                    {selectedLog.action}
+                  </Badge>
+                </div>
+                {selectedLog.entity_id && (
+                  <div className="col-span-2">
+                    <p className="text-muted-foreground">{t('auditLogs.entityId')}</p>
+                    <p className="font-mono text-xs">{selectedLog.entity_id}</p>
+                  </div>
+                )}
+                {selectedLog.ip_address && (
+                  <div>
+                    <p className="text-muted-foreground">IP</p>
+                    <p className="font-mono text-xs">{selectedLog.ip_address}</p>
+                  </div>
+                )}
+              </div>
+              {selectedLog.metadata_json && Object.keys(selectedLog.metadata_json).length > 0 && (
+                <div>
+                  <p className="text-muted-foreground mb-2">Metadata</p>
+                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs">
+                    {JSON.stringify(selectedLog.metadata_json, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </BackofficeLayout>
   );
 };

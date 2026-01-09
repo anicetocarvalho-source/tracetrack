@@ -151,6 +151,20 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", emailResponse);
 
+    // Log EMAIL_SENT in audit log
+    await supabase.from("audit_log").insert({
+      entity_type: "EMAIL",
+      entity_id: shipment_id,
+      action: "EMAIL_SENT",
+      metadata_json: {
+        recipients: client.notification_emails,
+        subject: `Shipment Update: ${shipment.shipment_ref} - ${statusDisplay}`,
+        shipment_ref: shipment.shipment_ref,
+        status: status,
+        email_id: emailResponse.data?.id,
+      },
+    });
+
     return new Response(
       JSON.stringify({ success: true, emailResponse }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

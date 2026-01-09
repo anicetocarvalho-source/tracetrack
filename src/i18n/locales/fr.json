@@ -56,7 +56,10 @@
     "lastUpdated": "Dernière mise à jour",
     "noItemsConfigured": "Aucun élément configuré",
     "itemAlreadyExists": "L'élément existe déjà",
-    "requiredField": "Champ obligatoire"
+    "requiredField": "Champ obligatoire",
+    "showing": "Affichage",
+    "of": "sur",
+    "loadMore": "Charger plus"
   },
   "nav": {
     "dashboard": "Tableau de bord",
