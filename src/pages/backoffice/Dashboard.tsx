@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Package, TrendingUp, AlertTriangle, CheckCircle, CalendarIcon } from 'lucide-react';
+import { Package, TrendingUp, AlertTriangle, CheckCircle, CalendarIcon, ShieldAlert } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -163,6 +163,24 @@ export default function Dashboard() {
     },
   });
 
+  // Fetch exception counts by severity
+  const { data: exceptionCounts } = useQuery({
+    queryKey: ['dashboard-exception-counts'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('shipment_exceptions')
+        .select('severity, status')
+        .in('status', ['OPEN', 'ACKNOWLEDGED']);
+
+      const counts = { P1: 0, P2: 0, P3: 0, total: 0 };
+      data?.forEach(ex => {
+        counts[ex.severity as keyof typeof counts]++;
+        counts.total++;
+      });
+      return counts;
+    },
+  });
+
   const dateRangeLabel = dateRange?.from && dateRange?.to
     ? `${format(dateRange.from, 'dd/MM/yyyy')} - ${format(dateRange.to, 'dd/MM/yyyy')}`
     : t('dashboard.allTime');
@@ -217,6 +235,64 @@ export default function Dashboard() {
         <div className="text-sm text-muted-foreground">
           {t('dashboard.dateRange')}: <span className="font-medium text-foreground">{dateRangeLabel}</span>
         </div>
+
+        {/* Exceptions Widget */}
+        <Card className="border-destructive/30 bg-destructive/5">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div>
+              <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                <ShieldAlert className="w-5 h-5 text-destructive" />
+                {t('dashboard.openExceptions')}
+              </CardTitle>
+              <CardDescription>{t('dashboard.exceptionsRequiringAttention')}</CardDescription>
+            </div>
+            <Link to="/backoffice/action-required">
+              <Button variant="outline" size="sm">
+                {t('shipments.viewAll')}
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-4 gap-4">
+              <Link 
+                to="/backoffice/action-required?severity=P1" 
+                className="flex flex-col items-center p-3 rounded-lg bg-destructive/10 hover:bg-destructive/20 transition-colors cursor-pointer"
+              >
+                <span className="text-2xl font-bold text-destructive">
+                  {exceptionCounts?.P1 ?? 0}
+                </span>
+                <span className="text-xs font-medium text-destructive">P1 Critical</span>
+              </Link>
+              <Link 
+                to="/backoffice/action-required?severity=P2" 
+                className="flex flex-col items-center p-3 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 transition-colors cursor-pointer"
+              >
+                <span className="text-2xl font-bold text-orange-600">
+                  {exceptionCounts?.P2 ?? 0}
+                </span>
+                <span className="text-xs font-medium text-orange-600">P2 High</span>
+              </Link>
+              <Link 
+                to="/backoffice/action-required?severity=P3" 
+                className="flex flex-col items-center p-3 rounded-lg bg-yellow-500/10 hover:bg-yellow-500/20 transition-colors cursor-pointer"
+              >
+                <span className="text-2xl font-bold text-yellow-600">
+                  {exceptionCounts?.P3 ?? 0}
+                </span>
+                <span className="text-xs font-medium text-yellow-600">P3 Medium</span>
+              </Link>
+              <Link 
+                to="/backoffice/action-required" 
+                className="flex flex-col items-center p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors cursor-pointer"
+              >
+                <span className="text-2xl font-bold">
+                  {exceptionCounts?.total ?? 0}
+                </span>
+                <span className="text-xs font-medium text-muted-foreground">{t('common.all')}</span>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Stats cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
