@@ -5,22 +5,25 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 interface CustomerLayoutProps {
   children: ReactNode;
 }
 
-const navItems = [
-  { path: '/portal', label: 'My Shipments', icon: Package },
-  { path: '/portal/profile', label: 'Profile', icon: User },
-];
-
 export function CustomerLayout({ children }: CustomerLayoutProps) {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const navItems = [
+    { path: '/portal', label: t('nav.myShipments'), icon: Package },
+    { path: '/portal/profile', label: t('nav.profile'), icon: User },
+  ];
 
   const handleSignOut = async () => {
     await signOut();
@@ -59,6 +62,7 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
           </nav>
 
           <div className="flex items-center gap-2">
+            <LanguageSwitcher />
             <div className="hidden sm:flex items-center gap-2 mr-2">
               <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
                 <span className="text-sm font-medium">
@@ -74,7 +78,7 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
               className="hidden md:flex"
             >
               <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
+              {t('common.signOut')}
             </Button>
             <Button
               variant="ghost"
@@ -116,7 +120,7 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
                 onClick={handleSignOut}
               >
                 <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
+                {t('common.signOut')}
               </Button>
             </div>
           </div>

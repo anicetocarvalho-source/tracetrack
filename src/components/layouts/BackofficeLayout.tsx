@@ -15,27 +15,29 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
-import dhlLogoWhite from '@/assets/dhl-logo-white.svg';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 interface BackofficeLayoutProps {
   children: ReactNode;
 }
 
-const navItems = [
-  { path: '/backoffice', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/backoffice/shipments', label: 'Shipments', icon: Package },
-  { path: '/backoffice/clients', label: 'Clients', icon: Building2, roles: ['MANAGER'] },
-  { path: '/backoffice/users', label: 'Users', icon: Users, roles: ['MANAGER'] },
-  { path: '/backoffice/audit-logs', label: 'Audit Logs', icon: FileText, roles: ['MANAGER'] },
-  { path: '/backoffice/settings', label: 'Settings', icon: Settings, roles: ['MANAGER'] },
-];
-
 export function BackofficeLayout({ children }: BackofficeLayoutProps) {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, role, signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const navItems = [
+    { path: '/backoffice', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { path: '/backoffice/shipments', label: t('nav.shipments'), icon: Package },
+    { path: '/backoffice/clients', label: t('nav.clients'), icon: Building2, roles: ['MANAGER'] },
+    { path: '/backoffice/users', label: t('nav.users'), icon: Users, roles: ['MANAGER'] },
+    { path: '/backoffice/audit-logs', label: t('nav.auditLogs'), icon: FileText, roles: ['MANAGER'] },
+    { path: '/backoffice/settings', label: t('nav.settings'), icon: Settings, roles: ['MANAGER'] },
+  ];
 
   const handleSignOut = async () => {
     await signOut();
@@ -65,7 +67,7 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
         )}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border bg-dhl-yellow">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-white/10 bg-dhl-yellow">
           <div className="flex items-center gap-2">
             <img src={dhlLogoRed} alt="DHL" className="h-6 w-auto" />
           </div>
@@ -105,25 +107,25 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
         </nav>
 
         {/* User section */}
-        <div className="p-4 border-t border-sidebar-border">
+        <div className="p-4 border-t border-white/10">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-sidebar-accent flex items-center justify-center">
-              <span className="text-sm font-medium">
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+              <span className="text-sm font-medium text-white">
                 {profile?.name?.charAt(0).toUpperCase() || 'U'}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{profile?.name}</p>
-              <p className="text-xs text-sidebar-foreground/60 truncate">{role}</p>
+              <p className="text-sm font-medium truncate text-white">{profile?.name}</p>
+              <p className="text-xs text-white/60 truncate">{role}</p>
             </div>
           </div>
           <Button
             variant="ghost"
-            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+            className="w-full justify-start text-white hover:bg-white/10"
             onClick={handleSignOut}
           >
             <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
+            {t('common.signOut')}
           </Button>
         </div>
       </aside>
@@ -141,6 +143,7 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
             <Menu className="w-5 h-5" />
           </Button>
           <div className="flex-1" />
+          <LanguageSwitcher />
         </header>
 
         {/* Page content */}
