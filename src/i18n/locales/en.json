@@ -370,7 +370,14 @@
     "testReportSent": "Test report sent",
     "testReportSentDesc": "Check your email for the SLA report",
     "errorSendingTestReport": "Error sending test report",
-    "scheduledReportInfo": "The weekly SLA report is automatically sent every Monday at 8:00 AM UTC to all active managers."
+    "dailyRiskAlert": "Daily SLA Risk Alert",
+    "dailyRiskAlertDesc": "Notifies supervisors about shipments approaching their SLA limits",
+    "sendRiskAlert": "Send Risk Alert",
+    "riskAlertSent": "Risk alert sent",
+    "riskAlertSentDesc": "Alert sent for {{count}} at-risk shipments",
+    "noAtRiskShipments": "No shipments are currently at risk",
+    "errorSendingRiskAlert": "Error sending risk alert",
+    "scheduledReportInfo": "Weekly SLA report runs every Monday at 8:00 AM UTC. Daily risk alerts run every day at 7:00 AM UTC."
   },
   "auditLogs": {
     "title": "Audit Logs",

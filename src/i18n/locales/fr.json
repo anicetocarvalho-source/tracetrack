@@ -370,7 +370,14 @@
     "testReportSent": "Rapport test envoyé",
     "testReportSentDesc": "Vérifiez votre email pour le rapport SLA",
     "errorSendingTestReport": "Erreur lors de l'envoi du rapport test",
-    "scheduledReportInfo": "Le rapport hebdomadaire SLA est envoyé automatiquement chaque lundi à 8h00 UTC à tous les managers actifs."
+    "dailyRiskAlert": "Alerte Quotidienne de Risque SLA",
+    "dailyRiskAlertDesc": "Notifie les superviseurs des expéditions approchant leurs limites SLA",
+    "sendRiskAlert": "Envoyer Alerte de Risque",
+    "riskAlertSent": "Alerte de risque envoyée",
+    "riskAlertSentDesc": "Alerte envoyée pour {{count}} expéditions à risque",
+    "noAtRiskShipments": "Aucune expédition actuellement à risque",
+    "errorSendingRiskAlert": "Erreur lors de l'envoi de l'alerte de risque",
+    "scheduledReportInfo": "Le rapport hebdomadaire SLA s'exécute tous les lundis à 8h00 UTC. Les alertes quotidiennes de risque s'exécutent tous les jours à 7h00 UTC."
   },
   "auditLogs": {
     "title": "Journaux d'Audit",
