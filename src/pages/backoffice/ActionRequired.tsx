@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, Clock, CheckCircle, Eye, MessageSquare } from 'lucide-react';
+import { AlertTriangle, Clock, CheckCircle, Eye, MessageSquare, RefreshCw } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -163,6 +163,25 @@ export default function ActionRequired() {
 
   const canResolve = userRole === 'SUPERVISOR' || userRole === 'MANAGER';
 
+  // Run detection mutation
+  const runDetectionMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('detect-exceptions');
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['shipment-exceptions'] });
+      toast({ 
+        title: t('exceptions.detectionComplete'),
+        description: t('exceptions.exceptionsCreated', { count: data?.exceptions_created || 0 }),
+      });
+    },
+    onError: () => {
+      toast({ title: t('exceptions.detectionFailed'), variant: 'destructive' });
+    },
+  });
+
   const getTimeOverdue = (exception: ShipmentException) => {
     const rule = exception.exception_rule as any;
     if (!rule) return null;
@@ -187,6 +206,14 @@ export default function ActionRequired() {
           </div>
 
           <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              onClick={() => runDetectionMutation.mutate()}
+              disabled={runDetectionMutation.isPending}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${runDetectionMutation.isPending ? 'animate-spin' : ''}`} />
+              {runDetectionMutation.isPending ? t('exceptions.runningDetection') : t('exceptions.runDetection')}
+            </Button>
             <Badge variant="destructive" className="text-sm px-3 py-1">
               {openCount} {t('exceptions.open')}
             </Badge>

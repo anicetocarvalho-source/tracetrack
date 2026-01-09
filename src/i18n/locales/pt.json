@@ -379,6 +379,11 @@
     "ruleDeleted": "Regra de exceção excluída",
     "failedToDeleteRule": "Falha ao excluir regra",
     "confirmDeleteRule": "Tem certeza que deseja excluir esta regra?",
-    "ruleFormDesc": "Defina quando uma exceção deve ser levantada"
+    "ruleFormDesc": "Defina quando uma exceção deve ser levantada",
+    "runDetection": "Executar Detecção",
+    "runningDetection": "Executando...",
+    "detectionComplete": "Detecção completa",
+    "exceptionsCreated": "{{count}} novas exceções criadas",
+    "detectionFailed": "Falha ao executar detecção"
   }
 }

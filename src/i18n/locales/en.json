@@ -379,6 +379,11 @@
     "ruleDeleted": "Exception rule deleted",
     "failedToDeleteRule": "Failed to delete rule",
     "confirmDeleteRule": "Are you sure you want to delete this rule?",
-    "ruleFormDesc": "Define when an exception should be raised"
+    "ruleFormDesc": "Define when an exception should be raised",
+    "runDetection": "Run Detection Now",
+    "runningDetection": "Running...",
+    "detectionComplete": "Detection complete",
+    "exceptionsCreated": "{{count}} new exceptions created",
+    "detectionFailed": "Failed to run detection"
   }
 }
