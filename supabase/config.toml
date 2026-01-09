@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.weekly-sla-report]
 verify_jwt = false
+
+[functions.daily-sla-risk-alert]
+verify_jwt = false
