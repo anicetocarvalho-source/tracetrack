@@ -104,7 +104,10 @@
     "awaitingResolution": "aguardando resolução",
     "completedSuccessfully": "concluídos com sucesso",
     "openExceptions": "Exceções Abertas",
-    "exceptionsRequiringAttention": "Exceções ativas que requerem atenção"
+    "exceptionsRequiringAttention": "Exceções ativas que requerem atenção",
+    "exceptionTrends": "Tendências de Exceções",
+    "exceptionsOverTime": "Ocorrências de exceções por severidade ao longo do tempo",
+    "noExceptions": "Sem exceções neste período"
   },
   "shipments": {
     "title": "Envios",

@@ -104,7 +104,10 @@
     "awaitingResolution": "en attente de résolution",
     "completedSuccessfully": "terminées avec succès",
     "openExceptions": "Exceptions Ouvertes",
-    "exceptionsRequiringAttention": "Exceptions actives nécessitant une attention"
+    "exceptionsRequiringAttention": "Exceptions actives nécessitant une attention",
+    "exceptionTrends": "Tendances des Exceptions",
+    "exceptionsOverTime": "Occurrences d'exceptions par sévérité au fil du temps",
+    "noExceptions": "Aucune exception sur cette période"
   },
   "shipments": {
     "title": "Expéditions",
