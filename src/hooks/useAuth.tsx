@@ -95,29 +95,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    
-    if (!error) {
-      // Log successful login
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.from('audit_log').insert({
-          entity_type: 'AUTH',
-          action: 'LOGIN_SUCCESS',
-          actor_user_id: user.id,
-          metadata_json: { email },
+    try {
+      // Use rate-limited login edge function
+      const response = await supabase.functions.invoke('rate-limited-login', {
+        body: { email, password }
+      });
+
+      if (response.error) {
+        return { error: new Error(response.error.message || 'Login failed') };
+      }
+
+      const data = response.data;
+      
+      if (data.error) {
+        // Handle rate limiting error
+        if (data.rate_limited) {
+          return { error: new Error(data.error) };
+        }
+        return { error: new Error(data.error) };
+      }
+
+      // Set session from edge function response
+      if (data.session) {
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token
         });
       }
-    } else {
-      // Log failed login
-      await supabase.from('audit_log').insert({
-        entity_type: 'AUTH',
-        action: 'LOGIN_FAIL',
-        metadata_json: { email, error: error.message },
-      });
-    }
 
-    return { error };
+      return { error: null };
+    } catch (err) {
+      console.error('Login error:', err);
+      return { error: err instanceof Error ? err : new Error('Login failed') };
+    }
   };
 
   const signUp = async (email: string, password: string, name: string) => {

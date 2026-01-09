@@ -112,6 +112,36 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          action: string
+          attempts: number
+          blocked_until: string | null
+          first_attempt_at: string
+          id: string
+          identifier: string
+          last_attempt_at: string
+        }
+        Insert: {
+          action: string
+          attempts?: number
+          blocked_until?: string | null
+          first_attempt_at?: string
+          id?: string
+          identifier: string
+          last_attempt_at?: string
+        }
+        Update: {
+          action?: string
+          attempts?: number
+          blocked_until?: string | null
+          first_attempt_at?: string
+          id?: string
+          identifier?: string
+          last_attempt_at?: string
+        }
+        Relationships: []
+      }
       shipment_containers: {
         Row: {
           container_number: string
@@ -312,6 +342,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: {
+          p_action: string
+          p_block_seconds?: number
+          p_identifier: string
+          p_max_attempts?: number
+          p_window_seconds?: number
+        }
+        Returns: {
+          allowed: boolean
+          blocked_until: string
+          remaining_attempts: number
+        }[]
+      }
+      cleanup_rate_limits: { Args: never; Returns: number }
       get_user_client_id: { Args: { _user_id: string }; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
@@ -325,6 +370,10 @@ export type Database = {
         Returns: boolean
       }
       is_internal_user: { Args: { _user_id: string }; Returns: boolean }
+      reset_rate_limit: {
+        Args: { p_action: string; p_identifier: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "TECHNICIAN" | "SUPERVISOR" | "MANAGER" | "CUSTOMER"
