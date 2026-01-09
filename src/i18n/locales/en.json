@@ -131,7 +131,15 @@
     "slaStatus": "SLA Status",
     "resolvedBy": "Resolved By",
     "breached": "Breached",
-    "withinSLA": "Within SLA"
+    "withinSLA": "Within SLA",
+    "atRiskShipments": "At-Risk Shipments",
+    "shipmentsApproachingSLA": "Shipments approaching their SLA time limits",
+    "viewSLAReport": "View SLA Report",
+    "critical": "Critical",
+    "warning": "Warning",
+    "atRisk": "at risk",
+    "mostUrgent": "Most urgent shipments",
+    "remaining": "remaining"
   },
   "shipments": {
     "title": "Shipments",

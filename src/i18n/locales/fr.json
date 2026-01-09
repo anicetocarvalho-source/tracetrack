@@ -131,7 +131,15 @@
     "slaStatus": "Statut SLA",
     "resolvedBy": "Résolu Par",
     "breached": "Violé",
-    "withinSLA": "Dans le SLA"
+    "withinSLA": "Dans le SLA",
+    "atRiskShipments": "Expéditions à Risque",
+    "shipmentsApproachingSLA": "Expéditions approchant leurs limites de temps SLA",
+    "viewSLAReport": "Voir le Rapport SLA",
+    "critical": "Critique",
+    "warning": "Alerte",
+    "atRisk": "à risque",
+    "mostUrgent": "Expéditions les plus urgentes",
+    "remaining": "restant"
   },
   "shipments": {
     "title": "Expéditions",
