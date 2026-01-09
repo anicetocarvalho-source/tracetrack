@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { format, formatDistanceToNow } from 'date-fns';
 import {
@@ -16,11 +16,15 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { TrackingTimeline } from '@/components/shipments/TrackingTimeline';
@@ -30,16 +34,25 @@ import { supabase } from '@/integrations/supabase/client';
 import { Shipment, TrackingEvent, ShipmentContainer, ShipmentException, ExceptionRule } from '@/types/database';
 import { ShipmentStatus, SEVERITY_LABELS, EXCEPTION_STATUS_LABELS } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ShipmentDetail() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { role } = useAuth();
+  const { user, role } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [showEditShipment, setShowEditShipment] = useState(false);
+  const [resolveDialog, setResolveDialog] = useState<{ open: boolean; exception: ShipmentException | null }>({
+    open: false,
+    exception: null,
+  });
+  const [resolutionNote, setResolutionNote] = useState('');
 
   const canEdit = role === 'SUPERVISOR' || role === 'MANAGER';
+  const canResolve = role === 'SUPERVISOR' || role === 'MANAGER';
 
   const { data: shipment, isLoading: loadingShipment } = useQuery({
     queryKey: ['shipment', id],
@@ -143,6 +156,93 @@ export default function ShipmentDetail() {
     },
     enabled: !!id,
   });
+
+  // Acknowledge mutation
+  const acknowledgeMutation = useMutation({
+    mutationFn: async (exceptionId: string) => {
+      const { error } = await supabase
+        .from('shipment_exceptions')
+        .update({
+          status: 'ACKNOWLEDGED',
+          acknowledged_at: new Date().toISOString(),
+          acknowledged_by: user?.id,
+        })
+        .eq('id', exceptionId);
+
+      if (error) throw error;
+
+      // Audit log
+      const exception = exceptions?.find(e => e.id === exceptionId);
+      await supabase.from('audit_log').insert({
+        entity_type: 'SHIPMENT_EXCEPTION',
+        entity_id: exceptionId,
+        action: 'EXCEPTION_ACKNOWLEDGED',
+        actor_user_id: user?.id,
+        metadata_json: {
+          shipment_ref: shipment?.shipment_ref,
+          rule_name: exception?.exception_rule?.name,
+          severity: exception?.severity,
+        },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shipment-exceptions', id] });
+      toast({ title: t('exceptions.acknowledged') });
+    },
+    onError: () => {
+      toast({ title: t('exceptions.failedToAcknowledge'), variant: 'destructive' });
+    },
+  });
+
+  // Resolve mutation
+  const resolveMutation = useMutation({
+    mutationFn: async ({ exceptionId, note }: { exceptionId: string; note: string }) => {
+      const { error } = await supabase
+        .from('shipment_exceptions')
+        .update({
+          status: 'RESOLVED',
+          resolved_at: new Date().toISOString(),
+          resolved_by: user?.id,
+          resolution_note: note,
+        })
+        .eq('id', exceptionId);
+
+      if (error) throw error;
+
+      // Audit log
+      const exception = exceptions?.find(e => e.id === exceptionId);
+      await supabase.from('audit_log').insert({
+        entity_type: 'SHIPMENT_EXCEPTION',
+        entity_id: exceptionId,
+        action: 'EXCEPTION_RESOLVED',
+        actor_user_id: user?.id,
+        metadata_json: {
+          shipment_ref: shipment?.shipment_ref,
+          rule_name: exception?.exception_rule?.name,
+          severity: exception?.severity,
+          resolution_note: note,
+        },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shipment-exceptions', id] });
+      setResolveDialog({ open: false, exception: null });
+      setResolutionNote('');
+      toast({ title: t('exceptions.resolved') });
+    },
+    onError: () => {
+      toast({ title: t('exceptions.failedToResolve'), variant: 'destructive' });
+    },
+  });
+
+  const handleResolve = () => {
+    if (resolveDialog.exception && resolutionNote.trim()) {
+      resolveMutation.mutate({
+        exceptionId: resolveDialog.exception.id,
+        note: resolutionNote.trim(),
+      });
+    }
+  };
 
   if (loadingShipment) {
     return (
@@ -347,7 +447,7 @@ export default function ShipmentDetail() {
                     {exceptions.map((exception) => (
                       <div
                         key={exception.id}
-                        className="p-4 border rounded-lg space-y-2"
+                        className="p-4 border rounded-lg space-y-3"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-2">
@@ -404,6 +504,36 @@ export default function ShipmentDetail() {
                             )}
                           </div>
                         )}
+                        
+                        {/* Action buttons */}
+                        {exception.status !== 'RESOLVED' && (
+                          <div className="flex gap-2 pt-2 border-t">
+                            {exception.status === 'OPEN' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => acknowledgeMutation.mutate(exception.id)}
+                                disabled={acknowledgeMutation.isPending}
+                              >
+                                <Clock className="w-4 h-4 mr-1" />
+                                {t('exceptions.acknowledge')}
+                              </Button>
+                            )}
+                            {canResolve && (
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => {
+                                  setResolveDialog({ open: true, exception });
+                                  setResolutionNote('');
+                                }}
+                              >
+                                <MessageSquare className="w-4 h-4 mr-1" />
+                                {t('exceptions.resolve')}
+                              </Button>
+                            )}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -443,6 +573,41 @@ export default function ShipmentDetail() {
           shipment={shipment}
         />
       )}
+
+      {/* Resolve Exception Dialog */}
+      <Dialog open={resolveDialog.open} onOpenChange={(open) => setResolveDialog({ open, exception: open ? resolveDialog.exception : null })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('exceptions.resolveException')}</DialogTitle>
+            <DialogDescription>
+              {resolveDialog.exception?.exception_rule?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="resolution-note">{t('exceptions.resolutionNote')}</Label>
+              <Textarea
+                id="resolution-note"
+                value={resolutionNote}
+                onChange={(e) => setResolutionNote(e.target.value)}
+                placeholder={t('exceptions.resolutionNotePlaceholder')}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResolveDialog({ open: false, exception: null })}>
+              {t('common.cancel')}
+            </Button>
+            <Button 
+              onClick={handleResolve} 
+              disabled={!resolutionNote.trim() || resolveMutation.isPending}
+            >
+              {t('exceptions.resolve')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </BackofficeLayout>
   );
 }
