@@ -29,7 +29,6 @@ import {
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { CONTAINER_TYPES } from '@/lib/constants';
 import { Client } from '@/types/database';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -91,6 +90,25 @@ export default function CreateShipment() {
       return data as Client[];
     },
   });
+
+  const { data: settings } = useQuery({
+    queryKey: ['system-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('*');
+      if (error) throw error;
+      const settingsMap: Record<string, string[]> = {};
+      data.forEach((s) => {
+        settingsMap[s.key] = Array.isArray(s.value) ? s.value : JSON.parse(s.value as string);
+      });
+      return settingsMap;
+    },
+  });
+
+  const shippingLines = settings?.shipping_lines || [];
+  const containerTypes = settings?.container_types || [];
+  const operators = settings?.operators || [];
 
   const form = useForm<ShipmentFormData>({
     resolver: zodResolver(shipmentSchema),
@@ -367,9 +385,20 @@ export default function CreateShipment() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Assigned Operator</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., John Smith" {...field} />
-                          </FormControl>
+                          <Select onValueChange={field.onChange} value={field.value || ''}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select operator" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {operators.map((op) => (
+                                <SelectItem key={op} value={op}>
+                                  {op}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormDescription>Internal operator handling this shipment</FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -387,9 +416,20 @@ export default function CreateShipment() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Shipping Line *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Maersk, MSC, CMA CGM" {...field} />
-                          </FormControl>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select shipping line" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {shippingLines.map((line) => (
+                                <SelectItem key={line} value={line}>
+                                  {line}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -446,7 +486,7 @@ export default function CreateShipment() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {CONTAINER_TYPES.map((type) => (
+                                    {containerTypes.map((type) => (
                                       <SelectItem key={type} value={type}>
                                         {type}
                                       </SelectItem>
