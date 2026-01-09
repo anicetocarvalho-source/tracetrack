@@ -1,17 +1,25 @@
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { MapPin, User, Eye, EyeOff } from 'lucide-react';
+import { MapPin, User, Eye, EyeOff, ChevronDown } from 'lucide-react';
 import { StatusBadge } from '@/components/StatusBadge';
+import { Button } from '@/components/ui/button';
 import { TrackingEvent } from '@/types/database';
 import { cn } from '@/lib/utils';
 
 interface TrackingTimelineProps {
   events: TrackingEvent[];
   showVisibility?: boolean;
+  initialLimit?: number;
 }
 
-export function TrackingTimeline({ events, showVisibility = true }: TrackingTimelineProps) {
+export function TrackingTimeline({ 
+  events, 
+  showVisibility = true,
+  initialLimit = 5 
+}: TrackingTimelineProps) {
   const { t } = useTranslation();
+  const [displayCount, setDisplayCount] = useState(initialLimit);
 
   if (!events || events.length === 0) {
     return (
@@ -26,13 +34,20 @@ export function TrackingTimeline({ events, showVisibility = true }: TrackingTime
     (a, b) => new Date(b.event_datetime).getTime() - new Date(a.event_datetime).getTime()
   );
 
+  const displayedEvents = sortedEvents.slice(0, displayCount);
+  const hasMore = sortedEvents.length > displayCount;
+
+  const handleLoadMore = () => {
+    setDisplayCount(prev => prev + 10);
+  };
+
   return (
     <div className="relative">
       {/* Timeline line */}
       <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border" />
 
       <div className="space-y-6">
-        {sortedEvents.map((event, index) => (
+        {displayedEvents.map((event, index) => (
           <div key={event.id} className="relative pl-10">
             {/* Timeline dot */}
             <div
@@ -85,6 +100,21 @@ export function TrackingTimeline({ events, showVisibility = true }: TrackingTime
           </div>
         ))}
       </div>
+
+      {/* Load More Button */}
+      {hasMore && (
+        <div className="mt-4 text-center">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleLoadMore}
+            className="text-muted-foreground"
+          >
+            <ChevronDown className="w-4 h-4 mr-2" />
+            {t('common.loadMore')} ({sortedEvents.length - displayCount} {t('common.remaining') || 'remaining'})
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
