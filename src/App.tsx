@@ -15,6 +15,7 @@ import CreateShipment from "./pages/backoffice/CreateShipment";
 import Clients from "./pages/backoffice/Clients";
 import Users from "./pages/backoffice/Users";
 import AuditLogs from "./pages/backoffice/AuditLogs";
+import Settings from "./pages/backoffice/Settings";
 import MyShipments from "./pages/portal/MyShipments";
 import ShipmentTracking from "./pages/portal/ShipmentTracking";
 
@@ -65,6 +66,11 @@ const App = () => (
             <Route path="/backoffice/audit-logs" element={
               <ProtectedRoute requireInternal>
                 <AuditLogs />
+              </ProtectedRoute>
+            } />
+            <Route path="/backoffice/settings" element={
+              <ProtectedRoute requireInternal>
+                <Settings />
               </ProtectedRoute>
             } />
 
