@@ -70,7 +70,8 @@
     "settings": "Settings",
     "myShipments": "My Shipments",
     "profile": "Profile",
-    "slaManagement": "SLA Management"
+    "slaManagement": "SLA Management",
+    "slaBreachReport": "SLA Breach Report"
   },
   "auth": {
     "welcome": "Welcome",
@@ -485,5 +486,25 @@
     "ok": "OK",
     "entered": "Entered",
     "exited": "Exited"
+  },
+  "slaBreachReport": {
+    "title": "SLA Breach Report",
+    "subtitle": "Detailed analysis of all SLA breaches with filtering options",
+    "totalBreaches": "Total Breaches",
+    "avgOverage": "Average Overage",
+    "worstStatus": "Most Breached Status",
+    "client": "Client",
+    "status": "Status",
+    "dateFrom": "From Date",
+    "dateTo": "To Date",
+    "breachList": "SLA Breaches",
+    "shipmentRef": "Shipment Ref",
+    "enteredAt": "Entered At",
+    "exitedAt": "Exited At",
+    "elapsed": "Elapsed",
+    "target": "Target",
+    "overage": "Overage",
+    "noBreaches": "No SLA breaches found matching your filters",
+    "breachDetails": "Breach Details"
   }
 }

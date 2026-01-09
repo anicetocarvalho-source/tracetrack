@@ -70,7 +70,8 @@
     "settings": "Paramètres",
     "myShipments": "Mes Expéditions",
     "profile": "Profil",
-    "slaManagement": "Gestion SLA"
+    "slaManagement": "Gestion SLA",
+    "slaBreachReport": "Rapport de Violations SLA"
   },
   "auth": {
     "welcome": "Bienvenue",
@@ -485,5 +486,25 @@
     "ok": "OK",
     "entered": "Entrée",
     "exited": "Sortie"
+  },
+  "slaBreachReport": {
+    "title": "Rapport de Violations SLA",
+    "subtitle": "Analyse détaillée de toutes les violations SLA avec options de filtrage",
+    "totalBreaches": "Total des Violations",
+    "avgOverage": "Dépassement Moyen",
+    "worstStatus": "Statut le Plus Violé",
+    "client": "Client",
+    "status": "Statut",
+    "dateFrom": "Date de Début",
+    "dateTo": "Date de Fin",
+    "breachList": "Violations SLA",
+    "shipmentRef": "Réf. Expédition",
+    "enteredAt": "Entrée",
+    "exitedAt": "Sortie",
+    "elapsed": "Écoulé",
+    "target": "Cible",
+    "overage": "Dépassement",
+    "noBreaches": "Aucune violation SLA trouvée avec les filtres appliqués",
+    "breachDetails": "Détails de la Violation"
   }
 }

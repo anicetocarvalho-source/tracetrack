@@ -20,6 +20,7 @@ import Settings from "./pages/backoffice/Settings";
 import ActionRequired from "./pages/backoffice/ActionRequired";
 import ExceptionRules from "./pages/backoffice/ExceptionRules";
 import SLAManagement from "./pages/backoffice/SLAManagement";
+import SLABreachReport from "./pages/backoffice/SLABreachReport";
 import MyShipments from "./pages/portal/MyShipments";
 import ShipmentTracking from "./pages/portal/ShipmentTracking";
 import Profile from "./pages/portal/Profile";
@@ -91,6 +92,11 @@ const App = () => (
             <Route path="/backoffice/sla-management" element={
               <ProtectedRoute requireInternal>
                 <SLAManagement />
+              </ProtectedRoute>
+            } />
+            <Route path="/backoffice/sla-breach-report" element={
+              <ProtectedRoute requireInternal>
+                <SLABreachReport />
               </ProtectedRoute>
             } />
 
