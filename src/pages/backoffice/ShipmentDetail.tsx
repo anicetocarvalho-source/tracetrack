@@ -29,6 +29,7 @@ import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { TrackingTimeline } from '@/components/shipments/TrackingTimeline';
 import { AddTrackingEventDrawer } from '@/components/shipments/AddTrackingEventDrawer';
+import { SLACountdownTimer } from '@/components/shipments/SLACountdownTimer';
 import { EditShipmentDrawer } from '@/components/shipments/EditShipmentDrawer';
 import { supabase } from '@/integrations/supabase/client';
 import { Shipment, TrackingEvent, ShipmentContainer, ShipmentException, ExceptionRule } from '@/types/database';
@@ -489,79 +490,106 @@ export default function ShipmentDetail() {
                 {!slaRecords || slaRecords.length === 0 ? (
                   <p className="text-muted-foreground text-sm">{t('sla.noSlaData')}</p>
                 ) : (
-                  <div className="space-y-2">
-                    {slaRecords.map((record) => {
-                      const maxHours = record.sla_config?.max_hours;
-                      const elapsed = record.elapsed_hours;
-                      const isActive = !record.exited_at;
-                      const isBreach = record.breached;
-                      
-                      // For active records, calculate current elapsed time
-                      const currentElapsed = isActive
-                        ? Math.round((Date.now() - new Date(record.entered_at).getTime()) / (1000 * 60 * 60))
-                        : elapsed;
-                      
-                      const percentUsed = maxHours && currentElapsed 
-                        ? Math.min((currentElapsed / maxHours) * 100, 100) 
-                        : 0;
-                      
-                      return (
-                        <div
-                          key={record.id}
-                          className={`p-3 border rounded-lg ${isBreach ? 'border-destructive bg-destructive/5' : isActive ? 'border-primary bg-primary/5' : ''}`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <StatusBadge status={record.shipment_status} />
-                              {isActive && (
-                                <Badge variant="outline" className="text-xs border-primary text-primary">
-                                  {t('sla.current')}
-                                </Badge>
+                  <div className="space-y-4">
+                    {/* Live Countdown Timer for Active SLA */}
+                    {(() => {
+                      const activeSla = slaRecords.find(r => !r.exited_at && r.sla_config?.max_hours);
+                      if (activeSla && activeSla.sla_config?.max_hours) {
+                        return (
+                          <div className="p-4 border-2 border-primary rounded-lg bg-primary/5">
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="font-semibold flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-primary" />
+                                {t('sla.liveCountdown')}
+                              </h4>
+                              <StatusBadge status={activeSla.shipment_status} />
+                            </div>
+                            <SLACountdownTimer
+                              enteredAt={activeSla.entered_at}
+                              maxHours={activeSla.sla_config.max_hours}
+                              breached={activeSla.breached || false}
+                            />
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+
+                    {/* SLA History */}
+                    <div className="space-y-2">
+                      {slaRecords.map((record) => {
+                        const maxHours = record.sla_config?.max_hours;
+                        const elapsed = record.elapsed_hours;
+                        const isActive = !record.exited_at;
+                        const isBreach = record.breached;
+                        
+                        // For active records, calculate current elapsed time
+                        const currentElapsed = isActive
+                          ? Math.round((Date.now() - new Date(record.entered_at).getTime()) / (1000 * 60 * 60))
+                          : elapsed;
+                        
+                        const percentUsed = maxHours && currentElapsed 
+                          ? Math.min((currentElapsed / maxHours) * 100, 100) 
+                          : 0;
+                        
+                        return (
+                          <div
+                            key={record.id}
+                            className={`p-3 border rounded-lg ${isBreach ? 'border-destructive bg-destructive/5' : isActive ? 'border-primary bg-primary/5' : ''}`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <StatusBadge status={record.shipment_status} />
+                                {isActive && (
+                                  <Badge variant="outline" className="text-xs border-primary text-primary">
+                                    {t('sla.current')}
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {isBreach ? (
+                                  <Badge variant="destructive" className="text-xs">
+                                    <AlertTriangle className="w-3 h-3 mr-1" />
+                                    {t('sla.breached')}
+                                  </Badge>
+                                ) : record.exited_at ? (
+                                  <Badge variant="outline" className="text-xs border-green-500 text-green-600">
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                    {t('sla.ok')}
+                                  </Badge>
+                                ) : null}
+                              </div>
+                            </div>
+                            
+                            {maxHours && (
+                              <div className="space-y-1">
+                                <div className="flex justify-between text-xs text-muted-foreground">
+                                  <span>{currentElapsed}h / {maxHours}h</span>
+                                  <span>{Math.round(percentUsed)}%</span>
+                                </div>
+                                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                  <div 
+                                    className={`h-full transition-all ${
+                                      isBreach ? 'bg-destructive' : 
+                                      percentUsed >= 75 ? 'bg-amber-500' : 
+                                      'bg-green-500'
+                                    }`}
+                                    style={{ width: `${percentUsed}%` }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                            
+                            <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                              <span>{t('sla.entered')}: {format(new Date(record.entered_at), 'MMM d, HH:mm')}</span>
+                              {record.exited_at && (
+                                <span>{t('sla.exited')}: {format(new Date(record.exited_at), 'MMM d, HH:mm')}</span>
                               )}
                             </div>
-                            <div className="flex items-center gap-2">
-                              {isBreach ? (
-                                <Badge variant="destructive" className="text-xs">
-                                  <AlertTriangle className="w-3 h-3 mr-1" />
-                                  {t('sla.breached')}
-                                </Badge>
-                              ) : record.exited_at ? (
-                                <Badge variant="outline" className="text-xs border-green-500 text-green-600">
-                                  <CheckCircle className="w-3 h-3 mr-1" />
-                                  {t('sla.ok')}
-                                </Badge>
-                              ) : null}
-                            </div>
                           </div>
-                          
-                          {maxHours && (
-                            <div className="space-y-1">
-                              <div className="flex justify-between text-xs text-muted-foreground">
-                                <span>{currentElapsed}h / {maxHours}h</span>
-                                <span>{Math.round(percentUsed)}%</span>
-                              </div>
-                              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                                <div 
-                                  className={`h-full transition-all ${
-                                    isBreach ? 'bg-destructive' : 
-                                    percentUsed >= 75 ? 'bg-amber-500' : 
-                                    'bg-green-500'
-                                  }`}
-                                  style={{ width: `${percentUsed}%` }}
-                                />
-                              </div>
-                            </div>
-                          )}
-                          
-                          <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-                            <span>{t('sla.entered')}: {format(new Date(record.entered_at), 'MMM d, HH:mm')}</span>
-                            {record.exited_at && (
-                              <span>{t('sla.exited')}: {format(new Date(record.exited_at), 'MMM d, HH:mm')}</span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </CardContent>
