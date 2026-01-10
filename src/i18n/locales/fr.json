@@ -66,7 +66,10 @@
     "enableDescription": "Recevez des notifications instantanées lorsque les expéditions atteignent des seuils SLA critiques",
     "enable": "Activer les Notifications",
     "criticalAlert": "Alerte SLA Critique",
-    "breachAlert": "Alerte de Violation SLA"
+    "breachAlert": "Alerte de Violation SLA",
+    "audioAlerts": "Alertes Audio",
+    "audioAlertsDescription": "Jouer des sons d'avertissement lorsque les expéditions atteignent des seuils SLA critiques",
+    "testSound": "Tester le Son"
   },
   "nav": {
     "dashboard": "Tableau de bord",

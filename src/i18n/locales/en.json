@@ -66,7 +66,10 @@
     "enableDescription": "Get instant browser notifications when shipments reach critical SLA thresholds",
     "enable": "Enable Notifications",
     "criticalAlert": "Critical SLA Alert",
-    "breachAlert": "SLA Breach Alert"
+    "breachAlert": "SLA Breach Alert",
+    "audioAlerts": "Audio Alerts",
+    "audioAlertsDescription": "Play warning sounds when shipments reach critical SLA thresholds",
+    "testSound": "Test Sound"
   },
   "nav": {
     "dashboard": "Dashboard",

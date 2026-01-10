@@ -66,7 +66,10 @@
     "enableDescription": "Receba notificações instantâneas quando os envios atingirem limites críticos de SLA",
     "enable": "Ativar Notificações",
     "criticalAlert": "Alerta SLA Crítico",
-    "breachAlert": "Alerta de Violação SLA"
+    "breachAlert": "Alerta de Violação SLA",
+    "audioAlerts": "Alertas de Áudio",
+    "audioAlertsDescription": "Reproduzir sons de aviso quando os envios atingirem limites críticos de SLA",
+    "testSound": "Testar Som"
   },
   "nav": {
     "dashboard": "Painel",
