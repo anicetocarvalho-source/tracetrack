@@ -618,5 +618,12 @@
     "breachTrend": "Tendência de Violações",
     "last30Days": "Últimos 30 dias",
     "breachesByStatus": "Violações por Status"
+  },
+  "realtime": {
+    "live": "Ao Vivo",
+    "slaBreached": "SLA Violado",
+    "slaBreachedDescription": "Uma remessa violou seu limite de SLA",
+    "statusUpdated": "Status Atualizado",
+    "statusUpdatedDescription": "O status de uma remessa foi atualizado"
   }
 }

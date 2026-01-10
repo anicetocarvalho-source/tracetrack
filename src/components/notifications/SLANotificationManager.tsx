@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useBrowserNotifications } from '@/hooks/useBrowserNotifications';
 import { useAuth } from '@/hooks/useAuth';
 import { ShipmentStatus } from '@/lib/constants';
+import { useRealtimeSLA } from '@/hooks/useRealtimeSLA';
 
 interface AtRiskShipment {
   id: string;
@@ -24,7 +25,8 @@ export function SLANotificationManager() {
   const isInternalUser = role === 'MANAGER' || role === 'SUPERVISOR' || role === 'TECHNICIAN';
   const lastCheckRef = useRef<number>(Date.now());
 
-  // Only fetch for internal users with granted permission
+  // Enable realtime updates to instantly detect SLA changes
+  useRealtimeSLA();
   const { data: atRiskShipments } = useQuery({
     queryKey: ['sla-critical-notifications'],
     queryFn: async () => {

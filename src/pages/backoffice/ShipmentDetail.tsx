@@ -17,6 +17,7 @@ import {
   CheckCircle,
   Clock,
   MessageSquare,
+  Radio,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,6 +37,7 @@ import { Shipment, TrackingEvent, ShipmentContainer, ShipmentException, Exceptio
 import { ShipmentStatus, SEVERITY_LABELS, EXCEPTION_STATUS_LABELS } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useRealtimeShipmentSLA } from '@/hooks/useRealtimeSLA';
 
 export default function ShipmentDetail() {
   const { t } = useTranslation();
@@ -51,6 +53,9 @@ export default function ShipmentDetail() {
     exception: null,
   });
   const [resolutionNote, setResolutionNote] = useState('');
+
+  // Enable realtime updates for this shipment's SLA
+  useRealtimeShipmentSLA(id);
 
   const canEdit = role === 'SUPERVISOR' || role === 'MANAGER';
   const canResolve = role === 'SUPERVISOR' || role === 'MANAGER';
