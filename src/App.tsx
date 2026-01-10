@@ -23,6 +23,7 @@ import ExceptionRules from "./pages/backoffice/ExceptionRules";
 import SLAManagement from "./pages/backoffice/SLAManagement";
 import SLABreachReport from "./pages/backoffice/SLABreachReport";
 import NotificationSettings from "./pages/backoffice/NotificationSettings";
+import SLAHeatmap from "./pages/backoffice/SLAHeatmap";
 import MyShipments from "./pages/portal/MyShipments";
 import ShipmentTracking from "./pages/portal/ShipmentTracking";
 import Profile from "./pages/portal/Profile";
@@ -105,6 +106,11 @@ const App = () => (
             <Route path="/backoffice/notification-settings" element={
               <ProtectedRoute requireInternal>
                 <NotificationSettings />
+              </ProtectedRoute>
+            } />
+            <Route path="/backoffice/sla-heatmap" element={
+              <ProtectedRoute requireInternal>
+                <SLAHeatmap />
               </ProtectedRoute>
             } />
 

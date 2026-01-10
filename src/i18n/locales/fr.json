@@ -82,7 +82,23 @@
     "profile": "Profil",
     "slaManagement": "Gestion SLA",
     "slaBreachReport": "Rapport de Violations SLA",
-    "notificationSettings": "Notifications"
+    "notificationSettings": "Notifications",
+    "slaHeatmap": "Carte de Chaleur SLA"
+  },
+  "slaHeatmap": {
+    "title": "Carte de Chaleur SLA",
+    "subtitle": "Vue d'ensemble visuelle de toutes les expéditions actives par statut et progression SLA",
+    "activeShipments": "SLA Actifs Suivis",
+    "onTrack": "Dans les Temps (<75%)",
+    "critical": "Critique (90-100%)",
+    "breached": "Violé",
+    "heatmapTitle": "Statut vs Progression SLA",
+    "heatmapDescription": "Cliquez sur n'importe quelle cellule pour voir les expéditions dans cette catégorie",
+    "heatmapTooltip": "Chaque cellule affiche le nombre d'expéditions dans un statut spécifique à un niveau de progression SLA spécifique. Les couleurs plus foncées indiquent une urgence plus élevée.",
+    "shipments": "expédition(s)",
+    "shipmentsInCategory": "{{count}} expéditions dans cette catégorie",
+    "remainingTime": "{{minutes}} min restantes",
+    "breachedBy": "Violé de {{minutes}} min"
   },
   "notificationSettings": {
     "title": "Paramètres de Notification",

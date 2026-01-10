@@ -82,7 +82,23 @@
     "profile": "Profile",
     "slaManagement": "SLA Management",
     "slaBreachReport": "SLA Breach Report",
-    "notificationSettings": "Notifications"
+    "notificationSettings": "Notifications",
+    "slaHeatmap": "SLA Heatmap"
+  },
+  "slaHeatmap": {
+    "title": "SLA Heatmap",
+    "subtitle": "Visual overview of all active shipments by status and SLA progress",
+    "activeShipments": "Active SLA Tracked",
+    "onTrack": "On Track (<75%)",
+    "critical": "Critical (90-100%)",
+    "breached": "Breached",
+    "heatmapTitle": "Status vs SLA Progress",
+    "heatmapDescription": "Click on any cell to view shipments in that category",
+    "heatmapTooltip": "Each cell shows the count of shipments in a specific status at a specific SLA progress level. Darker colors indicate higher urgency.",
+    "shipments": "shipment(s)",
+    "shipmentsInCategory": "{{count}} shipments in this category",
+    "remainingTime": "{{minutes}} min remaining",
+    "breachedBy": "Breached by {{minutes}} min"
   },
   "notificationSettings": {
     "title": "Notification Settings",

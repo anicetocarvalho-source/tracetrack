@@ -82,7 +82,23 @@
     "profile": "Perfil",
     "slaManagement": "Gestão SLA",
     "slaBreachReport": "Relatório de Violações SLA",
-    "notificationSettings": "Notificações"
+    "notificationSettings": "Notificações",
+    "slaHeatmap": "Mapa de Calor SLA"
+  },
+  "slaHeatmap": {
+    "title": "Mapa de Calor SLA",
+    "subtitle": "Visão geral visual de todos os envios ativos por status e progresso SLA",
+    "activeShipments": "SLA Ativos Rastreados",
+    "onTrack": "No Prazo (<75%)",
+    "critical": "Crítico (90-100%)",
+    "breached": "Violado",
+    "heatmapTitle": "Status vs Progresso SLA",
+    "heatmapDescription": "Clique em qualquer célula para ver os envios nessa categoria",
+    "heatmapTooltip": "Cada célula mostra a contagem de envios em um status específico em um nível de progresso SLA específico. Cores mais escuras indicam maior urgência.",
+    "shipments": "envio(s)",
+    "shipmentsInCategory": "{{count}} envios nesta categoria",
+    "remainingTime": "{{minutes}} min restantes",
+    "breachedBy": "Violado por {{minutes}} min"
   },
   "notificationSettings": {
     "title": "Configurações de Notificação",
