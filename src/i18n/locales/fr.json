@@ -618,5 +618,12 @@
     "breachTrend": "Tendance des Violations",
     "last30Days": "30 derniers jours",
     "breachesByStatus": "Violations par Statut"
+  },
+  "realtime": {
+    "live": "En Direct",
+    "slaBreached": "SLA Violé",
+    "slaBreachedDescription": "Une expédition a dépassé son délai SLA",
+    "statusUpdated": "Statut Mis à Jour",
+    "statusUpdatedDescription": "Le statut d'une expédition a été mis à jour"
   }
 }

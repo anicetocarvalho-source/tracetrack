@@ -618,5 +618,12 @@
     "breachTrend": "Breach Trend",
     "last30Days": "Last 30 days",
     "breachesByStatus": "Breaches by Status"
+  },
+  "realtime": {
+    "live": "Live",
+    "slaBreached": "SLA Breached",
+    "slaBreachedDescription": "A shipment has breached its SLA limit",
+    "statusUpdated": "Status Updated",
+    "statusUpdatedDescription": "A shipment status has been updated"
   }
 }

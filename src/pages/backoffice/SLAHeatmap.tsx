@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Grid3X3, RefreshCw, Info, ExternalLink } from 'lucide-react';
+import { Grid3X3, RefreshCw, Info, ExternalLink, Radio } from 'lucide-react';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { SHIPMENT_STATUSES, ShipmentStatus } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { useRealtimeSLA } from '@/hooks/useRealtimeSLA';
 
 interface ShipmentSLAData {
   shipment_id: string;
@@ -51,6 +52,9 @@ export default function SLAHeatmap() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [selectedCell, setSelectedCell] = useState<HeatmapCell | null>(null);
+
+  // Enable realtime updates for the heatmap
+  useRealtimeSLA({ showToasts: true });
 
   const { data: slaData, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['sla-heatmap-data'],
@@ -155,8 +159,12 @@ export default function SLAHeatmap() {
               <Grid3X3 className="w-6 h-6" />
               {t('slaHeatmap.title')}
             </h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-1 flex items-center gap-2">
               {t('slaHeatmap.subtitle')}
+              <Badge variant="outline" className="text-xs gap-1">
+                <Radio className="w-3 h-3 text-green-500 animate-pulse" />
+                {t('realtime.live')}
+              </Badge>
             </p>
           </div>
           <Button 
