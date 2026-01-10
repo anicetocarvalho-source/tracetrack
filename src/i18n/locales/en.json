@@ -61,6 +61,13 @@
     "of": "of",
     "loadMore": "Load more"
   },
+  "notifications": {
+    "enableTitle": "Enable SLA Alerts",
+    "enableDescription": "Get instant browser notifications when shipments reach critical SLA thresholds",
+    "enable": "Enable Notifications",
+    "criticalAlert": "Critical SLA Alert",
+    "breachAlert": "SLA Breach Alert"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "shipments": "Shipments",

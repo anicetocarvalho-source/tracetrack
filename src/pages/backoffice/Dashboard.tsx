@@ -12,6 +12,7 @@ import { ShipmentStatus, STATUS_LABELS } from '@/lib/constants';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { NotificationPermissionBanner } from '@/components/notifications/NotificationPermissionBanner';
 import {
   BarChart,
   Bar,
@@ -554,6 +555,7 @@ export default function Dashboard() {
 
   return (
     <BackofficeLayout>
+      <NotificationPermissionBanner />
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>

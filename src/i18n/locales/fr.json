@@ -61,6 +61,13 @@
     "of": "sur",
     "loadMore": "Charger plus"
   },
+  "notifications": {
+    "enableTitle": "Activer les Alertes SLA",
+    "enableDescription": "Recevez des notifications instantanées lorsque les expéditions atteignent des seuils SLA critiques",
+    "enable": "Activer les Notifications",
+    "criticalAlert": "Alerte SLA Critique",
+    "breachAlert": "Alerte de Violation SLA"
+  },
   "nav": {
     "dashboard": "Tableau de bord",
     "shipments": "Expéditions",

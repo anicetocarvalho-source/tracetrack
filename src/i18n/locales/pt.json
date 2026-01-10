@@ -61,6 +61,13 @@
     "of": "de",
     "loadMore": "Carregar mais"
   },
+  "notifications": {
+    "enableTitle": "Ativar Alertas SLA",
+    "enableDescription": "Receba notificações instantâneas quando os envios atingirem limites críticos de SLA",
+    "enable": "Ativar Notificações",
+    "criticalAlert": "Alerta SLA Crítico",
+    "breachAlert": "Alerta de Violação SLA"
+  },
   "nav": {
     "dashboard": "Painel",
     "shipments": "Envios",
