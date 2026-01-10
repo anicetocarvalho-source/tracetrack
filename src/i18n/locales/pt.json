@@ -509,7 +509,15 @@
     "breached": "Violado",
     "ok": "OK",
     "entered": "Entrada",
-    "exited": "Saída"
+    "exited": "Saída",
+    "timeRemaining": "Tempo restante",
+    "overdue": "Atrasado por",
+    "used": "usado",
+    "limit": "limite",
+    "critical": "Crítico",
+    "warning": "Atenção",
+    "onTrack": "No Prazo",
+    "liveCountdown": "Contagem Regressiva SLA"
   },
   "slaBreachReport": {
     "title": "Relatório de Violações SLA",

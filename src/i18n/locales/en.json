@@ -509,7 +509,15 @@
     "breached": "Breached",
     "ok": "OK",
     "entered": "Entered",
-    "exited": "Exited"
+    "exited": "Exited",
+    "timeRemaining": "Time remaining",
+    "overdue": "Overdue by",
+    "used": "used",
+    "limit": "limit",
+    "critical": "Critical",
+    "warning": "Warning",
+    "onTrack": "On Track",
+    "liveCountdown": "Live SLA Countdown"
   },
   "slaBreachReport": {
     "title": "SLA Breach Report",
