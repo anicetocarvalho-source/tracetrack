@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.daily-sla-risk-alert]
 verify_jwt = false
+
+[functions.daily-sla-digest]
+verify_jwt = false
