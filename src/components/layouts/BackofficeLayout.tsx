@@ -13,7 +13,8 @@ import {
   X,
   AlertTriangle,
   Settings2,
-  Target
+  Target,
+  BellRing
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -40,6 +41,7 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
     { path: '/backoffice/shipments', label: t('nav.shipments'), icon: Package },
     { path: '/backoffice/sla-management', label: t('nav.slaManagement'), icon: Target, roles: ['SUPERVISOR', 'MANAGER'] },
     { path: '/backoffice/sla-breach-report', label: t('nav.slaBreachReport'), icon: FileWarning, roles: ['SUPERVISOR', 'MANAGER'] },
+    { path: '/backoffice/notification-settings', label: t('nav.notificationSettings'), icon: BellRing },
     { path: '/backoffice/clients', label: t('nav.clients'), icon: Building2, roles: ['MANAGER'] },
     { path: '/backoffice/users', label: t('nav.users'), icon: Users, roles: ['MANAGER'] },
     { path: '/backoffice/exception-rules', label: t('exceptions.rulesTitle'), icon: Settings2, roles: ['MANAGER'] },
