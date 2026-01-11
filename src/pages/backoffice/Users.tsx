@@ -38,6 +38,13 @@ const Users = () => {
   const { role: currentUserRole, user } = useAuth();
   const queryClient = useQueryClient();
   const isManager = currentUserRole === 'MANAGER';
+  const isSupervisor = currentUserRole === 'SUPERVISOR';
+  const canManageUsers = isManager || isSupervisor;
+
+  // Roles that the current user can assign
+  const allowedRoles: AppRole[] = isManager 
+    ? ['MANAGER', 'SUPERVISOR', 'TECHNICIAN', 'CUSTOMER']
+    : ['TECHNICIAN', 'CUSTOMER']; // Supervisors can only assign these roles
 
   const { data, isLoading } = useQuery({
     queryKey: ['users', page],
@@ -161,7 +168,22 @@ const Users = () => {
       toast({ title: t('users.customerMustHaveClient'), variant: 'destructive' });
       return;
     }
+    // Check if supervisor is trying to create a role they don't have permission for
+    if (!allowedRoles.includes(formData.role as AppRole)) {
+      toast({ title: t('users.noPermissionForRole'), variant: 'destructive' });
+      return;
+    }
     createUserMutation.mutate(formData);
+  };
+
+  // Check if current user can edit a specific user based on their role
+  const canEditUser = (userRole: AppRole | null): boolean => {
+    if (isManager) return true;
+    if (isSupervisor) {
+      // Supervisors can only edit TECHNICIAN and CUSTOMER
+      return userRole === 'TECHNICIAN' || userRole === 'CUSTOMER' || userRole === null;
+    }
+    return false;
   };
 
   const handleEdit = (u: UserWithRole) => {
@@ -174,6 +196,11 @@ const Users = () => {
     if (!selectedUser) return;
     if (editFormData.role === 'CUSTOMER' && !editFormData.client_id) {
       toast({ title: t('users.customerMustHaveClient'), variant: 'destructive' });
+      return;
+    }
+    // Check if user has permission to assign the selected role
+    if (editFormData.role && !allowedRoles.includes(editFormData.role as AppRole)) {
+      toast({ title: t('users.noPermissionForRole'), variant: 'destructive' });
       return;
     }
     updateUserMutation.mutate({
@@ -201,7 +228,7 @@ const Users = () => {
             <h1 className="text-3xl font-bold tracking-tight">{t('users.title')}</h1>
             <p className="text-muted-foreground">{t('users.subtitle')}</p>
           </div>
-          {isManager && (
+          {canManageUsers && (
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-2" />{t('users.addUser')}</Button>
@@ -226,7 +253,7 @@ const Users = () => {
                     <Select value={formData.role} onValueChange={(v: AppRole) => setFormData({ ...formData, role: v })}>
                       <SelectTrigger><SelectValue placeholder={t('users.selectRole')} /></SelectTrigger>
                       <SelectContent>
-                        {(['MANAGER', 'SUPERVISOR', 'TECHNICIAN', 'CUSTOMER'] as AppRole[]).map((r) => (
+                        {allowedRoles.map((r) => (
                           <SelectItem key={r} value={r}>{t(`roles.${r}`)}</SelectItem>
                         ))}
                       </SelectContent>
@@ -275,7 +302,7 @@ const Users = () => {
                 <TableHead>{t('shipments.client')}</TableHead>
                 <TableHead>{t('common.status')}</TableHead>
                 <TableHead>{t('shipments.createdAt')}</TableHead>
-                {isManager && <TableHead>{t('common.actions')}</TableHead>}
+                {canManageUsers && <TableHead>{t('common.actions')}</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -307,11 +334,15 @@ const Users = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>{new Date(u.created_at).toLocaleDateString()}</TableCell>
-                    {isManager && (
+                    {canManageUsers && (
                       <TableCell>
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(u)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
+                        {canEditUser(u.role) ? (
+                          <Button variant="ghost" size="icon" onClick={() => handleEdit(u)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">{t('users.noPermission')}</span>
+                        )}
                       </TableCell>
                     )}
                   </TableRow>
@@ -357,7 +388,7 @@ const Users = () => {
                   <Select value={editFormData.role} onValueChange={(v: AppRole) => setEditFormData({ ...editFormData, role: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {(['MANAGER', 'SUPERVISOR', 'TECHNICIAN', 'CUSTOMER'] as AppRole[]).map((r) => (
+                      {allowedRoles.map((r) => (
                         <SelectItem key={r} value={r}>{t(`roles.${r}`)}</SelectItem>
                       ))}
                     </SelectContent>

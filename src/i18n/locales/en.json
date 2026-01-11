@@ -617,7 +617,9 @@
     "errorCreatingUser": "Error creating user",
     "errorUpdatingUser": "Error updating user",
     "fillAllFields": "Please fill all required fields",
-    "saveChanges": "Save Changes"
+    "saveChanges": "Save Changes",
+    "noPermissionForRole": "You don't have permission to assign this role",
+    "noPermission": "No permission"
   },
   "settings": {
     "title": "Settings",

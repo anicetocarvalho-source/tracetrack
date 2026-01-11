@@ -622,7 +622,9 @@
     "errorCreatingUser": "Erro ao criar utilizador",
     "errorUpdatingUser": "Erro ao atualizar utilizador",
     "fillAllFields": "Por favor preencha todos os campos obrigatórios",
-    "saveChanges": "Guardar Alterações"
+    "saveChanges": "Guardar Alterações",
+    "noPermissionForRole": "Não tem permissão para atribuir esta função",
+    "noPermission": "Sem permissão"
   },
   "settings": {
     "title": "Configurações",
