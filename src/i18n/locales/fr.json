@@ -144,6 +144,7 @@
     "deleteConfirmTitle": "Supprimer le Document",
     "deleteConfirmDescription": "Êtes-vous sûr de vouloir supprimer \"{{filename}}\"? Cette action ne peut pas être annulée.",
     "visibilityUpdated": "Visibilité du document mise à jour",
+    "visibilityUpdatedNotified": "Document partagé et client notifié",
     "visibilityError": "Échec de la mise à jour de la visibilité",
     "hideFromClient": "Masquer au client",
     "showToClient": "Montrer au client",

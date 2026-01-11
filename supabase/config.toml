@@ -71,3 +71,6 @@ verify_jwt = false
 
 [functions.notify-scorecard-available]
 verify_jwt = false
+
+[functions.notify-document-available]
+verify_jwt = false
