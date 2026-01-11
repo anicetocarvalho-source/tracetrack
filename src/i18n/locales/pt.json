@@ -1,4 +1,31 @@
 {
+  "aiHistory": {
+    "totalSuggestions": "Total de Sugestões",
+    "accepted": "Aceites",
+    "dismissed": "Rejeitadas",
+    "acceptanceRate": "Taxa de Aceitação",
+    "timestamp": "Data/Hora",
+    "type": "Tipo",
+    "decision": "Decisão",
+    "user": "Utilizador",
+    "shipment": "Envio",
+    "noHistory": "Sem histórico de sugestões AI",
+    "noHistoryDesc": "As sugestões AI aceites e rejeitadas aparecerão aqui",
+    "detailsTitle": "Detalhes da Sugestão AI",
+    "typeClassification": "Classificação",
+    "typeSuggestion": "Próxima Ação",
+    "classificationAccepted": "Classificação Aceite",
+    "classificationDismissed": "Classificação Rejeitada",
+    "suggestionAccepted": "Sugestão Aceite",
+    "suggestionDismissed": "Sugestão Rejeitada",
+    "suggestionDetails": "Detalhes da Sugestão",
+    "suggestedAction": "Ação Sugerida",
+    "suggestedStatus": "Estado Sugerido",
+    "reason": "Motivo",
+    "priority": "Prioridade",
+    "shipmentId": "ID do Envio",
+    "rawMetadata": "Metadados Completos"
+  },
   "aiSuggestion": {
     "title": "Próxima Ação Sugerida",
     "analyzing": "A analisar envio...",
@@ -850,7 +877,9 @@
     "exportSelectedCSV": "Exportar CSV",
     "exportSelectedJSON": "Exportar JSON",
     "exportSuccess": "{{count}} entradas de log exportadas com sucesso",
-    "noLogsToExport": "Nenhum log para exportar"
+    "noLogsToExport": "Nenhum log para exportar",
+    "allLogs": "Todos os Logs",
+    "aiHistory": "Histórico AI"
   },
   "roles": {
     "MANAGER": "Gestor",

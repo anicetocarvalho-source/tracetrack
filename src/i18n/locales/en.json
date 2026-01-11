@@ -1,4 +1,31 @@
 {
+  "aiHistory": {
+    "totalSuggestions": "Total Suggestions",
+    "accepted": "Accepted",
+    "dismissed": "Dismissed",
+    "acceptanceRate": "Acceptance Rate",
+    "timestamp": "Timestamp",
+    "type": "Type",
+    "decision": "Decision",
+    "user": "User",
+    "shipment": "Shipment",
+    "noHistory": "No AI suggestion history",
+    "noHistoryDesc": "Accepted and dismissed AI suggestions will appear here",
+    "detailsTitle": "AI Suggestion Details",
+    "typeClassification": "Classification",
+    "typeSuggestion": "Next Action",
+    "classificationAccepted": "Classification Accepted",
+    "classificationDismissed": "Classification Dismissed",
+    "suggestionAccepted": "Suggestion Accepted",
+    "suggestionDismissed": "Suggestion Dismissed",
+    "suggestionDetails": "Suggestion Details",
+    "suggestedAction": "Suggested Action",
+    "suggestedStatus": "Suggested Status",
+    "reason": "Reason",
+    "priority": "Priority",
+    "shipmentId": "Shipment ID",
+    "rawMetadata": "Raw Metadata"
+  },
   "aiSuggestion": {
     "title": "Suggested Next Action",
     "analyzing": "Analyzing shipment...",
@@ -856,7 +883,9 @@
     "exportSelectedCSV": "Export CSV",
     "exportSelectedJSON": "Export JSON",
     "exportSuccess": "Successfully exported {{count}} log entries",
-    "noLogsToExport": "No logs to export"
+    "noLogsToExport": "No logs to export",
+    "allLogs": "All Logs",
+    "aiHistory": "AI History"
   },
   "roles": {
     "MANAGER": "Manager",

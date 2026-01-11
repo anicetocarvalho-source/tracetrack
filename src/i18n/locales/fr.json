@@ -1,4 +1,31 @@
 {
+  "aiHistory": {
+    "totalSuggestions": "Total des Suggestions",
+    "accepted": "Acceptées",
+    "dismissed": "Rejetées",
+    "acceptanceRate": "Taux d'Acceptation",
+    "timestamp": "Horodatage",
+    "type": "Type",
+    "decision": "Décision",
+    "user": "Utilisateur",
+    "shipment": "Expédition",
+    "noHistory": "Aucun historique de suggestions IA",
+    "noHistoryDesc": "Les suggestions IA acceptées et rejetées apparaîtront ici",
+    "detailsTitle": "Détails de la Suggestion IA",
+    "typeClassification": "Classification",
+    "typeSuggestion": "Prochaine Action",
+    "classificationAccepted": "Classification Acceptée",
+    "classificationDismissed": "Classification Rejetée",
+    "suggestionAccepted": "Suggestion Acceptée",
+    "suggestionDismissed": "Suggestion Rejetée",
+    "suggestionDetails": "Détails de la Suggestion",
+    "suggestedAction": "Action Suggérée",
+    "suggestedStatus": "Statut Suggéré",
+    "reason": "Raison",
+    "priority": "Priorité",
+    "shipmentId": "ID Expédition",
+    "rawMetadata": "Métadonnées Brutes"
+  },
   "aiSuggestion": {
     "title": "Prochaine Action Suggérée",
     "analyzing": "Analyse de l'expédition...",
@@ -849,7 +876,9 @@
     "exportSelectedCSV": "Exporter CSV",
     "exportSelectedJSON": "Exporter JSON",
     "exportSuccess": "{{count}} entrées de journal exportées avec succès",
-    "noLogsToExport": "Aucun journal à exporter"
+    "noLogsToExport": "Aucun journal à exporter",
+    "allLogs": "Tous les Journaux",
+    "aiHistory": "Historique IA"
   },
   "roles": {
     "MANAGER": "Gestionnaire",
