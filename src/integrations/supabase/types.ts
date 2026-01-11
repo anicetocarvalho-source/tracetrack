@@ -322,6 +322,38 @@ export type Database = {
         }
         Relationships: []
       }
+      request_comments: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          message: string
+          request_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          message: string
+          request_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          message?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_comments_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "customer_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scorecard_exports: {
         Row: {
           export_type: string
