@@ -189,16 +189,7 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
                 <p>{t('notifications.title', 'Notifications')}</p>
               </TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span>
-                  <ThemeToggle />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{t('settings.toggleTheme')}</p>
-              </TooltipContent>
-            </Tooltip>
+            <ThemeToggle />
             <Tooltip>
               <TooltipTrigger asChild>
                 <span>
