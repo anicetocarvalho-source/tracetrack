@@ -47,6 +47,86 @@ export type Database = {
         }
         Relationships: []
       }
+      client_scorecards: {
+        Row: {
+          avg_transit_hours: number
+          client_id: string
+          created_at: string
+          delivered_shipments: number
+          exceptions_p1: number
+          exceptions_p2: number
+          exceptions_p3: number
+          generated_at: string
+          generated_by: string | null
+          id: string
+          notes: string | null
+          on_time_delivery_rate: number
+          period_month: number
+          period_year: number
+          sla_compliance_rate: number
+          status_breakdown: Json
+          top_issues: Json
+          total_incidents: number
+          total_shipments: number
+          trend_data: Json
+          updated_at: string
+        }
+        Insert: {
+          avg_transit_hours?: number
+          client_id: string
+          created_at?: string
+          delivered_shipments?: number
+          exceptions_p1?: number
+          exceptions_p2?: number
+          exceptions_p3?: number
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          notes?: string | null
+          on_time_delivery_rate?: number
+          period_month: number
+          period_year: number
+          sla_compliance_rate?: number
+          status_breakdown?: Json
+          top_issues?: Json
+          total_incidents?: number
+          total_shipments?: number
+          trend_data?: Json
+          updated_at?: string
+        }
+        Update: {
+          avg_transit_hours?: number
+          client_id?: string
+          created_at?: string
+          delivered_shipments?: number
+          exceptions_p1?: number
+          exceptions_p2?: number
+          exceptions_p3?: number
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          notes?: string | null
+          on_time_delivery_rate?: number
+          period_month?: number
+          period_year?: number
+          sla_compliance_rate?: number
+          status_breakdown?: Json
+          top_issues?: Json
+          total_incidents?: number
+          total_shipments?: number
+          trend_data?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_scorecards_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           created_at: string
@@ -191,6 +271,41 @@ export type Database = {
           last_attempt_at?: string
         }
         Relationships: []
+      }
+      scorecard_exports: {
+        Row: {
+          export_type: string
+          exported_at: string
+          exported_by: string
+          id: string
+          recipient_emails: string[] | null
+          scorecard_id: string
+        }
+        Insert: {
+          export_type: string
+          exported_at?: string
+          exported_by: string
+          id?: string
+          recipient_emails?: string[] | null
+          scorecard_id: string
+        }
+        Update: {
+          export_type?: string
+          exported_at?: string
+          exported_by?: string
+          id?: string
+          recipient_emails?: string[] | null
+          scorecard_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scorecard_exports_scorecard_id_fkey"
+            columns: ["scorecard_id"]
+            isOneToOne: false
+            referencedRelation: "client_scorecards"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shipment_containers: {
         Row: {
