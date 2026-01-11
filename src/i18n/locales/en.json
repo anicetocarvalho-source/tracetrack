@@ -234,13 +234,16 @@
     "volumeComparison": "Volume Comparison",
     "ratesComparison": "Performance Rates Comparison",
     "noYoyData": "No data available for {{month}} {{year}}",
-    "generateYoyHint": "Generate a scorecard for the same period last year to see year-over-year comparison"
+    "generateYoyHint": "Generate a scorecard for the same period last year to see year-over-year comparison",
+    "found": "scorecard(s) found"
   },
   "portal": {
     "scorecard": "Performance Scorecard",
     "scorecardDesc": "View your monthly performance summaries",
     "noScorecards": "No scorecards available yet",
-    "scorecardsSoon": "Performance scorecards will appear here once generated"
+    "scorecardsSoon": "Performance scorecards will appear here once generated",
+    "noScorecardsForPeriod": "No scorecards found for selected period",
+    "trackShipments": "Track your shipments"
   },
   "slaHeatmap": {
     "title": "SLA Heatmap",

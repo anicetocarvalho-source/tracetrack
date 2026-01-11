@@ -239,13 +239,16 @@
     "volumeComparison": "Comparação de Volume",
     "ratesComparison": "Comparação de Taxas de Desempenho",
     "noYoyData": "Nenhum dado disponível para {{month}} {{year}}",
-    "generateYoyHint": "Gere um scorecard para o mesmo período do ano passado para ver a comparação ano a ano"
+    "generateYoyHint": "Gere um scorecard para o mesmo período do ano passado para ver a comparação ano a ano",
+    "found": "scorecard(s) encontrado(s)"
   },
   "portal": {
     "scorecard": "Scorecard de Desempenho",
     "scorecardDesc": "Visualize seus resumos mensais de desempenho",
     "noScorecards": "Nenhum scorecard disponível ainda",
-    "scorecardsSoon": "Os scorecards de desempenho aparecerão aqui quando forem gerados"
+    "scorecardsSoon": "Os scorecards de desempenho aparecerão aqui quando forem gerados",
+    "noScorecardsForPeriod": "Nenhum scorecard encontrado para o período selecionado",
+    "trackShipments": "Acompanhe seus envios"
   },
   "slaHeatmap": {
     "title": "Mapa de Calor SLA",
