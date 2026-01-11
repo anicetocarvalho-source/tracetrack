@@ -1243,5 +1243,13 @@
     "accepted": "Classification accepted",
     "appliedClassification": "Applied Classification",
     "autoAnalyzing": "AI will analyze when you finish typing..."
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "createShipment": "Create Shipment",
+    "viewExceptions": "View Exceptions",
+    "viewRequests": "Customer Requests",
+    "slaBreaches": "SLA Breaches",
+    "viewScorecards": "View Scorecards"
   }
 }

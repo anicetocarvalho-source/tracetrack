@@ -1237,5 +1237,13 @@
     "accepted": "Classificação aceite",
     "appliedClassification": "Classificação Aplicada",
     "autoAnalyzing": "IA irá analisar quando terminar de escrever..."
+  },
+  "quickActions": {
+    "title": "Ações Rápidas",
+    "createShipment": "Criar Envio",
+    "viewExceptions": "Ver Exceções",
+    "viewRequests": "Pedidos de Cliente",
+    "slaBreaches": "Violações SLA",
+    "viewScorecards": "Ver Scorecards"
   }
 }
