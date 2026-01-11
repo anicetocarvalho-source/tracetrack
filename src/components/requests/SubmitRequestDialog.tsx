@@ -46,14 +46,53 @@ export function SubmitRequestDialog({
     mutationFn: async () => {
       if (!user) throw new Error('Not authenticated');
 
-      const { error } = await supabase.from('customer_requests').insert({
-        shipment_id: shipmentId,
-        request_type: requestType,
-        message: message.trim(),
-        created_by: user.id,
-      });
+      // First, insert the request
+      const { data: insertedRequest, error } = await supabase
+        .from('customer_requests')
+        .insert({
+          shipment_id: shipmentId,
+          request_type: requestType,
+          message: message.trim(),
+          created_by: user.id,
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
+
+      // Fetch shipment and client info for the notification
+      const { data: shipmentData } = await supabase
+        .from('shipments')
+        .select('shipment_ref, client:clients(name)')
+        .eq('id', shipmentId)
+        .single();
+
+      // Fetch user profile for the requester name
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('name, email')
+        .eq('id', user.id)
+        .single();
+
+      // Send notification email (fire and forget - don't block on failure)
+      try {
+        await supabase.functions.invoke('notify-new-request', {
+          body: {
+            request_id: insertedRequest.id,
+            shipment_id: shipmentId,
+            shipment_ref: shipmentData?.shipment_ref || 'Unknown',
+            client_name: shipmentData?.client?.name || 'Unknown Client',
+            request_type: requestType,
+            message: message.trim(),
+            requester_name: profileData?.name || 'Customer',
+            requester_email: profileData?.email || user.email || '',
+          },
+        });
+        console.log('Notification email sent successfully');
+      } catch (notifyError) {
+        console.error('Failed to send notification email:', notifyError);
+        // Don't throw - the request was still created successfully
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customer-requests', shipmentId] });
