@@ -26,6 +26,7 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { PreferencesSyncIndicator } from '@/components/PreferencesSyncIndicator';
 import { HelpMenu } from '@/components/HelpMenu';
+import { BackofficeTour } from '@/components/tour/BackofficeTour';
 import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 interface BackofficeLayoutProps {
@@ -78,6 +79,7 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
 
       {/* Sidebar */}
       <aside 
+        data-tour="sidebar"
         className={cn(
           "fixed lg:static inset-y-0 left-0 z-50 w-64 bg-dhl-red text-white flex flex-col transition-transform lg:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -100,15 +102,21 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
 
         {/* Navigation */}
         <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
-          {filteredNavItems.map((item) => {
+          {filteredNavItems.map((item, index) => {
             const isActive = location.pathname === item.path || 
               (item.path !== '/backoffice' && location.pathname.startsWith(item.path));
+            
+            const tourId = item.path === '/backoffice' ? 'dashboard' 
+              : item.path === '/backoffice/action-required' ? 'exceptions'
+              : item.path === '/backoffice/shipments' ? 'shipments'
+              : undefined;
             
             return (
               <Link
                 key={item.path}
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
+                data-tour={tourId}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-white",
                   isActive 
@@ -135,16 +143,21 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
               <p className="text-sm font-medium truncate text-white">{profile?.name}</p>
               <p className="text-xs text-white/60 truncate">{role}</p>
             </div>
-            <HelpMenu userRole={role} />
+            <div data-tour="help-button">
+              <HelpMenu userRole={role} />
+            </div>
           </div>
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-white hover:bg-white/10"
-            onClick={handleSignOut}
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            {t('common.signOut')}
-          </Button>
+          <div className="flex gap-2">
+            <BackofficeTour />
+            <Button
+              variant="ghost"
+              className="flex-1 justify-start text-white hover:bg-white/10"
+              onClick={handleSignOut}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              {t('common.signOut')}
+            </Button>
+          </div>
         </div>
       </aside>
 
@@ -163,7 +176,9 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
           <div className="flex-1" />
           <div className="flex items-center gap-2">
             <PreferencesSyncIndicator />
-            <ThemeToggle />
+            <div data-tour="theme-toggle">
+              <ThemeToggle />
+            </div>
             <LanguageSwitcher />
           </div>
         </header>

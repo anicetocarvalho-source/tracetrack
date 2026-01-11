@@ -951,5 +951,59 @@
         "features": ["Create new requests", "Track request status", "View request history", "Receive resolution notifications"]
       }
     }
+  },
+  "tour": {
+    "startTour": "Guided Tour",
+    "next": "Next",
+    "previous": "Previous",
+    "finish": "Finish",
+    "backoffice": {
+      "welcome": {
+        "title": "Welcome to DHL Backoffice!",
+        "content": "Let's take a quick tour of the platform's main features. Follow the steps to discover everything."
+      },
+      "dashboard": {
+        "title": "Dashboard",
+        "content": "Here you have an overview of all operations: active shipments, exceptions, performance metrics, and scorecards."
+      },
+      "exceptions": {
+        "title": "Exceptions",
+        "content": "This is the exception center. Here you see all issues that need immediate attention, organized by priority."
+      },
+      "shipments": {
+        "title": "Shipment Management",
+        "content": "Manage all shipments: create new ones, add tracking events, upload documents, and track progress."
+      },
+      "help": {
+        "title": "Help Center",
+        "content": "Click here whenever you need help. You'll find detailed descriptions of each module and its features."
+      },
+      "settings": {
+        "title": "Customize Your Experience",
+        "content": "Use these controls to switch between light/dark theme and change the platform language."
+      }
+    },
+    "customer": {
+      "welcome": {
+        "title": "Welcome to DHL Customer Portal!",
+        "content": "This is your portal to track shipments and view performance. Let's explore the features."
+      },
+      "shipments": {
+        "title": "My Shipments",
+        "content": "View all your shipments in real-time. Click on any shipment to see details, documents, and event history."
+      },
+      "scorecard": {
+        "title": "My Scorecard",
+        "content": "Track your monthly performance with SLA compliance metrics, delivery rates, and trend analysis."
+      },
+      "profile": {
+        "title": "Your Profile",
+        "content": "View your account information and contact details registered on the platform."
+      },
+      "help": {
+        "title": "Need Help?",
+        "content": "Click here to see the complete portal guide with descriptions of all available features."
+      }
+    }
   }
 }
