@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Globe } from 'lucide-react';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 
 const languages = [
   { code: 'pt', label: 'Português', flag: '🇵🇹' },
@@ -26,11 +27,12 @@ export function LanguageSwitcher({
   className 
 }: LanguageSwitcherProps) {
   const { i18n } = useTranslation();
+  const { updateLanguage } = useUserPreferences();
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 
   const changeLanguage = (code: string) => {
-    i18n.changeLanguage(code);
+    updateLanguage(code);
   };
 
   return (

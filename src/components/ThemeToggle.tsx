@@ -7,13 +7,15 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useTranslation } from 'react-i18next';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 
 export function ThemeToggle() {
   const { t } = useTranslation();
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
+  const { updateTheme } = useUserPreferences();
 
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    updateTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   return (

@@ -8,6 +8,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SLANotificationManager } from "@/components/notifications/SLANotificationManager";
+import { PreferencesLoader } from "@/components/PreferencesLoader";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -37,11 +38,12 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-        <SLANotificationManager />
-        <BrowserRouter>
+        <PreferencesLoader>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <SLANotificationManager />
+            <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -147,8 +149,9 @@ const App = () => (
 
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </PreferencesLoader>
     </AuthProvider>
   </ThemeProvider>
   </QueryClientProvider>
