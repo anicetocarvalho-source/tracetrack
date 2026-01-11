@@ -541,7 +541,10 @@
     "themeLight": "Light",
     "themeDark": "Dark",
     "themeSystem": "System",
-    "themeDesc": "Select your preferred theme or use system settings"
+    "themeDesc": "Select your preferred theme or use system settings",
+    "toggleTheme": "Toggle theme",
+    "lightMode": "Switch to light mode",
+    "darkMode": "Switch to dark mode"
   },
   "auditLogs": {
     "title": "Audit Logs",

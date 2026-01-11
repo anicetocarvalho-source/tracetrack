@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -21,9 +21,9 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 interface BackofficeLayoutProps {
@@ -157,7 +157,10 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
             <Menu className="w-5 h-5" />
           </Button>
           <div className="flex-1" />
-          <LanguageSwitcher />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <LanguageSwitcher />
+          </div>
         </header>
 
         {/* Page content */}
