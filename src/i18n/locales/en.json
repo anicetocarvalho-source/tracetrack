@@ -118,7 +118,12 @@
     "trend": "6-Month Trend",
     "statusBreakdown": "Status Breakdown",
     "topIssues": "Top Issues",
-    "noIssues": "No issues this period!"
+    "noIssues": "No issues this period!",
+    "yoyComparison": "Year-over-Year Comparison",
+    "volumeComparison": "Volume Comparison",
+    "ratesComparison": "Performance Rates Comparison",
+    "noYoyData": "No data available for {{month}} {{year}}",
+    "generateYoyHint": "Generate a scorecard for the same period last year to see year-over-year comparison"
   },
   "portal": {
     "scorecard": "Performance Scorecard",

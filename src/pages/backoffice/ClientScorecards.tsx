@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, FileBarChart, Download, Mail, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle2, Clock, Package } from "lucide-react";
+import { Loader2, FileBarChart, Download, Mail, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle2, Clock, Package, Calendar, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
 
 const MONTHS = [
   { value: 1, label: "January" },
@@ -126,6 +127,119 @@ export default function ClientScorecards() {
       return (data || []) as unknown as Scorecard[];
     },
   });
+
+  // Fetch previous year scorecard for comparison
+  const { data: previousYearScorecard } = useQuery({
+    queryKey: ["scorecard-yoy", selectedScorecard?.client_id, selectedScorecard?.period_year, selectedScorecard?.period_month],
+    queryFn: async () => {
+      if (!selectedScorecard) return null;
+      
+      const { data, error } = await supabase
+        .from("client_scorecards")
+        .select("*")
+        .eq("client_id", selectedScorecard.client_id)
+        .eq("period_year", selectedScorecard.period_year - 1)
+        .eq("period_month", selectedScorecard.period_month)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data as unknown as Scorecard | null;
+    },
+    enabled: !!selectedScorecard,
+  });
+
+  // Compute YoY comparison data
+  const yoyData = useMemo(() => {
+    if (!selectedScorecard || !previousYearScorecard) return null;
+    
+    const calcChange = (current: number, previous: number) => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return Math.round(((current - previous) / previous) * 100);
+    };
+    
+    return {
+      shipments: {
+        current: selectedScorecard.total_shipments,
+        previous: previousYearScorecard.total_shipments,
+        change: calcChange(selectedScorecard.total_shipments, previousYearScorecard.total_shipments),
+      },
+      onTimeRate: {
+        current: selectedScorecard.on_time_delivery_rate,
+        previous: previousYearScorecard.on_time_delivery_rate,
+        change: selectedScorecard.on_time_delivery_rate - previousYearScorecard.on_time_delivery_rate,
+      },
+      slaCompliance: {
+        current: selectedScorecard.sla_compliance_rate,
+        previous: previousYearScorecard.sla_compliance_rate,
+        change: selectedScorecard.sla_compliance_rate - previousYearScorecard.sla_compliance_rate,
+      },
+      avgTransit: {
+        current: selectedScorecard.avg_transit_hours,
+        previous: previousYearScorecard.avg_transit_hours,
+        change: calcChange(selectedScorecard.avg_transit_hours, previousYearScorecard.avg_transit_hours),
+      },
+      incidents: {
+        current: selectedScorecard.total_incidents,
+        previous: previousYearScorecard.total_incidents,
+        change: calcChange(selectedScorecard.total_incidents, previousYearScorecard.total_incidents),
+      },
+      exceptionsP1: {
+        current: selectedScorecard.exceptions_p1,
+        previous: previousYearScorecard.exceptions_p1,
+        change: selectedScorecard.exceptions_p1 - previousYearScorecard.exceptions_p1,
+      },
+      exceptionsP2: {
+        current: selectedScorecard.exceptions_p2,
+        previous: previousYearScorecard.exceptions_p2,
+        change: selectedScorecard.exceptions_p2 - previousYearScorecard.exceptions_p2,
+      },
+      exceptionsP3: {
+        current: selectedScorecard.exceptions_p3,
+        previous: previousYearScorecard.exceptions_p3,
+        change: selectedScorecard.exceptions_p3 - previousYearScorecard.exceptions_p3,
+      },
+    };
+  }, [selectedScorecard, previousYearScorecard]);
+
+  // Prepare chart data for YoY comparison
+  const yoyChartData = useMemo(() => {
+    if (!selectedScorecard || !previousYearScorecard) return [];
+    
+    return [
+      {
+        metric: "Shipments",
+        [selectedScorecard.period_year - 1]: previousYearScorecard.total_shipments,
+        [selectedScorecard.period_year]: selectedScorecard.total_shipments,
+      },
+      {
+        metric: "Delivered",
+        [selectedScorecard.period_year - 1]: previousYearScorecard.delivered_shipments,
+        [selectedScorecard.period_year]: selectedScorecard.delivered_shipments,
+      },
+      {
+        metric: "Incidents",
+        [selectedScorecard.period_year - 1]: previousYearScorecard.total_incidents,
+        [selectedScorecard.period_year]: selectedScorecard.total_incidents,
+      },
+    ];
+  }, [selectedScorecard, previousYearScorecard]);
+
+  const yoyRatesChartData = useMemo(() => {
+    if (!selectedScorecard || !previousYearScorecard) return [];
+    
+    return [
+      {
+        metric: "On-Time %",
+        [selectedScorecard.period_year - 1]: previousYearScorecard.on_time_delivery_rate,
+        [selectedScorecard.period_year]: selectedScorecard.on_time_delivery_rate,
+      },
+      {
+        metric: "SLA Compliance %",
+        [selectedScorecard.period_year - 1]: previousYearScorecard.sla_compliance_rate,
+        [selectedScorecard.period_year]: selectedScorecard.sla_compliance_rate,
+      },
+    ];
+  }, [selectedScorecard, previousYearScorecard]);
 
   // Generate scorecard mutation
   const generateMutation = useMutation({
@@ -486,16 +600,180 @@ export default function ClientScorecards() {
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
                 <div className="text-3xl font-bold text-red-700">{selectedScorecard.exceptions_p1}</div>
                 <Badge variant="destructive" className="mt-1">P1 Critical</Badge>
+                {yoyData && (
+                  <div className={`text-xs mt-2 flex items-center justify-center gap-1 ${yoyData.exceptionsP1.change <= 0 ? "text-green-600" : "text-red-600"}`}>
+                    {yoyData.exceptionsP1.change <= 0 ? <ArrowDownRight className="h-3 w-3" /> : <ArrowUpRight className="h-3 w-3" />}
+                    {yoyData.exceptionsP1.change > 0 ? "+" : ""}{yoyData.exceptionsP1.change} vs {selectedScorecard.period_year - 1}
+                  </div>
+                )}
               </div>
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
                 <div className="text-3xl font-bold text-yellow-700">{selectedScorecard.exceptions_p2}</div>
                 <Badge variant="outline" className="mt-1 bg-yellow-100 text-yellow-800 border-yellow-300">P2 High</Badge>
+                {yoyData && (
+                  <div className={`text-xs mt-2 flex items-center justify-center gap-1 ${yoyData.exceptionsP2.change <= 0 ? "text-green-600" : "text-red-600"}`}>
+                    {yoyData.exceptionsP2.change <= 0 ? <ArrowDownRight className="h-3 w-3" /> : <ArrowUpRight className="h-3 w-3" />}
+                    {yoyData.exceptionsP2.change > 0 ? "+" : ""}{yoyData.exceptionsP2.change} vs {selectedScorecard.period_year - 1}
+                  </div>
+                )}
               </div>
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
                 <div className="text-3xl font-bold text-blue-700">{selectedScorecard.exceptions_p3}</div>
                 <Badge variant="outline" className="mt-1 bg-blue-100 text-blue-800 border-blue-300">P3 Medium</Badge>
+                {yoyData && (
+                  <div className={`text-xs mt-2 flex items-center justify-center gap-1 ${yoyData.exceptionsP3.change <= 0 ? "text-green-600" : "text-red-600"}`}>
+                    {yoyData.exceptionsP3.change <= 0 ? <ArrowDownRight className="h-3 w-3" /> : <ArrowUpRight className="h-3 w-3" />}
+                    {yoyData.exceptionsP3.change > 0 ? "+" : ""}{yoyData.exceptionsP3.change} vs {selectedScorecard.period_year - 1}
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Year-over-Year Comparison Section */}
+            {yoyData && previousYearScorecard && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold text-lg">Year-over-Year Comparison</h3>
+                  <Badge variant="outline">{selectedScorecard.period_year - 1} vs {selectedScorecard.period_year}</Badge>
+                </div>
+
+                {/* YoY KPI Changes */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="bg-muted/50 rounded-lg p-4 text-center">
+                    <div className="text-sm text-muted-foreground mb-1">Shipments</div>
+                    <div className={`text-xl font-bold flex items-center justify-center gap-1 ${yoyData.shipments.change >= 0 ? "text-green-600" : "text-red-600"}`}>
+                      {yoyData.shipments.change >= 0 ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
+                      {yoyData.shipments.change > 0 ? "+" : ""}{yoyData.shipments.change}%
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {previousYearScorecard.total_shipments} → {selectedScorecard.total_shipments}
+                    </div>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-4 text-center">
+                    <div className="text-sm text-muted-foreground mb-1">On-Time Rate</div>
+                    <div className={`text-xl font-bold flex items-center justify-center gap-1 ${yoyData.onTimeRate.change >= 0 ? "text-green-600" : "text-red-600"}`}>
+                      {yoyData.onTimeRate.change >= 0 ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
+                      {yoyData.onTimeRate.change > 0 ? "+" : ""}{yoyData.onTimeRate.change.toFixed(1)}pp
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {previousYearScorecard.on_time_delivery_rate}% → {selectedScorecard.on_time_delivery_rate}%
+                    </div>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-4 text-center">
+                    <div className="text-sm text-muted-foreground mb-1">SLA Compliance</div>
+                    <div className={`text-xl font-bold flex items-center justify-center gap-1 ${yoyData.slaCompliance.change >= 0 ? "text-green-600" : "text-red-600"}`}>
+                      {yoyData.slaCompliance.change >= 0 ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
+                      {yoyData.slaCompliance.change > 0 ? "+" : ""}{yoyData.slaCompliance.change.toFixed(1)}pp
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {previousYearScorecard.sla_compliance_rate}% → {selectedScorecard.sla_compliance_rate}%
+                    </div>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-4 text-center">
+                    <div className="text-sm text-muted-foreground mb-1">Avg Transit</div>
+                    <div className={`text-xl font-bold flex items-center justify-center gap-1 ${yoyData.avgTransit.change <= 0 ? "text-green-600" : "text-red-600"}`}>
+                      {yoyData.avgTransit.change <= 0 ? <ArrowDownRight className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
+                      {yoyData.avgTransit.change > 0 ? "+" : ""}{yoyData.avgTransit.change}%
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {formatHours(previousYearScorecard.avg_transit_hours)} → {formatHours(selectedScorecard.avg_transit_hours)}
+                    </div>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-4 text-center">
+                    <div className="text-sm text-muted-foreground mb-1">Incidents</div>
+                    <div className={`text-xl font-bold flex items-center justify-center gap-1 ${yoyData.incidents.change <= 0 ? "text-green-600" : "text-red-600"}`}>
+                      {yoyData.incidents.change <= 0 ? <ArrowDownRight className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
+                      {yoyData.incidents.change > 0 ? "+" : ""}{yoyData.incidents.change}%
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {previousYearScorecard.total_incidents} → {selectedScorecard.total_incidents}
+                    </div>
+                  </div>
+                </div>
+
+                {/* YoY Charts */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Volume Comparison Chart */}
+                  <div className="bg-muted/30 rounded-lg p-4">
+                    <h4 className="font-medium mb-4 text-sm">Volume Comparison</h4>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <BarChart data={yoyChartData}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis dataKey="metric" tick={{ fontSize: 12 }} />
+                        <YAxis tick={{ fontSize: 12 }} />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'hsl(var(--background))', 
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px'
+                          }} 
+                        />
+                        <Legend />
+                        <Bar 
+                          dataKey={selectedScorecard.period_year - 1} 
+                          fill="hsl(var(--muted-foreground))" 
+                          name={`${selectedScorecard.period_year - 1}`}
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar 
+                          dataKey={selectedScorecard.period_year} 
+                          fill="hsl(var(--primary))" 
+                          name={`${selectedScorecard.period_year}`}
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Rates Comparison Chart */}
+                  <div className="bg-muted/30 rounded-lg p-4">
+                    <h4 className="font-medium mb-4 text-sm">Performance Rates Comparison (%)</h4>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <BarChart data={yoyRatesChartData}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis dataKey="metric" tick={{ fontSize: 12 }} />
+                        <YAxis tick={{ fontSize: 12 }} domain={[0, 100]} />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'hsl(var(--background))', 
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px'
+                          }}
+                          formatter={(value: number) => [`${value}%`, '']}
+                        />
+                        <Legend />
+                        <Bar 
+                          dataKey={selectedScorecard.period_year - 1} 
+                          fill="hsl(var(--muted-foreground))" 
+                          name={`${selectedScorecard.period_year - 1}`}
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar 
+                          dataKey={selectedScorecard.period_year} 
+                          fill="hsl(var(--primary))" 
+                          name={`${selectedScorecard.period_year}`}
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* No YoY Data Available Notice */}
+            {!previousYearScorecard && selectedScorecard && (
+              <div className="bg-muted/30 rounded-lg p-6 text-center">
+                <Calendar className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  No data available for {MONTHS.find(m => m.value === selectedScorecard.period_month)?.label} {selectedScorecard.period_year - 1}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Generate a scorecard for the same period last year to see year-over-year comparison
+                </p>
+              </div>
+            )}
 
             {/* Trend Chart */}
             {selectedScorecard.trend_data && selectedScorecard.trend_data.length > 0 && (
