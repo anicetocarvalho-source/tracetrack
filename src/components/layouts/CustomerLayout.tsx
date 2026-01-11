@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Package, User, LogOut, Menu, X } from 'lucide-react';
+import { Package, User, LogOut, Menu, X, FileBarChart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,6 +22,7 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
 
   const navItems = [
     { path: '/portal', label: t('nav.myShipments'), icon: Package },
+    { path: '/portal/scorecard', label: t('nav.scorecard'), icon: FileBarChart },
     { path: '/portal/profile', label: t('nav.profile'), icon: User },
   ];
 

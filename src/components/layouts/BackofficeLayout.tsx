@@ -15,7 +15,8 @@ import {
   Settings2,
   Target,
   BellRing,
-  Grid3X3
+  Grid3X3,
+  FileBarChart
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -43,6 +44,7 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
     { path: '/backoffice/sla-management', label: t('nav.slaManagement'), icon: Target, roles: ['SUPERVISOR', 'MANAGER'] },
     { path: '/backoffice/sla-breach-report', label: t('nav.slaBreachReport'), icon: FileWarning, roles: ['SUPERVISOR', 'MANAGER'] },
     { path: '/backoffice/sla-heatmap', label: t('nav.slaHeatmap'), icon: Grid3X3, roles: ['SUPERVISOR', 'MANAGER'] },
+    { path: '/backoffice/scorecards', label: t('nav.scorecards'), icon: FileBarChart, roles: ['SUPERVISOR', 'MANAGER'] },
     { path: '/backoffice/notification-settings', label: t('nav.notificationSettings'), icon: BellRing },
     { path: '/backoffice/clients', label: t('nav.clients'), icon: Building2, roles: ['MANAGER'] },
     { path: '/backoffice/users', label: t('nav.users'), icon: Users, roles: ['MANAGER'] },
