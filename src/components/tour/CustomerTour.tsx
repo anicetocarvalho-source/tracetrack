@@ -67,26 +67,24 @@ export function CustomerTour() {
     },
   ];
 
-  const { hasSeenTour, startTour } = useTourGuide({
+  const { hasSeenTour, startTour, isLoading } = useTourGuide({
     tourId: 'customer-intro',
     steps,
   });
 
-  // Show "Start Tour" button for users who have already seen the tour
-  if (hasSeenTour) {
-    return (
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={startTour}
-        className="gap-2"
-        data-tour="start-tour"
-      >
-        <Sparkles className="h-4 w-4" />
-        <span className="hidden sm:inline">{t('tour.startTour')}</span>
-      </Button>
-    );
-  }
+  // Always show the tour button in header
+  if (isLoading) return null;
 
-  return null;
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={startTour}
+      className="gap-2"
+      data-tour="start-tour"
+    >
+      <Sparkles className="h-4 w-4" />
+      <span className="hidden sm:inline">{t('tour.startTour')}</span>
+    </Button>
+  );
 }
