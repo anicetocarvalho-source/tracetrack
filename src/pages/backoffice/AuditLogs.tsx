@@ -30,12 +30,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { FileText, Filter, X, ChevronLeft, ChevronRight, Eye, Download, CheckSquare } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FileText, Filter, X, ChevronLeft, ChevronRight, Eye, Download, CheckSquare, Brain } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { safeFormatDate } from '@/lib/utils';
 import { DateRangePickerCompact } from '@/components/ui/date-range-picker';
 import { toast } from 'sonner';
 import type { AuditLog, Profile } from '@/types/database';
+import AISuggestionsHistory from '@/components/audit/AISuggestionsHistory';
 
 const ENTITY_TYPES = ['shipment', 'tracking_event', 'client', 'user', 'AUTH', 'EMAIL'];
 const PAGE_SIZE = 50;
@@ -246,17 +248,36 @@ const AuditLogs = () => {
             <h1 className="text-3xl font-bold tracking-tight">{t('auditLogs.title')}</h1>
             <p className="text-muted-foreground">{t('auditLogs.subtitle')}</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={exportToCSV}>
-              <Download className="w-4 h-4 mr-2" />
-              {t('auditLogs.exportCSV')}
-            </Button>
-            <Button variant="outline" onClick={exportToJSON}>
-              <Download className="w-4 h-4 mr-2" />
-              {t('auditLogs.exportJSON')}
-            </Button>
-          </div>
         </div>
+
+        <Tabs defaultValue="all" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="all" className="gap-2">
+              <FileText className="h-4 w-4" />
+              {t('auditLogs.allLogs')}
+            </TabsTrigger>
+            <TabsTrigger value="ai" className="gap-2">
+              <Brain className="h-4 w-4" />
+              {t('auditLogs.aiHistory')}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="ai" className="space-y-0">
+            <AISuggestionsHistory />
+          </TabsContent>
+
+          <TabsContent value="all" className="space-y-6">
+            {/* Export buttons */}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={exportToCSV}>
+                <Download className="w-4 h-4 mr-2" />
+                {t('auditLogs.exportCSV')}
+              </Button>
+              <Button variant="outline" onClick={exportToJSON}>
+                <Download className="w-4 h-4 mr-2" />
+                {t('auditLogs.exportJSON')}
+              </Button>
+            </div>
 
         {/* Filters */}
         <div className="rounded-lg border bg-card p-4">
@@ -469,6 +490,8 @@ const AuditLogs = () => {
             </div>
           )}
         </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Details Dialog */}
