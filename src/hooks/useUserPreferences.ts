@@ -19,7 +19,7 @@ export interface UserPreferences {
 }
 
 const DEFAULT_PREFERENCES: UserPreferences = {
-  theme: 'system',
+  theme: 'light',
   language: 'en',
   notifications: {
     enableBrowserNotifications: false,
