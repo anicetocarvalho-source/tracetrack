@@ -9,6 +9,7 @@ import {
   EyeOff,
   Trash2,
   Loader2,
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +24,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { DocumentUploadDialog } from './DocumentUploadDialog';
+import { DocumentPreviewDialog } from './DocumentPreviewDialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,6 +42,10 @@ export function DocumentList({ shipmentId, isCustomer = false }: DocumentListPro
   const queryClient = useQueryClient();
 
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; doc: ShipmentDocument | null }>({
+    open: false,
+    doc: null,
+  });
+  const [previewDialog, setPreviewDialog] = useState<{ open: boolean; doc: ShipmentDocument | null }>({
     open: false,
     doc: null,
   });
@@ -189,6 +195,14 @@ export function DocumentList({ shipmentId, isCustomer = false }: DocumentListPro
               </div>
 
               <div className="flex items-center gap-1 flex-shrink-0">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => setPreviewDialog({ open: true, doc })}
+                  title={t('documents.preview')}
+                >
+                  <Search className="w-4 h-4" />
+                </Button>
                 {!isCustomer && (
                   <Button
                     size="icon"
@@ -232,6 +246,12 @@ export function DocumentList({ shipmentId, isCustomer = false }: DocumentListPro
           ))}
         </div>
       )}
+
+      <DocumentPreviewDialog
+        open={previewDialog.open}
+        onOpenChange={(open) => setPreviewDialog({ open, doc: open ? previewDialog.doc : null })}
+        document={previewDialog.doc}
+      />
 
       <AlertDialog
         open={deleteDialog.open}
