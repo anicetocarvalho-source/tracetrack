@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTheme } from 'next-themes';
 import { supabase } from '@/integrations/supabase/client';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Plus, X, Ship, Package, MapPin, Users, Clock, AlertTriangle, Loader2, TrendingUp, Target, Mail, Send, BarChart3 } from 'lucide-react';
+import { Plus, X, Ship, Package, MapPin, Users, Clock, AlertTriangle, Loader2, TrendingUp, Target, Mail, Send, BarChart3, Moon, Sun, Monitor } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
@@ -65,6 +66,7 @@ const Settings = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { user, role } = useAuth();
+  const { theme, setTheme } = useTheme();
   const queryClient = useQueryClient();
   const [newItems, setNewItems] = useState<Record<string, string>>({});
 
@@ -328,6 +330,54 @@ const Settings = () => {
           <h1 className="text-3xl font-bold tracking-tight">{t('settings.title')}</h1>
           <p className="text-muted-foreground">{t('settings.subtitle')}</p>
         </div>
+
+        {/* Appearance Settings */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Sun className="h-5 w-5 text-amber-500" />
+              <CardTitle className="text-lg">{t('settings.appearance')}</CardTitle>
+            </div>
+            <CardDescription>{t('settings.appearanceDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t('settings.theme')}</Label>
+              <div className="flex gap-2">
+                <Button
+                  variant={theme === 'light' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTheme('light')}
+                  className="flex items-center gap-2"
+                >
+                  <Sun className="h-4 w-4" />
+                  {t('settings.themeLight')}
+                </Button>
+                <Button
+                  variant={theme === 'dark' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTheme('dark')}
+                  className="flex items-center gap-2"
+                >
+                  <Moon className="h-4 w-4" />
+                  {t('settings.themeDark')}
+                </Button>
+                <Button
+                  variant={theme === 'system' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTheme('system')}
+                  className="flex items-center gap-2"
+                >
+                  <Monitor className="h-4 w-4" />
+                  {t('settings.themeSystem')}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t('settings.themeDesc')}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Automation Settings */}
         {role === 'MANAGER' && (

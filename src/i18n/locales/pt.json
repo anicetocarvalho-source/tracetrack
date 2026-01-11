@@ -534,7 +534,14 @@
     "scorecardBatchGenerated": "Lote de scorecards gerado",
     "scorecardBatchGeneratedDesc": "Gerados com sucesso {{success}} de {{total}} scorecards de clientes",
     "errorGeneratingScorecardBatch": "Erro ao gerar lote de scorecards",
-    "scheduledReportInfo": "Relatório semanal de SLA executa todas as segundas às 8:00 UTC. Alertas diários de risco executam todos os dias às 7:00 UTC. Scorecards mensais executam no dia 1º às 6:00 UTC."
+    "scheduledReportInfo": "Relatório semanal de SLA executa todas as segundas às 8:00 UTC. Alertas diários de risco executam todos os dias às 7:00 UTC. Scorecards mensais executam no dia 1º às 6:00 UTC.",
+    "appearance": "Aparência",
+    "appearanceDesc": "Personalize a aparência da aplicação",
+    "theme": "Tema",
+    "themeLight": "Claro",
+    "themeDark": "Escuro",
+    "themeSystem": "Sistema",
+    "themeDesc": "Selecione o seu tema preferido ou use as configurações do sistema"
   },
   "auditLogs": {
     "title": "Logs de Auditoria",
