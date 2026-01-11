@@ -261,7 +261,18 @@
     "warning": "Warning",
     "atRisk": "at risk",
     "mostUrgent": "Most urgent shipments",
-    "remaining": "remaining"
+    "remaining": "remaining",
+    "clientScorecards": "Client Scorecards",
+    "performanceSummaries": "Monthly performance summaries",
+    "recentPerformance": "Recent client performance summaries",
+    "generateScorecard": "Generate",
+    "noScorecards": "No scorecards generated yet",
+    "generateFirst": "Generate scorecards to see client performance",
+    "recentScorecards": "Recent Scorecards",
+    "avgSlaCompliance": "Avg SLA",
+    "avgOnTime": "Avg On-Time",
+    "totalIncidents": "Incidents",
+    "issues": "issues"
   },
   "shipments": {
     "title": "Shipments",

@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { NotificationPermissionBanner } from '@/components/notifications/NotificationPermissionBanner';
+import { ScorecardWidget } from '@/components/dashboard/ScorecardWidget';
 import {
   BarChart,
   Bar,
@@ -758,6 +759,9 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         )}
+
+        {/* Client Scorecards Widget */}
+        <ScorecardWidget />
 
         {/* Stats cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

@@ -261,7 +261,18 @@
     "warning": "Alerta",
     "atRisk": "em risco",
     "mostUrgent": "Remessas mais urgentes",
-    "remaining": "restante"
+    "remaining": "restante",
+    "clientScorecards": "Scorecards de Clientes",
+    "performanceSummaries": "Resumos mensais de desempenho",
+    "recentPerformance": "Resumos recentes de desempenho de clientes",
+    "generateScorecard": "Gerar",
+    "noScorecards": "Nenhum scorecard gerado ainda",
+    "generateFirst": "Gere scorecards para ver o desempenho do cliente",
+    "recentScorecards": "Scorecards Recentes",
+    "avgSlaCompliance": "SLA Médio",
+    "avgOnTime": "No Prazo Médio",
+    "totalIncidents": "Incidentes",
+    "issues": "problemas"
   },
   "shipments": {
     "title": "Envios",

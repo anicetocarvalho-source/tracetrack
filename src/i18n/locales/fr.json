@@ -261,7 +261,18 @@
     "warning": "Alerte",
     "atRisk": "à risque",
     "mostUrgent": "Expéditions les plus urgentes",
-    "remaining": "restant"
+    "remaining": "restant",
+    "clientScorecards": "Fiches Client",
+    "performanceSummaries": "Résumés de performance mensuels",
+    "recentPerformance": "Résumés récents de performance client",
+    "generateScorecard": "Générer",
+    "noScorecards": "Aucune fiche générée encore",
+    "generateFirst": "Générez des fiches pour voir les performances clients",
+    "recentScorecards": "Fiches Récentes",
+    "avgSlaCompliance": "SLA Moyen",
+    "avgOnTime": "À Temps Moyen",
+    "totalIncidents": "Incidents",
+    "issues": "problèmes"
   },
   "shipments": {
     "title": "Expéditions",
