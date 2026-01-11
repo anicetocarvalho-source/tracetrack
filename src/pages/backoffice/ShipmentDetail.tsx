@@ -18,6 +18,7 @@ import {
   Clock,
   MessageSquare,
   Radio,
+  Files,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +33,8 @@ import { TrackingTimeline } from '@/components/shipments/TrackingTimeline';
 import { AddTrackingEventDrawer } from '@/components/shipments/AddTrackingEventDrawer';
 import { SLACountdownTimer } from '@/components/shipments/SLACountdownTimer';
 import { EditShipmentDrawer } from '@/components/shipments/EditShipmentDrawer';
+import { DocumentList } from '@/components/documents/DocumentList';
+import { DocumentUploadDialog } from '@/components/documents/DocumentUploadDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { Shipment, TrackingEvent, ShipmentContainer, ShipmentException, ExceptionRule } from '@/types/database';
 import { ShipmentStatus, SEVERITY_LABELS, EXCEPTION_STATUS_LABELS } from '@/lib/constants';
@@ -698,6 +701,20 @@ export default function ShipmentDetail() {
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Documents */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Files className="w-5 h-5" />
+                  {t('documents.title')}
+                </CardTitle>
+                <DocumentUploadDialog shipmentId={id!} />
+              </CardHeader>
+              <CardContent>
+                <DocumentList shipmentId={id!} isCustomer={false} />
               </CardContent>
             </Card>
           </div>

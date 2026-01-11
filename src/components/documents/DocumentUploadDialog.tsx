@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Upload, Loader2 } from 'lucide-react';
+import { Upload, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,6 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,18 +28,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { DocumentType, DOCUMENT_TYPE_LABELS } from '@/types/documents';
 
 interface DocumentUploadDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   shipmentId: string;
   isCustomer?: boolean;
 }
 
 export function DocumentUploadDialog({
-  open,
-  onOpenChange,
   shipmentId,
   isCustomer = false,
 }: DocumentUploadDialogProps) {
+  const [open, setOpen] = useState(false);
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -83,7 +81,7 @@ export function DocumentUploadDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipment-documents', shipmentId] });
       toast({ title: t('documents.uploadSuccess') });
-      onOpenChange(false);
+      setOpen(false);
       setFile(null);
       setDocumentType('OTHER');
       setVisibleToClient(isCustomer);
@@ -106,7 +104,13 @@ export function DocumentUploadDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm">
+          <Plus className="w-4 h-4 mr-2" />
+          {t('documents.upload')}
+        </Button>
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('documents.uploadDocument')}</DialogTitle>
@@ -166,7 +170,7 @@ export function DocumentUploadDialog({
           )}
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={!file || uploadMutation.isPending}>
