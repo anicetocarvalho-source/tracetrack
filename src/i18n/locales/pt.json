@@ -542,7 +542,12 @@
     "bulkUpdateStatusDescription": "Atualizar o estado de {{count}} envios selecionados",
     "selectNewStatus": "Selecionar novo estado",
     "bulkUpdateSuccess": "{{count}} envios atualizados com sucesso para {{status}}",
-    "bulkUpdateError": "Falha ao atualizar envios"
+    "bulkUpdateError": "Falha ao atualizar envios",
+    "totalShipments": "Total de Envios",
+    "inTransit": "Em Trânsito",
+    "delivered": "Entregues",
+    "pending": "Pendentes",
+    "issues": "Com Problemas"
   },
   "tracking": {
     "title": "Rastreamento de Envio",
