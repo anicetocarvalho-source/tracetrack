@@ -624,7 +624,10 @@
     "fillAllFields": "Veuillez remplir tous les champs obligatoires",
     "saveChanges": "Enregistrer les Modifications",
     "noPermissionForRole": "Vous n'avez pas la permission d'attribuer ce rôle",
-    "noPermission": "Pas de permission"
+    "noPermission": "Pas de permission",
+    "confirmRoleChange": "Confirmer le Changement de Rôle",
+    "confirmRoleChangeDesc": "Vous êtes sur le point de changer le rôle de {{userName}} de {{oldRole}} à {{newRole}}. Cette action affectera immédiatement les permissions de l'utilisateur.",
+    "confirmChange": "Confirmer le Changement"
   },
   "settings": {
     "title": "Paramètres",

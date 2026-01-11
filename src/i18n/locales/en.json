@@ -619,7 +619,10 @@
     "fillAllFields": "Please fill all required fields",
     "saveChanges": "Save Changes",
     "noPermissionForRole": "You don't have permission to assign this role",
-    "noPermission": "No permission"
+    "noPermission": "No permission",
+    "confirmRoleChange": "Confirm Role Change",
+    "confirmRoleChangeDesc": "You are about to change the role of {{userName}} from {{oldRole}} to {{newRole}}. This action will affect the user's permissions immediately.",
+    "confirmChange": "Confirm Change"
   },
   "settings": {
     "title": "Settings",
