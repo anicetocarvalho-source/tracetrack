@@ -35,6 +35,7 @@ import Profile from "./pages/portal/Profile";
 import MyScorecard from "./pages/portal/MyScorecard";
 import MyDocuments from "./pages/portal/MyDocuments";
 import DocumentDetail from "./pages/portal/DocumentDetail";
+import MyRequests from "./pages/portal/MyRequests";
 
 const queryClient = new QueryClient();
 
@@ -164,6 +165,11 @@ const App = () => (
             <Route path="/portal/documents/:id" element={
               <ProtectedRoute requireCustomer>
                 <DocumentDetail />
+              </ProtectedRoute>
+            } />
+            <Route path="/portal/requests" element={
+              <ProtectedRoute requireCustomer>
+                <MyRequests />
               </ProtectedRoute>
             } />
 
