@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Upload, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
+import { Plus, Search, Upload, ChevronLeft, ChevronRight, AlertTriangle, CheckSquare, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,6 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { DateRangePickerCompact } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 import type { ExceptionSeverity } from '@/lib/constants';
 
 const PAGE_SIZE = 20;
@@ -26,11 +29,17 @@ const PAGE_SIZE = 20;
 export default function Shipments() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [page, setPage] = useState(0);
+  
+  // Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkStatusDialogOpen, setBulkStatusDialogOpen] = useState(false);
+  const [bulkNewStatus, setBulkNewStatus] = useState<ShipmentStatus | ''>('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['shipments', search, statusFilter, dateRange?.from, dateRange?.to, page],
@@ -104,6 +113,54 @@ export default function Shipments() {
     return acc;
   }, {});
 
+  // Bulk update mutation
+  const bulkUpdateMutation = useMutation({
+    mutationFn: async ({ ids, newStatus }: { ids: string[]; newStatus: ShipmentStatus }) => {
+      const { error } = await supabase
+        .from('shipments')
+        .update({ current_status: newStatus, updated_at: new Date().toISOString() })
+        .in('id', ids);
+      if (error) throw error;
+    },
+    onSuccess: (_, { ids, newStatus }) => {
+      queryClient.invalidateQueries({ queryKey: ['shipments'] });
+      toast.success(t('shipments.bulkUpdateSuccess', { count: ids.length, status: t(`status.${newStatus}`) }));
+      setSelectedIds(new Set());
+      setBulkStatusDialogOpen(false);
+      setBulkNewStatus('');
+    },
+    onError: () => {
+      toast.error(t('shipments.bulkUpdateError'));
+    },
+  });
+
+  // Selection helpers
+  const allSelected = shipments.length > 0 && shipments.every((s: any) => selectedIds.has(s.id));
+  const someSelected = selectedIds.size > 0;
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(shipments.map((s: any) => s.id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedIds(newSet);
+  };
+
+  const handleBulkStatusUpdate = () => {
+    if (!bulkNewStatus || selectedIds.size === 0) return;
+    bulkUpdateMutation.mutate({ ids: Array.from(selectedIds), newStatus: bulkNewStatus });
+  };
+
   return (
     <BackofficeLayout>
       <div className="space-y-6">
@@ -174,6 +231,39 @@ export default function Shipments() {
           </CardContent>
         </Card>
 
+        {/* Bulk Actions Bar */}
+        {someSelected && (
+          <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CheckSquare className="w-5 h-5 text-primary" />
+                  <span className="font-medium">
+                    {t('shipments.selectedCount', { count: selectedIds.size })}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBulkStatusDialogOpen(true)}
+                  >
+                    {t('shipments.bulkUpdateStatus')}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedIds(new Set())}
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    {t('common.clear')}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Table */}
         <Card>
           <CardContent className="p-0">
@@ -181,6 +271,13 @@ export default function Shipments() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={allSelected}
+                        onCheckedChange={toggleSelectAll}
+                        aria-label={t('common.selectAll')}
+                      />
+                    </TableHead>
                     <TableHead>{t('shipments.shipmentRef')}</TableHead>
                     <TableHead>{t('shipments.client')}</TableHead>
                     <TableHead>{t('shipments.shippingLine')}</TableHead>
@@ -193,26 +290,33 @@ export default function Shipments() {
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8">
+                      <TableCell colSpan={8} className="text-center py-8">
                         {t('common.loading')}
                       </TableCell>
                     </TableRow>
                   ) : shipments.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                         {t('shipments.noShipments')}
                       </TableCell>
                     </TableRow>
                   ) : (
                     shipments.map((shipment: any) => {
                       const exception = exceptionsByShipment[shipment.id];
+                      const isSelected = selectedIds.has(shipment.id);
                       return (
                         <TableRow 
                           key={shipment.id} 
-                          className={`cursor-pointer hover:bg-muted/50 ${exception?.severity === 'P1' ? 'bg-destructive/5' : ''}`}
-                          onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)}
+                          className={`cursor-pointer hover:bg-muted/50 ${exception?.severity === 'P1' ? 'bg-destructive/5' : ''} ${isSelected ? 'bg-primary/5' : ''}`}
                         >
-                          <TableCell>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => toggleSelect(shipment.id)}
+                              aria-label={t('common.selectRow')}
+                            />
+                          </TableCell>
+                          <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)}>
                             <div className="flex items-center gap-2">
                               <div>
                                 <p className="font-medium">{shipment.shipment_ref}</p>
@@ -236,14 +340,14 @@ export default function Shipments() {
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>{shipment.client?.name}</TableCell>
-                          <TableCell>{shipment.shipping_line}</TableCell>
-                          <TableCell className="font-mono text-sm">{shipment.bl_reference}</TableCell>
-                          <TableCell>{shipment.containers?.length || 0}</TableCell>
-                          <TableCell>
+                          <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)}>{shipment.client?.name}</TableCell>
+                          <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)}>{shipment.shipping_line}</TableCell>
+                          <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)} className="font-mono text-sm">{shipment.bl_reference}</TableCell>
+                          <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)}>{shipment.containers?.length || 0}</TableCell>
+                          <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)}>
                             <StatusBadge status={shipment.current_status} />
                           </TableCell>
-                          <TableCell className="text-muted-foreground">
+                          <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)} className="text-muted-foreground">
                             {safeFormatDate(shipment.created_at, 'MMM d, yyyy')}
                           </TableCell>
                         </TableRow>
@@ -285,6 +389,43 @@ export default function Shipments() {
             )}
           </CardContent>
         </Card>
+
+        {/* Bulk Status Update Dialog */}
+        <Dialog open={bulkStatusDialogOpen} onOpenChange={setBulkStatusDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t('shipments.bulkUpdateStatusTitle')}</DialogTitle>
+              <DialogDescription>
+                {t('shipments.bulkUpdateStatusDescription', { count: selectedIds.size })}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <Select value={bulkNewStatus} onValueChange={(v) => setBulkNewStatus(v as ShipmentStatus)}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('shipments.selectNewStatus')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {SHIPMENT_STATUSES.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {t(`status.${status}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setBulkStatusDialogOpen(false)}>
+                {t('common.cancel')}
+              </Button>
+              <Button 
+                onClick={handleBulkStatusUpdate}
+                disabled={!bulkNewStatus || bulkUpdateMutation.isPending}
+              >
+                {bulkUpdateMutation.isPending ? t('common.updating') : t('common.update')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </BackofficeLayout>
   );

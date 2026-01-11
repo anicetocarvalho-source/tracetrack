@@ -59,7 +59,10 @@
     "requiredField": "Required field",
     "showing": "Showing",
     "of": "of",
-    "loadMore": "Load more"
+    "loadMore": "Load more",
+    "selectAll": "Select all",
+    "selectRow": "Select row",
+    "updating": "Updating..."
   },
   "notifications": {
     "enableTitle": "Enable SLA Alerts",
@@ -310,7 +313,14 @@
     "datesForecasts": "Dates & Forecasts",
     "forecasts": "Forecasts",
     "created": "Created",
-    "addToSystem": "Add a new shipment to the system"
+    "addToSystem": "Add a new shipment to the system",
+    "selectedCount": "{{count}} selected",
+    "bulkUpdateStatus": "Update Status",
+    "bulkUpdateStatusTitle": "Bulk Status Update",
+    "bulkUpdateStatusDescription": "Update the status of {{count}} selected shipments",
+    "selectNewStatus": "Select new status",
+    "bulkUpdateSuccess": "Successfully updated {{count}} shipments to {{status}}",
+    "bulkUpdateError": "Failed to update shipments"
   },
   "tracking": {
     "title": "Shipment Tracking",
