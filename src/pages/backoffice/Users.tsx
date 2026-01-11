@@ -9,8 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Pencil, Search, Users as UsersIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Pencil, Search, Users as UsersIcon, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
@@ -28,6 +29,7 @@ const Users = () => {
   const { t } = useTranslation();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isConfirmRoleChangeOpen, setIsConfirmRoleChangeOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
@@ -192,7 +194,8 @@ const Users = () => {
     setIsEditOpen(true);
   };
 
-  const handleUpdate = () => {
+  // Check if role is changing and needs confirmation
+  const handleUpdateClick = () => {
     if (!selectedUser) return;
     if (editFormData.role === 'CUSTOMER' && !editFormData.client_id) {
       toast({ title: t('users.customerMustHaveClient'), variant: 'destructive' });
@@ -203,6 +206,18 @@ const Users = () => {
       toast({ title: t('users.noPermissionForRole'), variant: 'destructive' });
       return;
     }
+    
+    // If role is changing, show confirmation dialog
+    if (editFormData.role && editFormData.role !== selectedUser.role) {
+      setIsConfirmRoleChangeOpen(true);
+    } else {
+      // No role change, proceed directly
+      executeUpdate();
+    }
+  };
+
+  const executeUpdate = () => {
+    if (!selectedUser) return;
     updateUserMutation.mutate({
       userId: selectedUser.id,
       data: editFormData,
@@ -212,6 +227,7 @@ const Users = () => {
         is_active: selectedUser.is_active,
       },
     });
+    setIsConfirmRoleChangeOpen(false);
   };
 
   const filteredUsers = users.filter((u) => 
@@ -414,7 +430,7 @@ const Users = () => {
                 </div>
                 <div className="flex justify-end gap-2 pt-4">
                   <Button variant="outline" onClick={() => setIsEditOpen(false)}>{t('common.cancel')}</Button>
-                  <Button onClick={handleUpdate} disabled={updateUserMutation.isPending}>
+                  <Button onClick={handleUpdateClick} disabled={updateUserMutation.isPending}>
                     {updateUserMutation.isPending ? t('common.saving') : t('users.saveChanges')}
                   </Button>
                 </div>
@@ -422,6 +438,31 @@ const Users = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Role Change Confirmation Dialog */}
+        <AlertDialog open={isConfirmRoleChangeOpen} onOpenChange={setIsConfirmRoleChangeOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
+                {t('users.confirmRoleChange')}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {t('users.confirmRoleChangeDesc', {
+                  userName: selectedUser?.name,
+                  oldRole: selectedUser?.role ? t(`roles.${selectedUser.role}`) : t('common.noRole'),
+                  newRole: editFormData.role ? t(`roles.${editFormData.role}`) : '',
+                })}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+              <AlertDialogAction onClick={executeUpdate} className="bg-primary">
+                {t('users.confirmChange')}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </BackofficeLayout>
   );

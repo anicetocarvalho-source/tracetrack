@@ -624,7 +624,10 @@
     "fillAllFields": "Por favor preencha todos os campos obrigatórios",
     "saveChanges": "Guardar Alterações",
     "noPermissionForRole": "Não tem permissão para atribuir esta função",
-    "noPermission": "Sem permissão"
+    "noPermission": "Sem permissão",
+    "confirmRoleChange": "Confirmar Alteração de Função",
+    "confirmRoleChangeDesc": "Está prestes a alterar a função de {{userName}} de {{oldRole}} para {{newRole}}. Esta ação afetará as permissões do utilizador imediatamente.",
+    "confirmChange": "Confirmar Alteração"
   },
   "settings": {
     "title": "Configurações",
