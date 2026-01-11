@@ -534,7 +534,14 @@
     "scorecardBatchGenerated": "Scorecard batch generated",
     "scorecardBatchGeneratedDesc": "Successfully generated {{success}} of {{total}} client scorecards",
     "errorGeneratingScorecardBatch": "Error generating scorecard batch",
-    "scheduledReportInfo": "Weekly SLA report runs every Monday at 8:00 AM UTC. Daily risk alerts run every day at 7:00 AM UTC. Monthly scorecards run on the 1st at 6:00 AM UTC."
+    "scheduledReportInfo": "Weekly SLA report runs every Monday at 8:00 AM UTC. Daily risk alerts run every day at 7:00 AM UTC. Monthly scorecards run on the 1st at 6:00 AM UTC.",
+    "appearance": "Appearance",
+    "appearanceDesc": "Customize how the application looks",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "themeDesc": "Select your preferred theme or use system settings"
   },
   "auditLogs": {
     "title": "Audit Logs",
