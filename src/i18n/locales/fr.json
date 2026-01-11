@@ -541,7 +541,12 @@
     "bulkUpdateStatusDescription": "Mettre à jour le statut de {{count}} expéditions sélectionnées",
     "selectNewStatus": "Sélectionner le nouveau statut",
     "bulkUpdateSuccess": "{{count}} expéditions mises à jour avec succès vers {{status}}",
-    "bulkUpdateError": "Échec de la mise à jour des expéditions"
+    "bulkUpdateError": "Échec de la mise à jour des expéditions",
+    "totalShipments": "Total des Envois",
+    "inTransit": "En Transit",
+    "delivered": "Livrées",
+    "pending": "En Attente",
+    "issues": "Avec Problèmes"
   },
   "tracking": {
     "title": "Suivi d'Expédition",
