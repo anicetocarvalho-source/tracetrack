@@ -15,6 +15,7 @@ import {
   Mail,
   ChevronDown,
   ChevronUp,
+  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -162,6 +163,28 @@ export function DocumentList({ shipmentId, isCustomer = false }: DocumentListPro
     },
     onError: () => {
       toast({ title: t('documents.visibilityError'), variant: 'destructive' });
+    },
+  });
+
+  const resendNotificationMutation = useMutation({
+    mutationFn: async ({ doc }: { doc: ShipmentDocument }) => {
+      const { error } = await supabase.functions.invoke('notify-document-available', {
+        body: {
+          documentId: doc.id,
+          shipmentId,
+          filename: doc.filename,
+          documentType: doc.document_type,
+        },
+      });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['document-notifications', shipmentId] });
+      toast({ title: t('documents.notificationResent') });
+    },
+    onError: () => {
+      toast({ title: t('documents.notificationResendError'), variant: 'destructive' });
     },
   });
 
@@ -346,6 +369,21 @@ export function DocumentList({ shipmentId, isCustomer = false }: DocumentListPro
                       <Eye className="w-4 h-4 text-green-600" />
                     ) : (
                       <EyeOff className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </Button>
+                )}
+                {!isCustomer && doc.visible_to_client && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => resendNotificationMutation.mutate({ doc })}
+                    disabled={resendNotificationMutation.isPending}
+                    title={t('documents.resendNotification')}
+                  >
+                    {resendNotificationMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-4 h-4 text-primary" />
                     )}
                   </Button>
                 )}
