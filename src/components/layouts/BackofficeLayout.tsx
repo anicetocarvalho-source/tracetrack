@@ -20,7 +20,11 @@ import {
   ChevronDown,
   ChevronRight,
   Clock,
-  Cog
+  Cog,
+  Zap,
+  Plus,
+  Eye,
+  BarChart3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -32,6 +36,14 @@ import { PreferencesSyncIndicator } from '@/components/PreferencesSyncIndicator'
 import { HelpMenu } from '@/components/HelpMenu';
 import { BackofficeTour } from '@/components/tour/BackofficeTour';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 interface BackofficeLayoutProps {
@@ -291,6 +303,43 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
           <div className="flex-1" />
           <div className="flex items-center gap-2">
             <PreferencesSyncIndicator />
+            
+            {/* Quick Actions Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Zap className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t('quickActions.title')}</span>
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>{t('quickActions.title')}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/backoffice/shipments/new')}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t('quickActions.createShipment')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/backoffice/action-required')}>
+                  <AlertTriangle className="mr-2 h-4 w-4" />
+                  {t('quickActions.viewExceptions')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/backoffice/customer-requests')}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  {t('quickActions.viewRequests')}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/backoffice/sla-breach-report')}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  {t('quickActions.slaBreaches')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/backoffice/scorecards')}>
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  {t('quickActions.viewScorecards')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             <BackofficeTour />
             <div data-tour="help-button">
               <HelpMenu userRole={role} />

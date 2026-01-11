@@ -1236,5 +1236,13 @@
     "accepted": "Classification acceptée",
     "appliedClassification": "Classification Appliquée",
     "autoAnalyzing": "L'IA analysera lorsque vous aurez fini de taper..."
+  },
+  "quickActions": {
+    "title": "Actions Rapides",
+    "createShipment": "Créer Expédition",
+    "viewExceptions": "Voir Exceptions",
+    "viewRequests": "Demandes Client",
+    "slaBreaches": "Violations SLA",
+    "viewScorecards": "Voir Scorecards"
   }
 }
