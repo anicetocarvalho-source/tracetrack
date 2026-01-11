@@ -45,7 +45,7 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => {
+            {navItems.map((item, index) => {
               const isActive = location.pathname === item.path;
               const tourId = item.path === '/portal' ? 'nav-shipments' 
                 : item.path === '/portal/scorecard' ? 'nav-scorecard'
@@ -57,13 +57,18 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
                   to={item.path}
                   data-tour={tourId}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium",
+                    "transition-all duration-200 ease-out",
+                    "hover:translate-y-[-2px]",
                     isActive 
-                      ? "bg-primary text-primary-foreground" 
+                      ? "bg-primary text-primary-foreground shadow-md" 
                       : "hover:bg-muted"
                   )}
                 >
-                  <item.icon className="w-4 h-4" />
+                  <item.icon className={cn(
+                    "w-4 h-4 transition-transform duration-200",
+                    isActive && "scale-110"
+                  )} />
                   {item.label}
                 </Link>
               );
@@ -107,34 +112,41 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
 
         {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden border-t bg-card">
+          <div className="md:hidden border-t bg-card animate-fade-in">
             <div className="px-4 py-3 space-y-1">
-              {navItems.map((item) => {
+              {navItems.map((item, index) => {
                 const isActive = location.pathname === item.path;
                 return (
                   <Link
                     key={item.path}
                     to={item.path}
                     onClick={() => setMenuOpen(false)}
+                    style={{ animationDelay: `${index * 50}ms` }}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                      "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium",
+                      "transition-all duration-200 ease-out animate-fade-in",
+                      "hover:translate-x-1",
                       isActive 
-                        ? "bg-primary text-primary-foreground" 
+                        ? "bg-primary text-primary-foreground shadow-md" 
                         : "hover:bg-muted"
                     )}
                   >
-                    <item.icon className="w-4 h-4" />
-                    {item.label}
+                    <item.icon className={cn(
+                      "w-4 h-4 shrink-0 transition-transform duration-200",
+                      isActive && "scale-110"
+                    )} />
+                    <span className="truncate">{item.label}</span>
                   </Link>
                 );
               })}
               <Button
                 variant="ghost"
-                className="w-full justify-start"
+                className="w-full justify-start transition-all duration-200 hover:translate-x-1 animate-fade-in"
+                style={{ animationDelay: `${navItems.length * 50}ms` }}
                 onClick={handleSignOut}
               >
-                <LogOut className="w-4 h-4 mr-2" />
-                {t('common.signOut')}
+                <LogOut className="w-4 h-4 mr-2 shrink-0" />
+                <span className="truncate">{t('common.signOut')}</span>
               </Button>
             </div>
           </div>
