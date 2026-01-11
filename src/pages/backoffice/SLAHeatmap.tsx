@@ -15,6 +15,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { SHIPMENT_STATUSES, ShipmentStatus } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { useRealtimeSLA } from '@/hooks/useRealtimeSLA';
+import { DateRangePickerCompact } from '@/components/ui/date-range-picker';
+import { DateRange } from 'react-day-picker';
+import { format } from 'date-fns';
 
 interface ShipmentSLAData {
   shipment_id: string;
@@ -52,14 +55,15 @@ export default function SLAHeatmap() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [selectedCell, setSelectedCell] = useState<HeatmapCell | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   // Enable realtime updates for the heatmap
   useRealtimeSLA({ showToasts: true });
 
   const { data: slaData, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['sla-heatmap-data'],
+    queryKey: ['sla-heatmap-data', dateRange?.from, dateRange?.to],
     queryFn: async () => {
-      const { data: slaRecords, error } = await supabase
+      let query = supabase
         .from('shipment_sla')
         .select(`
           id,
@@ -71,6 +75,16 @@ export default function SLAHeatmap() {
           shipment:shipments(shipment_ref, current_status)
         `)
         .is('exited_at', null);
+
+      // Apply date filters
+      if (dateRange?.from) {
+        query = query.gte('entered_at', format(dateRange.from, 'yyyy-MM-dd'));
+      }
+      if (dateRange?.to) {
+        query = query.lte('entered_at', format(dateRange.to, 'yyyy-MM-dd') + 'T23:59:59');
+      }
+
+      const { data: slaRecords, error } = await query;
 
       if (error) throw error;
 
@@ -167,14 +181,21 @@ export default function SLAHeatmap() {
               </Badge>
             </p>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={() => refetch()}
-            disabled={isFetching}
-          >
-            <RefreshCw className={cn("w-4 h-4 mr-2", isFetching && "animate-spin")} />
-            {t('common.refresh')}
-          </Button>
+          <div className="flex items-center gap-2">
+            <DateRangePickerCompact
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+              placeholder={t('dateRange.selectRange')}
+            />
+            <Button 
+              variant="outline" 
+              onClick={() => refetch()}
+              disabled={isFetching}
+            >
+              <RefreshCw className={cn("w-4 h-4 mr-2", isFetching && "animate-spin")} />
+              {t('common.refresh')}
+            </Button>
+          </div>
         </div>
 
         {/* Summary Stats */}
