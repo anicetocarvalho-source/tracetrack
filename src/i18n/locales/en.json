@@ -688,5 +688,15 @@
     "slaBreachedDescription": "A shipment has breached its SLA limit",
     "statusUpdated": "Status Updated",
     "statusUpdatedDescription": "A shipment status has been updated"
+  },
+  "dateRange": {
+    "selectRange": "Select date range",
+    "last7Days": "Last 7 days",
+    "last30Days": "Last 30 days",
+    "last90Days": "Last 90 days",
+    "allTime": "All time",
+    "customRange": "Custom range",
+    "from": "From",
+    "to": "To"
   }
 }
