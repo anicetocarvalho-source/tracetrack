@@ -63,7 +63,8 @@
     "selectAll": "Tout sélectionner",
     "selectRow": "Sélectionner la ligne",
     "updating": "Mise à jour...",
-    "you": "vous"
+    "you": "vous",
+    "viewDetails": "Voir détails"
   },
   "notifications": {
     "enableTitle": "Activer les Alertes SLA",
@@ -504,6 +505,7 @@
     "createdAt": "Créé le",
     "updatedAt": "Mis à jour le",
     "noShipments": "Aucune expédition trouvée",
+    "noShipmentsDesc": "Vos expéditions apparaîtront ici une fois créées",
     "searchPlaceholder": "Rechercher par référence, client ou BL...",
     "importCSV": "Importer CSV",
     "viewDetails": "Voir les Détails",

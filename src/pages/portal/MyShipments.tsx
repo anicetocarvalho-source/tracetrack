@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Package, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Package, Search, ChevronLeft, ChevronRight, Ship, Calendar, Hash, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,8 +10,29 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { safeFormatDate } from '@/lib/utils';
+import { ShipmentStatus } from '@/lib/constants';
 
 const PAGE_SIZE = 12;
+
+// Status color mapping for prominent display
+const getStatusAccentColor = (status: ShipmentStatus): string => {
+  switch (status) {
+    case 'DELIVERED':
+      return 'border-l-green-500 bg-green-500/5';
+    case 'IN_TRANSIT':
+    case 'OUT_FOR_DELIVERY':
+      return 'border-l-blue-500 bg-blue-500/5';
+    case 'ON_HOLD_INCIDENT':
+      return 'border-l-destructive bg-destructive/5';
+    case 'CANCELLED':
+      return 'border-l-muted-foreground bg-muted/50';
+    case 'CLEARANCE':
+    case 'AT_TERMINAL':
+      return 'border-l-orange-500 bg-orange-500/5';
+    default:
+      return 'border-l-primary bg-primary/5';
+  }
+};
 
 export default function MyShipments() {
   const { t } = useTranslation();
@@ -59,51 +80,107 @@ export default function MyShipments() {
 
   return (
     <CustomerLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">{t('nav.myShipments')}</h1>
-          <p className="text-muted-foreground">{t('portal.trackShipments')}</p>
+      <div className="space-y-8">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{t('nav.myShipments')}</h1>
+            <p className="text-muted-foreground mt-1">{t('portal.trackShipments')}</p>
+          </div>
+          
+          {/* Search */}
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder={t('common.search')}
+              className="pl-10"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(0);
+              }}
+            />
+          </div>
         </div>
 
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder={t('common.search')}
-            className="pl-10"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(0); // Reset to first page on search
-            }}
-          />
-        </div>
+        {/* Stats Summary */}
+        {!isLoading && shipments.length > 0 && (
+          <div className="text-sm text-muted-foreground">
+            {t('common.showing')} {shipments.length} {t('common.of')} {totalCount} {t('shipments.shipments').toLowerCase()}
+          </div>
+        )}
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* Shipments Grid */}
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {isLoading ? (
-            <p className="text-muted-foreground col-span-full">{t('common.loading')}</p>
+            <div className="col-span-full flex items-center justify-center py-12">
+              <div className="flex items-center gap-3 text-muted-foreground">
+                <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
+                {t('common.loading')}
+              </div>
+            </div>
           ) : shipments.length === 0 ? (
-            <Card className="col-span-full">
-              <CardContent className="py-12 text-center">
-                <Package className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">{t('shipments.noShipments')}</p>
+            <Card className="col-span-full border-dashed">
+              <CardContent className="py-16 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                  <Package className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h3 className="font-semibold mb-1">{t('shipments.noShipments')}</h3>
+                <p className="text-sm text-muted-foreground">{t('shipments.noShipmentsDesc')}</p>
               </CardContent>
             </Card>
           ) : (
             shipments.map((shipment: any) => (
               <Link key={shipment.id} to={`/portal/shipments/${shipment.id}`}>
-                <Card className="hover:border-primary transition-colors cursor-pointer">
-                  <CardContent className="pt-6">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <p className="font-semibold">{shipment.shipment_ref}</p>
-                        <p className="text-sm text-muted-foreground">{shipment.client_ref}</p>
-                      </div>
-                      <StatusBadge status={shipment.current_status} />
+                <Card className={`group h-full border-l-4 transition-all hover:shadow-md hover:border-primary/50 ${getStatusAccentColor(shipment.current_status)}`}>
+                  <CardContent className="p-5">
+                    {/* Status Badge - Prominent at Top */}
+                    <div className="mb-4">
+                      <StatusBadge 
+                        status={shipment.current_status} 
+                        className="text-sm px-3 py-1.5 font-medium"
+                      />
                     </div>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <p>BL: {shipment.bl_reference}</p>
-                      <p>{shipment.containers?.length || 0} {t('shipments.containers').toLowerCase()}</p>
-                      <p>{safeFormatDate(shipment.created_at, 'MMM d, yyyy')}</p>
+                    
+                    {/* Shipment Reference - Primary Info */}
+                    <div className="mb-4">
+                      <h3 className="text-lg font-bold tracking-tight group-hover:text-primary transition-colors">
+                        {shipment.shipment_ref}
+                      </h3>
+                      {shipment.client_ref && (
+                        <p className="text-sm text-muted-foreground mt-0.5">
+                          {shipment.client_ref}
+                        </p>
+                      )}
+                    </div>
+                    
+                    {/* Details Grid */}
+                    <div className="space-y-2.5 text-sm">
+                      <div className="flex items-center gap-2.5 text-muted-foreground">
+                        <Hash className="w-4 h-4 shrink-0" />
+                        <span className="truncate">BL: {shipment.bl_reference}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2.5 text-muted-foreground">
+                        <Ship className="w-4 h-4 shrink-0" />
+                        <span>{shipment.shipping_line}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2.5 text-muted-foreground">
+                        <Package className="w-4 h-4 shrink-0" />
+                        <span>{shipment.containers?.length || 0} {t('shipments.containers').toLowerCase()}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2.5 text-muted-foreground">
+                        <Calendar className="w-4 h-4 shrink-0" />
+                        <span>{safeFormatDate(shipment.created_at, 'dd MMM yyyy')}</span>
+                      </div>
+                    </div>
+                    
+                    {/* View Details Link */}
+                    <div className="mt-4 pt-4 border-t flex items-center justify-end text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                      {t('common.viewDetails')}
+                      <ArrowRight className="w-4 h-4 ml-1" />
                     </div>
                   </CardContent>
                 </Card>
@@ -114,7 +191,7 @@ export default function MyShipments() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-4 pt-4">
             <Button
               variant="outline"
               size="sm"
@@ -124,7 +201,7 @@ export default function MyShipments() {
               <ChevronLeft className="w-4 h-4 mr-1" />
               {t('common.previous')}
             </Button>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm font-medium">
               {page + 1} / {totalPages}
             </span>
             <Button

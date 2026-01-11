@@ -63,7 +63,8 @@
     "selectAll": "Select all",
     "selectRow": "Select row",
     "updating": "Updating...",
-    "you": "you"
+    "you": "you",
+    "viewDetails": "View details"
   },
   "notifications": {
     "enableTitle": "Enable SLA Alerts",
@@ -504,6 +505,7 @@
     "createdAt": "Created At",
     "updatedAt": "Updated At",
     "noShipments": "No shipments found",
+    "noShipmentsDesc": "Your shipments will appear here once they are created",
     "searchPlaceholder": "Search by reference, client or BL...",
     "importCSV": "Import CSV",
     "viewDetails": "View Details",
