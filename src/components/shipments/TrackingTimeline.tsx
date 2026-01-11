@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { MapPin, User, Eye, EyeOff, ChevronDown } from 'lucide-react';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { TrackingEvent } from '@/types/database';
-import { cn } from '@/lib/utils';
+import { cn, safeFormatDate } from '@/lib/utils';
 
 interface TrackingTimelineProps {
   events: TrackingEvent[];
@@ -76,7 +75,7 @@ export function TrackingTimeline({
                       )}
                     </span>
                   )}
-                  <span>{format(new Date(event.event_datetime), 'MMM d, yyyy HH:mm')}</span>
+                  <span>{safeFormatDate(event.event_datetime, 'MMM d, yyyy HH:mm')}</span>
                 </div>
               </div>
 

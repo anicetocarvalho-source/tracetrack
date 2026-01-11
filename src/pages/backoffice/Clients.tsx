@@ -23,8 +23,8 @@ import {
 } from '@/components/ui/dialog';
 import { Plus, Pencil, X, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
+import { safeFormatDate } from '@/lib/utils';
 import type { Client } from '@/types/database';
 
 export default function Clients() {
@@ -182,7 +182,7 @@ export default function Clients() {
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {client.created_at ? format(new Date(client.created_at), 'MMM d, yyyy') : '-'}
+                      {safeFormatDate(client.created_at, 'MMM d, yyyy')}
                     </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" onClick={() => openEdit(client)}>
