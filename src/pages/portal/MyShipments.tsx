@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/button';
 import { CustomerLayout } from '@/components/layouts/CustomerLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
+import { safeFormatDate } from '@/lib/utils';
 
 const PAGE_SIZE = 12;
 
@@ -103,7 +103,7 @@ export default function MyShipments() {
                     <div className="text-sm text-muted-foreground space-y-1">
                       <p>BL: {shipment.bl_reference}</p>
                       <p>{shipment.containers?.length || 0} {t('shipments.containers').toLowerCase()}</p>
-                      <p>{format(new Date(shipment.created_at), 'MMM d, yyyy')}</p>
+                      <p>{safeFormatDate(shipment.created_at, 'MMM d, yyyy')}</p>
                     </div>
                   </CardContent>
                 </Card>

@@ -1,7 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { format } from 'date-fns';
 import { ArrowLeft, Ship, Package, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +11,7 @@ import { TrackingTimeline } from '@/components/shipments/TrackingTimeline';
 import { supabase } from '@/integrations/supabase/client';
 import { Shipment, TrackingEvent, ShipmentContainer } from '@/types/database';
 import { ShipmentStatus } from '@/lib/constants';
+import { safeFormatDate } from '@/lib/utils';
 
 export default function ShipmentTracking() {
   const { t } = useTranslation();
@@ -156,25 +156,19 @@ export default function ShipmentTracking() {
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">{t('shipments.forecastShippingLine')}</p>
                     <p className="font-medium">
-                      {shipment.forecast_shipping_line
-                        ? format(new Date(shipment.forecast_shipping_line), 'MMM d, yyyy')
-                        : '—'}
+                      {safeFormatDate(shipment.forecast_shipping_line, 'MMM d, yyyy', '—')}
                     </p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">{t('shipments.forecastTerminal')}</p>
                     <p className="font-medium">
-                      {shipment.forecast_terminal
-                        ? format(new Date(shipment.forecast_terminal), 'MMM d, yyyy')
-                        : '—'}
+                      {safeFormatDate(shipment.forecast_terminal, 'MMM d, yyyy', '—')}
                     </p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">{t('shipments.dischargeDate')}</p>
                     <p className="font-medium">
-                      {shipment.discharge_date
-                        ? format(new Date(shipment.discharge_date), 'MMM d, yyyy')
-                        : '—'}
+                      {safeFormatDate(shipment.discharge_date, 'MMM d, yyyy', '—')}
                     </p>
                   </div>
                 </div>
