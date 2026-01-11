@@ -1,10 +1,17 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Package, User, LogOut, Menu, X, FileBarChart, FileText } from 'lucide-react';
+import { 
+  Package, 
+  User, 
+  LogOut, 
+  Menu, 
+  X, 
+  FileBarChart, 
+  FileText 
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -21,7 +28,7 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, signOut } = useAuth();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItems = [
     { path: '/portal', label: t('nav.myShipments'), icon: Package },
@@ -36,128 +43,133 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header data-tour="customer-header" className="sticky top-0 z-50 bg-dhl-yellow border-b border-yellow-500">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={dhlLogoRed} alt="DHL" className="h-6 w-auto" />
-          </div>
+    <div className="flex h-screen bg-background">
+      {/* Mobile sidebar backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden animate-fade-in"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item, index) => {
-              const isActive = location.pathname === item.path;
-              const tourId = item.path === '/portal' ? 'nav-shipments' 
-                : item.path === '/portal/scorecard' ? 'nav-scorecard'
-                : item.path === '/portal/profile' ? 'nav-profile'
-                : undefined;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  data-tour={tourId}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium",
-                    "transition-all duration-200 ease-out",
-                    "hover:translate-y-[-2px]",
-                    isActive 
-                      ? "bg-primary text-primary-foreground shadow-md" 
-                      : "hover:bg-muted"
-                  )}
-                >
-                  <item.icon className={cn(
-                    "w-4 h-4 transition-transform duration-200",
-                    isActive && "scale-110"
-                  )} />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-
+      {/* Sidebar */}
+      <aside 
+        data-tour="customer-sidebar"
+        className={cn(
+          "fixed lg:static inset-y-0 left-0 z-50 w-64 bg-dhl-yellow flex flex-col",
+          "transition-all duration-300 ease-in-out lg:translate-x-0",
+          "shadow-2xl lg:shadow-none",
+          sidebarOpen ? "translate-x-0 animate-slide-in-left lg:animate-none" : "-translate-x-full"
+        )}
+      >
+        {/* Logo */}
+        <div className="h-16 flex items-center justify-between px-4 border-b border-yellow-500 bg-dhl-yellow">
           <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <LanguageSwitcher />
+            <img src={dhlLogoRed} alt="DHL" className="h-6 w-auto" />
+            <span className="font-semibold text-sm text-foreground">Customer Portal</span>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="lg:hidden text-foreground hover:bg-black/10"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+          {navItems.map((item, index) => {
+            const isActive = location.pathname === item.path || 
+              (item.path !== '/portal' && location.pathname.startsWith(item.path));
+            
+            const tourId = item.path === '/portal' ? 'nav-shipments' 
+              : item.path === '/portal/scorecard' ? 'nav-scorecard'
+              : item.path === '/portal/profile' ? 'nav-profile'
+              : undefined;
+            
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setSidebarOpen(false)}
+                data-tour={tourId}
+                style={{ animationDelay: `${index * 30}ms` }}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium",
+                  "transition-all duration-200 ease-out",
+                  "hover:translate-x-1",
+                  isActive 
+                    ? "bg-dhl-red text-white shadow-md" 
+                    : "text-foreground hover:bg-black/10",
+                  sidebarOpen && "lg:animate-none animate-fade-in"
+                )}
+              >
+                <item.icon className={cn(
+                  "w-5 h-5 shrink-0 transition-transform duration-200",
+                  isActive && "scale-110"
+                )} />
+                <span className="truncate">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* User section */}
+        <div className="p-4 border-t border-yellow-500">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-full bg-dhl-red/10 flex items-center justify-center">
+              <span className="text-sm font-medium text-dhl-red">
+                {profile?.name?.charAt(0).toUpperCase() || 'U'}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate text-foreground">{profile?.name}</p>
+              <p className="text-xs text-muted-foreground truncate">{t('nav.customer')}</p>
+            </div>
             <div data-tour="customer-help">
               <CustomerHelpMenu />
             </div>
+          </div>
+          <div className="flex flex-col gap-2">
             <CustomerTour />
-            <div className="hidden sm:flex items-center gap-2 mr-2">
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                <span className="text-sm font-medium">
-                  {profile?.name?.charAt(0).toUpperCase() || 'U'}
-                </span>
-              </div>
-              <span className="text-sm font-medium">{profile?.name}</span>
-            </div>
             <Button
               variant="ghost"
-              size="sm"
+              className="w-full justify-start text-foreground hover:bg-black/10"
               onClick={handleSignOut}
-              className="hidden md:flex"
             >
-              <LogOut className="w-4 h-4 mr-2" />
-              {t('common.signOut')}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setMenuOpen(!menuOpen)}
-            >
-              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              <LogOut className="w-4 h-4 mr-2 shrink-0" />
+              <span className="truncate">{t('common.signOut')}</span>
             </Button>
           </div>
         </div>
-
-        {/* Mobile menu */}
-        {menuOpen && (
-          <div className="md:hidden border-t bg-card animate-fade-in">
-            <div className="px-4 py-3 space-y-1">
-              {navItems.map((item, index) => {
-                const isActive = location.pathname === item.path;
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setMenuOpen(false)}
-                    style={{ animationDelay: `${index * 50}ms` }}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium",
-                      "transition-all duration-200 ease-out animate-fade-in",
-                      "hover:translate-x-1",
-                      isActive 
-                        ? "bg-primary text-primary-foreground shadow-md" 
-                        : "hover:bg-muted"
-                    )}
-                  >
-                    <item.icon className={cn(
-                      "w-4 h-4 shrink-0 transition-transform duration-200",
-                      isActive && "scale-110"
-                    )} />
-                    <span className="truncate">{item.label}</span>
-                  </Link>
-                );
-              })}
-              <Button
-                variant="ghost"
-                className="w-full justify-start transition-all duration-200 hover:translate-x-1 animate-fade-in"
-                style={{ animationDelay: `${navItems.length * 50}ms` }}
-                onClick={handleSignOut}
-              >
-                <LogOut className="w-4 h-4 mr-2 shrink-0" />
-                <span className="truncate">{t('common.signOut')}</span>
-              </Button>
-            </div>
-          </div>
-        )}
-      </header>
+      </aside>
 
       {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {children}
-      </main>
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top bar */}
+        <header data-tour="customer-header" className="h-16 border-b flex items-center px-4 lg:px-6 bg-card">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden mr-2"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <Menu className="w-5 h-5" />
+          </Button>
+          <div className="flex-1" />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <LanguageSwitcher />
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-auto p-4 lg:p-6">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
