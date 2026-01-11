@@ -293,7 +293,7 @@ export function CustomerNotifications() {
               {notifications.slice(0, 20).map((notification) => (
                 <Link
                   key={notification.id}
-                  to={notification.shipmentId ? `/portal/tracking/${notification.shipmentId}` : '/portal'}
+                  to={notification.shipmentId ? `/portal/shipments/${notification.shipmentId}` : '/portal'}
                   onClick={() => {
                     markAsRead(notification.id);
                     setOpen(false);
