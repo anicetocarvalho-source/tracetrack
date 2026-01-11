@@ -240,7 +240,9 @@
     "ratesComparison": "Comparação de Taxas de Desempenho",
     "noYoyData": "Nenhum dado disponível para {{month}} {{year}}",
     "generateYoyHint": "Gere um scorecard para o mesmo período do ano passado para ver a comparação ano a ano",
-    "found": "scorecard(s) encontrado(s)"
+    "found": "scorecard(s) encontrado(s)",
+    "notificationSent": "Notificação por email enviada ao cliente",
+    "notificationFailed": "Falha ao enviar notificação por email"
   },
   "portal": {
     "scorecard": "Scorecard de Desempenho",

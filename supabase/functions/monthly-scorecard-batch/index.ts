@@ -57,7 +57,7 @@ async function generateScorecardForClient(
   clientName: string,
   year: number,
   month: number
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; scorecardId?: string }> {
   try {
     console.log(`[monthly-scorecard-batch] Generating scorecard for ${clientName} (${clientId}), ${year}-${month}`);
 
@@ -232,7 +232,7 @@ async function generateScorecardForClient(
     }
 
     // Upsert scorecard (generated_by is null for automated generation)
-    const { error: upsertError } = await supabase
+    const { data: scorecard, error: upsertError } = await supabase
       .from('client_scorecards')
       .upsert({
         client_id: clientId,
@@ -254,14 +254,18 @@ async function generateScorecardForClient(
         generated_by: null, // Automated generation
       }, {
         onConflict: 'client_id,period_year,period_month',
-      });
+      })
+      .select()
+      .single();
 
     if (upsertError) {
       throw upsertError;
     }
 
     console.log(`[monthly-scorecard-batch] Successfully generated scorecard for ${clientName}`);
-    return { success: true };
+    
+    // Return scorecard ID for notification
+    return { success: true, scorecardId: scorecard?.id };
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -316,7 +320,7 @@ Deno.serve(async (req) => {
     console.log(`[monthly-scorecard-batch] Found ${clients.length} active clients`);
 
     // Generate scorecards for each client
-    const results: { clientName: string; success: boolean; error?: string }[] = [];
+    const results: { clientName: string; success: boolean; error?: string; scorecardId?: string }[] = [];
     
     for (const client of clients) {
       const result = await generateScorecardForClient(
@@ -327,6 +331,28 @@ Deno.serve(async (req) => {
         month
       );
       results.push({ clientName: client.name, ...result });
+    }
+
+    // Send notifications for successfully generated scorecards
+    const successfulResults = results.filter(r => r.success && r.scorecardId);
+    console.log(`[monthly-scorecard-batch] Sending notifications for ${successfulResults.length} scorecards`);
+    
+    for (const result of successfulResults) {
+      try {
+        await fetch(`${supabaseUrl}/functions/v1/notify-scorecard-available`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({
+            scorecardId: result.scorecardId,
+          }),
+        });
+        console.log(`[monthly-scorecard-batch] Notification sent for ${result.clientName}`);
+      } catch (notifyError) {
+        console.error(`[monthly-scorecard-batch] Failed to send notification for ${result.clientName}:`, notifyError);
+      }
     }
 
     const successCount = results.filter(r => r.success).length;
