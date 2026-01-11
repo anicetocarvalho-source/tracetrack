@@ -104,7 +104,11 @@
     "invalidEmail": "Invalid email address",
     "emailExists": "Email already added",
     "noRecipients": "Please add at least one recipient",
-    "noSummary": "No summary available to send"
+    "noSummary": "No summary available to send",
+    "copyToClipboard": "Copy to clipboard",
+    "copied": "Copied!",
+    "copiedDesc": "Summary copied to clipboard",
+    "copyError": "Failed to copy to clipboard"
   },
   "documents": {
     "title": "Documents",

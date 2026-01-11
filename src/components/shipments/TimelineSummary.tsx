@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, RefreshCw, Loader2, AlertCircle, ChevronDown, ChevronUp, Mail, Send, X } from 'lucide-react';
+import { Sparkles, RefreshCw, Loader2, AlertCircle, ChevronDown, ChevronUp, Mail, Send, X, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -36,6 +36,7 @@ export function TimelineSummary({ shipmentId, mode, compact = false, clientEmail
   const [emailInput, setEmailInput] = useState('');
   const [recipients, setRecipients] = useState<string[]>(clientEmails);
   const [isSending, setIsSending] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const {
     data: summaryData,
@@ -183,6 +184,25 @@ export function TimelineSummary({ shipmentId, mode, compact = false, clientEmail
     }
   };
 
+  const handleCopyToClipboard = async () => {
+    if (!summaryData?.summary) return;
+    
+    try {
+      await navigator.clipboard.writeText(summaryData.summary);
+      setCopied(true);
+      toast({
+        title: t('summary.copied'),
+        description: t('summary.copiedDesc'),
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({
+        title: t('summary.copyError'),
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
@@ -253,7 +273,21 @@ export function TimelineSummary({ shipmentId, mode, compact = false, clientEmail
               {t('summary.aiPowered')}
             </span>
           </CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCopyToClipboard}
+              disabled={!summaryData}
+              className="h-8 px-2"
+              title={t('summary.copyToClipboard')}
+            >
+              {copied ? (
+                <Check className="w-4 h-4 text-green-500" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
+            </Button>
             <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
               <DialogTrigger asChild>
                 <Button
