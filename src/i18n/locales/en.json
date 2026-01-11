@@ -248,6 +248,7 @@
     "sendComment": "Send",
     "commentAdded": "Comment added",
     "commentError": "Failed to add comment",
+    "unreadComments": "unread",
     "cannotCommentResolved": "Cannot add comments to resolved requests"
   },
   "nav": {
