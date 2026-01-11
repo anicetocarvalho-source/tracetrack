@@ -853,6 +853,7 @@
     "themeSystem": "Sistema",
     "themeDesc": "Selecione o seu tema preferido ou use as configurações do sistema",
     "toggleTheme": "Alternar tema",
+    "changeLanguage": "Mudar idioma",
     "lightMode": "Mudar para modo claro",
     "darkMode": "Mudar para modo escuro",
     "aiClassificationSettings": "Classificação AI",
@@ -1240,6 +1241,7 @@
   },
   "quickActions": {
     "title": "Ações Rápidas",
+    "tooltip": "Acesso rápido a ações comuns",
     "createShipment": "Criar Envio",
     "viewExceptions": "Ver Exceções",
     "viewRequests": "Pedidos de Cliente",

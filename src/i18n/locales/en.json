@@ -859,6 +859,7 @@
     "themeSystem": "System",
     "themeDesc": "Select your preferred theme or use system settings",
     "toggleTheme": "Toggle theme",
+    "changeLanguage": "Change language",
     "lightMode": "Switch to light mode",
     "darkMode": "Switch to dark mode",
     "aiClassificationSettings": "AI Classification",
@@ -1246,6 +1247,7 @@
   },
   "quickActions": {
     "title": "Quick Actions",
+    "tooltip": "Quick access to common actions",
     "createShipment": "Create Shipment",
     "viewExceptions": "View Exceptions",
     "viewRequests": "Customer Requests",
