@@ -1120,5 +1120,21 @@
         "content": "Cliquez ici pour voir le guide complet du portail avec la description de toutes les fonctionnalités disponibles."
       }
     }
+  },
+  "classification": {
+    "analyzeWithAI": "Analyser avec IA",
+    "analyzing": "Analyse de l'incident...",
+    "aiProcessing": "L'IA traite votre texte",
+    "aiSuggestion": "Suggestion IA",
+    "confidence": "confiance",
+    "category": "Catégorie",
+    "severity": "Sévérité",
+    "cause": "Cause Probable",
+    "reasoning": "Raisonnement",
+    "accept": "Accepter",
+    "applyChanges": "Appliquer",
+    "dismiss": "Ignorer",
+    "accepted": "Classification acceptée",
+    "appliedClassification": "Classification Appliquée"
   }
 }

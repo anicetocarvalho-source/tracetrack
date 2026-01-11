@@ -1120,5 +1120,21 @@
         "content": "Click here to see the complete portal guide with descriptions of all available features."
       }
     }
+  },
+  "classification": {
+    "analyzeWithAI": "Analyze with AI",
+    "analyzing": "Analyzing incident...",
+    "aiProcessing": "AI is processing your text",
+    "aiSuggestion": "AI Suggestion",
+    "confidence": "confidence",
+    "category": "Category",
+    "severity": "Severity",
+    "cause": "Likely Cause",
+    "reasoning": "Reasoning",
+    "accept": "Accept",
+    "applyChanges": "Apply Changes",
+    "dismiss": "Dismiss",
+    "accepted": "Classification accepted",
+    "appliedClassification": "Applied Classification"
   }
 }
