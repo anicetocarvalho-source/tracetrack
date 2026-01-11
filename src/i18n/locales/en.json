@@ -74,6 +74,11 @@
     "audioAlertsDescription": "Play warning sounds when shipments reach critical SLA thresholds",
     "testSound": "Test Sound"
   },
+  "preferences": {
+    "loading": "Loading preferences...",
+    "saving": "Saving preferences...",
+    "synced": "Preferences synced"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "shipments": "Shipments",
