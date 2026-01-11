@@ -27,6 +27,7 @@ import SLABreachReport from "./pages/backoffice/SLABreachReport";
 import NotificationSettings from "./pages/backoffice/NotificationSettings";
 import SLAHeatmap from "./pages/backoffice/SLAHeatmap";
 import ClientScorecards from "./pages/backoffice/ClientScorecards";
+import CustomerRequests from "./pages/backoffice/CustomerRequests";
 import MyShipments from "./pages/portal/MyShipments";
 import ShipmentTracking from "./pages/portal/ShipmentTracking";
 import Profile from "./pages/portal/Profile";
@@ -122,6 +123,11 @@ const App = () => (
             <Route path="/backoffice/scorecards" element={
               <ProtectedRoute requireInternal>
                 <ClientScorecards />
+              </ProtectedRoute>
+            } />
+            <Route path="/backoffice/customer-requests" element={
+              <ProtectedRoute requireInternal>
+                <CustomerRequests />
               </ProtectedRoute>
             } />
 

@@ -42,6 +42,7 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
     { path: '/backoffice', label: t('nav.dashboard'), icon: LayoutDashboard },
     { path: '/backoffice/action-required', label: t('exceptions.title'), icon: AlertTriangle, highlight: true },
     { path: '/backoffice/shipments', label: t('nav.shipments'), icon: Package },
+    { path: '/backoffice/customer-requests', label: t('nav.customerRequests'), icon: FileText, roles: ['SUPERVISOR', 'MANAGER'] },
     { path: '/backoffice/sla-management', label: t('nav.slaManagement'), icon: Target, roles: ['SUPERVISOR', 'MANAGER'] },
     { path: '/backoffice/sla-breach-report', label: t('nav.slaBreachReport'), icon: FileWarning, roles: ['SUPERVISOR', 'MANAGER'] },
     { path: '/backoffice/sla-heatmap', label: t('nav.slaHeatmap'), icon: Grid3X3, roles: ['SUPERVISOR', 'MANAGER'] },
