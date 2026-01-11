@@ -280,7 +280,9 @@
     "customerRequests": "Customer Requests",
     "scorecard": "My Scorecard",
     "customer": "Customer",
-    "customerPortal": "Customer Portal"
+    "customerPortal": "Customer Portal",
+    "slaGroup": "SLA",
+    "adminGroup": "Administration"
   },
   "scorecards": {
     "title": "Client Scorecards",
