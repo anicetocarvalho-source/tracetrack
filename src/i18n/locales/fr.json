@@ -107,6 +107,9 @@
     "preview": "Aperçu",
     "previewError": "Échec du chargement de l'aperçu du document",
     "previewNotSupported": "Aperçu non disponible pour ce type de fichier",
+    "downloadAll": "Tout Télécharger",
+    "bulkDownloadSuccess": "Documents téléchargés avec succès",
+    "bulkDownloadError": "Échec du téléchargement des documents",
     "types": {
       "POD": "Preuve de Livraison",
       "BL": "Connaissement",

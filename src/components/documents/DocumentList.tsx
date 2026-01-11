@@ -10,6 +10,7 @@ import {
   Trash2,
   Loader2,
   Search,
+  Archive,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -51,6 +52,7 @@ export function DocumentList({ shipmentId, isCustomer = false }: DocumentListPro
   });
 
   const canManage = role === 'SUPERVISOR' || role === 'MANAGER';
+  const [isDownloadingZip, setIsDownloadingZip] = useState(false);
 
   const { data: documents, isLoading } = useQuery({
     queryKey: ['shipment-documents', shipmentId],
@@ -145,6 +147,45 @@ export function DocumentList({ shipmentId, isCustomer = false }: DocumentListPro
     URL.revokeObjectURL(url);
   };
 
+  const handleBulkDownload = async () => {
+    setIsDownloadingZip(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+
+      if (!token) {
+        toast({ title: t('common.unauthorized'), variant: 'destructive' });
+        return;
+      }
+
+      const response = await supabase.functions.invoke('bulk-download-documents', {
+        body: { shipmentId },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Download failed');
+      }
+
+      // The response data is the ZIP blob
+      const blob = new Blob([response.data], { type: 'application/zip' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `shipment_documents.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({ title: t('documents.bulkDownloadSuccess') });
+    } catch (error) {
+      console.error('Bulk download error:', error);
+      toast({ title: t('documents.bulkDownloadError'), variant: 'destructive' });
+    } finally {
+      setIsDownloadingZip(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -159,7 +200,24 @@ export function DocumentList({ shipmentId, isCustomer = false }: DocumentListPro
         <p className="text-sm text-muted-foreground">
           {documents?.length || 0} {t('documents.documentsCount')}
         </p>
-        <DocumentUploadDialog shipmentId={shipmentId} isCustomer={isCustomer} />
+        <div className="flex items-center gap-2">
+          {documents && documents.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBulkDownload}
+              disabled={isDownloadingZip}
+            >
+              {isDownloadingZip ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Archive className="w-4 h-4 mr-2" />
+              )}
+              {t('documents.downloadAll')}
+            </Button>
+          )}
+          <DocumentUploadDialog shipmentId={shipmentId} isCustomer={isCustomer} />
+        </div>
       </div>
 
       {!documents || documents.length === 0 ? (

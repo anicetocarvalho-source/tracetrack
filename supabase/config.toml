@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.notify-request-resolved]
 verify_jwt = false
+
+[functions.bulk-download-documents]
+verify_jwt = false
