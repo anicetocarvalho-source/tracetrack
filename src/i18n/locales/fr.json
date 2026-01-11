@@ -84,7 +84,13 @@
     "exceptionAlerts": "Alertes d'Exceptions",
     "exceptionAlertsDesc": "Recevez des alertes lorsque des exceptions sont détectées sur vos expéditions",
     "documentNotifications": "Notifications de Documents",
-    "documentNotificationsDesc": "Soyez notifié lorsque de nouveaux documents sont téléchargés sur vos expéditions"
+    "documentNotificationsDesc": "Soyez notifié lorsque de nouveaux documents sont téléchargés sur vos expéditions",
+    "title": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "noNotifications": "Aucune notification",
+    "newDocument": "Nouveau document disponible",
+    "requestResolved": "Demande résolue",
+    "trackingUpdate": "Mise à jour de suivi"
   },
   "preferences": {
     "loading": "Chargement des préférences...",
