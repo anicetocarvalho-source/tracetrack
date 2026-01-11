@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Send, Loader2, Plus } from 'lucide-react';
@@ -21,10 +21,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { RequestType, REQUEST_TYPE_LABELS } from '@/types/documents';
+import { AIClassificationSuggestion, AIClassification } from '@/components/shipments/AIClassificationSuggestion';
+import { useAIClassification } from '@/hooks/useAIClassification';
 
 interface SubmitRequestDialogProps {
   shipmentId: string;
@@ -41,6 +44,65 @@ export function SubmitRequestDialog({
 
   const [requestType, setRequestType] = useState<RequestType>('UPDATE_REQUEST');
   const [message, setMessage] = useState('');
+  
+  // Classification state
+  const [incidentCategory, setIncidentCategory] = useState<string | undefined>();
+  const [incidentSeverity, setIncidentSeverity] = useState<'P1' | 'P2' | 'P3' | undefined>();
+  const [incidentCause, setIncidentCause] = useState<string | undefined>();
+
+  const {
+    classification,
+    isLoading: isClassifying,
+    error: classificationError,
+    wasAccepted,
+    classifyText,
+    acceptClassification,
+    dismissClassification,
+    reset: resetClassification,
+  } = useAIClassification({
+    entityType: 'customer_request',
+    entityId: shipmentId,
+  });
+
+  // Reset classification when dialog closes
+  useEffect(() => {
+    if (!open) {
+      resetClassification();
+      setIncidentCategory(undefined);
+      setIncidentSeverity(undefined);
+      setIncidentCause(undefined);
+    }
+  }, [open, resetClassification]);
+
+  const handleRequestClassification = async () => {
+    if (message.trim()) {
+      await classifyText(message, `Request Type: ${requestType}`);
+    }
+  };
+
+  const handleAcceptClassification = async (cls: AIClassification) => {
+    await acceptClassification(cls);
+    setIncidentCategory(cls.category);
+    setIncidentSeverity(cls.severity);
+    setIncidentCause(cls.likely_cause);
+    toast({ title: t('classification.accepted', 'Classification accepted') });
+  };
+
+  const handleDismissClassification = async () => {
+    await dismissClassification();
+    setIncidentCategory(undefined);
+    setIncidentSeverity(undefined);
+    setIncidentCause(undefined);
+  };
+
+  const getSeverityColor = (severity?: string) => {
+    switch (severity) {
+      case 'P1': return 'bg-destructive text-destructive-foreground';
+      case 'P2': return 'bg-orange-500 text-white';
+      case 'P3': return 'bg-yellow-500 text-black';
+      default: return 'bg-muted text-muted-foreground';
+    }
+  };
 
   const submitMutation = useMutation({
     mutationFn: async () => {
@@ -59,6 +121,25 @@ export function SubmitRequestDialog({
         .single();
 
       if (error) throw error;
+
+      // Log classification if present
+      if (incidentCategory || incidentSeverity || incidentCause) {
+        await supabase.from('audit_log').insert([{
+          entity_type: 'customer_request',
+          entity_id: insertedRequest.id,
+          action: 'CREATE_WITH_CLASSIFICATION',
+          actor_user_id: user.id,
+          metadata_json: {
+            request_type: requestType,
+            classification: {
+              category: incidentCategory || null,
+              severity: incidentSeverity || null,
+              cause: incidentCause || null,
+              was_ai_assisted: wasAccepted,
+            },
+          },
+        }]);
+      }
 
       // Fetch shipment and client info for the notification
       const { data: shipmentData } = await supabase
@@ -86,6 +167,11 @@ export function SubmitRequestDialog({
             message: message.trim(),
             requester_name: profileData?.name || 'Customer',
             requester_email: profileData?.email || user.email || '',
+            classification: (incidentCategory || incidentSeverity || incidentCause) ? {
+              category: incidentCategory,
+              severity: incidentSeverity,
+              cause: incidentCause,
+            } : null,
           },
         });
         console.log('Notification email sent successfully');
@@ -102,6 +188,10 @@ export function SubmitRequestDialog({
       setOpen(false);
       setMessage('');
       setRequestType('UPDATE_REQUEST');
+      setIncidentCategory(undefined);
+      setIncidentSeverity(undefined);
+      setIncidentCause(undefined);
+      resetClassification();
     },
     onError: (error) => {
       console.error('Submit error:', error);
@@ -128,7 +218,7 @@ export function SubmitRequestDialog({
           {t('requests.submitRequest')}
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>{t('requests.submitRequest')}</DialogTitle>
           <DialogDescription>
@@ -167,6 +257,37 @@ export function SubmitRequestDialog({
               required
             />
           </div>
+
+          {/* AI Classification Section */}
+          <AIClassificationSuggestion
+            classification={classification}
+            isLoading={isClassifying}
+            error={classificationError}
+            onAccept={handleAcceptClassification}
+            onDismiss={handleDismissClassification}
+            onRequestClassification={handleRequestClassification}
+            hasText={message.trim().length > 0}
+          />
+
+          {/* Show accepted classification */}
+          {wasAccepted && (incidentCategory || incidentSeverity || incidentCause) && (
+            <div className="flex flex-wrap gap-2 p-3 bg-muted/50 rounded-lg border">
+              <span className="text-xs text-muted-foreground w-full mb-1">
+                {t('classification.appliedClassification', 'Applied Classification')}:
+              </span>
+              {incidentSeverity && (
+                <Badge className={getSeverityColor(incidentSeverity)}>
+                  {incidentSeverity}
+                </Badge>
+              )}
+              {incidentCategory && (
+                <Badge variant="outline">{incidentCategory.replace(/_/g, ' ')}</Badge>
+              )}
+              {incidentCause && (
+                <Badge variant="secondary">{incidentCause}</Badge>
+              )}
+            </div>
+          )}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
