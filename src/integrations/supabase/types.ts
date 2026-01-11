@@ -151,6 +151,53 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_requests: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          message: string
+          request_type: Database["public"]["Enums"]["request_type"]
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          shipment_id: string
+          status: Database["public"]["Enums"]["request_status"]
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          message: string
+          request_type: Database["public"]["Enums"]["request_type"]
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          shipment_id: string
+          status?: Database["public"]["Enums"]["request_status"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          message?: string
+          request_type?: Database["public"]["Enums"]["request_type"]
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          shipment_id?: string
+          status?: Database["public"]["Enums"]["request_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_requests_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exception_rules: {
         Row: {
           applies_to_client_id: string | null
@@ -335,6 +382,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "shipment_containers_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shipment_documents: {
+        Row: {
+          created_at: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          filename: string
+          id: string
+          shipment_id: string
+          storage_path: string
+          uploaded_at: string
+          uploaded_by: string
+          visible_to_client: boolean
+        }
+        Insert: {
+          created_at?: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          filename: string
+          id?: string
+          shipment_id: string
+          storage_path: string
+          uploaded_at?: string
+          uploaded_by: string
+          visible_to_client?: boolean
+        }
+        Update: {
+          created_at?: string
+          document_type?: Database["public"]["Enums"]["document_type"]
+          filename?: string
+          id?: string
+          shipment_id?: string
+          storage_path?: string
+          uploaded_at?: string
+          uploaded_by?: string
+          visible_to_client?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipment_documents_shipment_id_fkey"
             columns: ["shipment_id"]
             isOneToOne: false
             referencedRelation: "shipments"
@@ -717,8 +808,11 @@ export type Database = {
     }
     Enums: {
       app_role: "TECHNICIAN" | "SUPERVISOR" | "MANAGER" | "CUSTOMER"
+      document_type: "POD" | "BL" | "INVOICE" | "OTHER"
       exception_severity: "P1" | "P2" | "P3"
       exception_status: "OPEN" | "ACKNOWLEDGED" | "RESOLVED"
+      request_status: "OPEN" | "IN_PROGRESS" | "RESOLVED"
+      request_type: "UPDATE_REQUEST" | "DOC_UPLOAD" | "INSTRUCTION_CHANGE"
       shipment_status:
         | "RECEIVED"
         | "REGISTERED"
@@ -859,8 +953,11 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["TECHNICIAN", "SUPERVISOR", "MANAGER", "CUSTOMER"],
+      document_type: ["POD", "BL", "INVOICE", "OTHER"],
       exception_severity: ["P1", "P2", "P3"],
       exception_status: ["OPEN", "ACKNOWLEDGED", "RESOLVED"],
+      request_status: ["OPEN", "IN_PROGRESS", "RESOLVED"],
+      request_type: ["UPDATE_REQUEST", "DOC_UPLOAD", "INSTRUCTION_CHANGE"],
       shipment_status: [
         "RECEIVED",
         "REGISTERED",
