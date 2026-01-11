@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -35,6 +36,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SHIPMENT_STATUSES, ShipmentStatus } from '@/lib/constants';
 import { toast } from 'sonner';
+import { AIClassificationSuggestion, AIClassification } from './AIClassificationSuggestion';
+import { useAIClassification } from '@/hooks/useAIClassification';
+import { Badge } from '@/components/ui/badge';
 
 const trackingEventSchema = z.object({
   status: z.enum(SHIPMENT_STATUSES),
@@ -43,6 +47,10 @@ const trackingEventSchema = z.object({
   event_datetime: z.string(),
   visible_to_client: z.boolean(),
   notify_client: z.boolean(),
+  // AI classification fields (optional)
+  incident_category: z.string().optional(),
+  incident_severity: z.enum(['P1', 'P2', 'P3']).optional(),
+  incident_cause: z.string().optional(),
 });
 
 type TrackingEventFormData = z.infer<typeof trackingEventSchema>;
@@ -73,8 +81,56 @@ export function AddTrackingEventDrawer({
       event_datetime: new Date().toISOString().slice(0, 16),
       visible_to_client: false,
       notify_client: true,
+      incident_category: undefined,
+      incident_severity: undefined,
+      incident_cause: undefined,
     },
   });
+
+  const {
+    classification,
+    isLoading: isClassifying,
+    error: classificationError,
+    wasAccepted,
+    classifyText,
+    acceptClassification,
+    dismissClassification,
+    reset: resetClassification,
+  } = useAIClassification({
+    entityType: 'tracking_event',
+    entityId: shipmentId,
+  });
+
+  const noteValue = form.watch('note');
+  const statusValue = form.watch('status');
+
+  // Reset classification when drawer closes
+  useEffect(() => {
+    if (!open) {
+      resetClassification();
+    }
+  }, [open, resetClassification]);
+
+  const handleRequestClassification = async () => {
+    if (noteValue.trim()) {
+      await classifyText(noteValue, `Status: ${statusValue}`);
+    }
+  };
+
+  const handleAcceptClassification = async (cls: AIClassification) => {
+    await acceptClassification(cls);
+    form.setValue('incident_category', cls.category);
+    form.setValue('incident_severity', cls.severity);
+    form.setValue('incident_cause', cls.likely_cause);
+    toast.success(t('classification.accepted', 'Classification accepted'));
+  };
+
+  const handleDismissClassification = async () => {
+    await dismissClassification();
+    form.setValue('incident_category', undefined);
+    form.setValue('incident_severity', undefined);
+    form.setValue('incident_cause', undefined);
+  };
 
   const createEventMutation = useMutation({
     mutationFn: async (data: TrackingEventFormData) => {
@@ -100,18 +156,26 @@ export function AddTrackingEventDrawer({
 
       if (shipmentError) throw shipmentError;
 
-      // Create audit log
-      await supabase.from('audit_log').insert({
+      // Create audit log with classification data if present
+      const auditMetadata = {
+        status: data.status,
+        visible_to_client: data.visible_to_client,
+        notify_client: data.notify_client,
+        classification: (data.incident_category || data.incident_severity || data.incident_cause) ? {
+          category: data.incident_category || null,
+          severity: data.incident_severity || null,
+          cause: data.incident_cause || null,
+          was_ai_assisted: wasAccepted,
+        } : null,
+      };
+
+      await supabase.from('audit_log').insert([{
         entity_type: 'tracking_event',
         entity_id: shipmentId,
         action: 'CREATE',
         actor_user_id: user!.id,
-        metadata_json: {
-          status: data.status,
-          visible_to_client: data.visible_to_client,
-          notify_client: data.notify_client,
-        },
-      });
+        metadata_json: auditMetadata,
+      }]);
 
       // Send email notification if enabled
       if (data.notify_client && data.visible_to_client) {
@@ -142,7 +206,11 @@ export function AddTrackingEventDrawer({
         event_datetime: new Date().toISOString().slice(0, 16),
         visible_to_client: false,
         notify_client: true,
+        incident_category: undefined,
+        incident_severity: undefined,
+        incident_cause: undefined,
       });
+      resetClassification();
       onOpenChange(false);
     },
     onError: (error) => {
@@ -152,6 +220,19 @@ export function AddTrackingEventDrawer({
 
   const onSubmit = (data: TrackingEventFormData) => {
     createEventMutation.mutate(data);
+  };
+
+  const incidentCategory = form.watch('incident_category');
+  const incidentSeverity = form.watch('incident_severity');
+  const incidentCause = form.watch('incident_cause');
+
+  const getSeverityColor = (severity?: string) => {
+    switch (severity) {
+      case 'P1': return 'bg-destructive text-destructive-foreground';
+      case 'P2': return 'bg-orange-500 text-white';
+      case 'P3': return 'bg-yellow-500 text-black';
+      default: return 'bg-muted text-muted-foreground';
+    }
   };
 
   return (
@@ -208,6 +289,37 @@ export function AddTrackingEventDrawer({
                 </FormItem>
               )}
             />
+
+            {/* AI Classification Section */}
+            <AIClassificationSuggestion
+              classification={classification}
+              isLoading={isClassifying}
+              error={classificationError}
+              onAccept={handleAcceptClassification}
+              onDismiss={handleDismissClassification}
+              onRequestClassification={handleRequestClassification}
+              hasText={noteValue.trim().length > 0}
+            />
+
+            {/* Show accepted classification */}
+            {wasAccepted && (incidentCategory || incidentSeverity || incidentCause) && (
+              <div className="flex flex-wrap gap-2 p-3 bg-muted/50 rounded-lg border">
+                <span className="text-xs text-muted-foreground w-full mb-1">
+                  {t('classification.appliedClassification', 'Applied Classification')}:
+                </span>
+                {incidentSeverity && (
+                  <Badge className={getSeverityColor(incidentSeverity)}>
+                    {incidentSeverity}
+                  </Badge>
+                )}
+                {incidentCategory && (
+                  <Badge variant="outline">{incidentCategory.replace(/_/g, ' ')}</Badge>
+                )}
+                {incidentCause && (
+                  <Badge variant="secondary">{incidentCause}</Badge>
+                )}
+              </div>
+            )}
 
             <FormField
               control={form.control}

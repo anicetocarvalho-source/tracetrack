@@ -1120,5 +1120,21 @@
         "content": "Clique aqui para ver o guia completo do portal com descrição de todas as funcionalidades disponíveis."
       }
     }
+  },
+  "classification": {
+    "analyzeWithAI": "Analisar com IA",
+    "analyzing": "Analisando incidente...",
+    "aiProcessing": "IA está processando o texto",
+    "aiSuggestion": "Sugestão IA",
+    "confidence": "confiança",
+    "category": "Categoria",
+    "severity": "Severidade",
+    "cause": "Causa Provável",
+    "reasoning": "Raciocínio",
+    "accept": "Aceitar",
+    "applyChanges": "Aplicar Alterações",
+    "dismiss": "Dispensar",
+    "accepted": "Classificação aceite",
+    "appliedClassification": "Classificação Aplicada"
   }
 }
