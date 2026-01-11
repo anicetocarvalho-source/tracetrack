@@ -183,7 +183,19 @@
       "BL": "Connaissement",
       "INVOICE": "Facture",
       "OTHER": "Autre"
-    }
+    },
+    "documentNotFound": "Document non trouvé",
+    "documentNotFoundDesc": "Le document que vous cherchez n'existe pas ou vous n'y avez pas accès.",
+    "backToDocuments": "Retour aux Documents",
+    "uploadedAgo": "Téléchargé {{time}}",
+    "documentInfo": "Informations du Document",
+    "documentTypeDescription": "Description du Type",
+    "associatedShipment": "Expédition Associée",
+    "viewShipment": "Voir l'Expédition",
+    "otherDocuments": "Autres Documents",
+    "otherDocumentsDesc": "Documents de la même expédition",
+    "downloadToView": "Télécharger pour Voir",
+    "downloadSuccess": "Document téléchargé"
   },
   "requests": {
     "title": "Demandes Clients",

@@ -183,7 +183,19 @@
       "BL": "Bill of Lading",
       "INVOICE": "Invoice",
       "OTHER": "Other"
-    }
+    },
+    "documentNotFound": "Document not found",
+    "documentNotFoundDesc": "The document you are looking for does not exist or you don't have access.",
+    "backToDocuments": "Back to Documents",
+    "uploadedAgo": "Uploaded {{time}}",
+    "documentInfo": "Document Information",
+    "documentTypeDescription": "Type Description",
+    "associatedShipment": "Associated Shipment",
+    "viewShipment": "View Shipment",
+    "otherDocuments": "Other Documents",
+    "otherDocumentsDesc": "Documents from the same shipment",
+    "downloadToView": "Download to View",
+    "downloadSuccess": "Document downloaded"
   },
   "requests": {
     "title": "Customer Requests",

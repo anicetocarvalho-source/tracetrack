@@ -23,6 +23,7 @@ interface Notification {
   message: string;
   shipmentRef?: string;
   shipmentId?: string;
+  documentId?: string;
   timestamp: string;
   read: boolean;
 }
@@ -201,6 +202,7 @@ export function CustomerNotifications() {
       message: doc.filename,
       shipmentRef: doc.shipments?.shipment_ref,
       shipmentId: doc.shipment_id,
+      documentId: doc.id,
       timestamp: doc.uploaded_at,
       read: readNotifications.has(`doc-${doc.id}`),
     })) || []),
@@ -290,10 +292,21 @@ export function CustomerNotifications() {
             </div>
           ) : (
             <div className="divide-y">
-              {notifications.slice(0, 20).map((notification) => (
+              {notifications.slice(0, 20).map((notification) => {
+                const getLink = () => {
+                  if (notification.type === 'document' && notification.documentId) {
+                    return `/portal/documents/${notification.documentId}`;
+                  }
+                  if (notification.shipmentId) {
+                    return `/portal/shipments/${notification.shipmentId}`;
+                  }
+                  return '/portal';
+                };
+                
+                return (
                 <Link
                   key={notification.id}
-                  to={notification.shipmentId ? `/portal/shipments/${notification.shipmentId}` : '/portal'}
+                  to={getLink()}
                   onClick={() => {
                     markAsRead(notification.id);
                     setOpen(false);
@@ -331,7 +344,8 @@ export function CustomerNotifications() {
                     </div>
                   </div>
                 </Link>
-              ))}
+              );
+              })}
             </div>
           )}
         </ScrollArea>
