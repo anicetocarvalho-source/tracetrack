@@ -16,6 +16,9 @@ import { SHIPMENT_STATUSES, ShipmentStatus, SEVERITY_LABELS, SEVERITY_CLASSES } 
 import { CSVImportDialog } from '@/components/shipments/CSVImportDialog';
 import { safeFormatDate } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { DateRangePickerCompact } from '@/components/ui/date-range-picker';
+import { DateRange } from 'react-day-picker';
+import { format } from 'date-fns';
 import type { ExceptionSeverity } from '@/lib/constants';
 
 const PAGE_SIZE = 20;
@@ -25,11 +28,12 @@ export default function Shipments() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [page, setPage] = useState(0);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['shipments', search, statusFilter, page],
+    queryKey: ['shipments', search, statusFilter, dateRange?.from, dateRange?.to, page],
     queryFn: async () => {
       let query = supabase
         .from('shipments')
@@ -47,6 +51,14 @@ export default function Shipments() {
 
       if (search) {
         query = query.or(`shipment_ref.ilike.%${search}%,client_ref.ilike.%${search}%,bl_reference.ilike.%${search}%`);
+      }
+
+      if (dateRange?.from) {
+        query = query.gte('created_at', format(dateRange.from, 'yyyy-MM-dd'));
+      }
+
+      if (dateRange?.to) {
+        query = query.lte('created_at', format(dateRange.to, 'yyyy-MM-dd') + 'T23:59:59');
       }
 
       const { data, error, count } = await query;
@@ -149,6 +161,15 @@ export default function Shipments() {
                   ))}
                 </SelectContent>
               </Select>
+              <DateRangePickerCompact
+                dateRange={dateRange}
+                onDateRangeChange={(range) => {
+                  setDateRange(range);
+                  setPage(0);
+                }}
+                placeholder={t('dateRange.selectRange')}
+                className="w-full sm:w-auto"
+              />
             </div>
           </CardContent>
         </Card>
