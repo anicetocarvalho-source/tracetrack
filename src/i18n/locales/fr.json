@@ -323,7 +323,8 @@
     "signingIn": "Connexion en cours...",
     "needAccess": "Besoin d'accès? Contactez votre représentant DHL.",
     "invalidCredentials": "Identifiants invalides",
-    "emailPlaceholder": "vous@entreprise.com"
+    "emailPlaceholder": "vous@entreprise.com",
+    "quickAccess": "Accès rapide pour la démo"
   },
   "dashboard": {
     "title": "Tableau de bord",

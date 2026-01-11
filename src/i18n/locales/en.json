@@ -318,7 +318,8 @@
     "signingIn": "Signing in...",
     "needAccess": "Need access? Contact your DHL representative.",
     "invalidCredentials": "Invalid credentials",
-    "emailPlaceholder": "you@company.com"
+    "emailPlaceholder": "you@company.com",
+    "quickAccess": "Quick access for demo"
   },
   "dashboard": {
     "title": "Dashboard",

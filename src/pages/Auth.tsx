@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Package, Truck, MapPin } from 'lucide-react';
+import { Loader2, Package, Truck, MapPin, Zap, Shield, Users, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +21,38 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
+// Quick access demo accounts
+const quickAccessAccounts = [
+  { 
+    label: 'Manager',
+    email: 'manager@dhl.com', 
+    password: 'manager123',
+    icon: Shield,
+    description: 'Acesso completo'
+  },
+  { 
+    label: 'Supervisor',
+    email: 'supervisor@dhl.com', 
+    password: 'supervisor123',
+    icon: Users,
+    description: 'Gestão de equipa'
+  },
+  { 
+    label: 'Técnico',
+    email: 'technician@dhl.com', 
+    password: 'technician123',
+    icon: Zap,
+    description: 'Operações diárias'
+  },
+  { 
+    label: 'Cliente',
+    email: 'customer@example.com', 
+    password: 'customer123',
+    icon: User,
+    description: 'Portal do cliente'
+  },
+];
+
 export default function Auth() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -32,6 +64,11 @@ export default function Auth() {
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
   });
+
+  const fillQuickAccess = (email: string, password: string) => {
+    form.setValue('email', email);
+    form.setValue('password', password);
+  };
 
   const handleLogin = async (data: LoginFormData) => {
     setIsLoading(true);
@@ -185,7 +222,35 @@ export default function Auth() {
                 </form>
               </Form>
 
-              <div className="mt-6 pt-6 border-t text-center">
+              {/* Quick Access Section */}
+              <div className="mt-6 pt-6 border-t">
+                <p className="text-xs text-muted-foreground text-center mb-3">
+                  {t('auth.quickAccess')}
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {quickAccessAccounts.map((account) => {
+                    const Icon = account.icon;
+                    return (
+                      <Button
+                        key={account.email}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-auto py-2 px-3 flex flex-col items-start gap-0.5"
+                        onClick={() => fillQuickAccess(account.email, account.password)}
+                      >
+                        <div className="flex items-center gap-2 w-full">
+                          <Icon className="h-3.5 w-3.5 text-dhl-red" />
+                          <span className="font-medium text-xs">{account.label}</span>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">{account.description}</span>
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-4 pt-4 border-t text-center">
                 <p className="text-sm text-muted-foreground">
                   {t('auth.needAccess')}
                 </p>
