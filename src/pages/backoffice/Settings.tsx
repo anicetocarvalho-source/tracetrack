@@ -14,6 +14,7 @@ import { Plus, X, Ship, Package, MapPin, Users, Clock, AlertTriangle, Loader2, T
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 
 interface SystemSetting {
   id: string;
@@ -66,7 +67,8 @@ const Settings = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { user, role } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
+  const { updateTheme, isSaving: isPreferenceSaving } = useUserPreferences();
   const queryClient = useQueryClient();
   const [newItems, setNewItems] = useState<Record<string, string>>({});
 
@@ -347,8 +349,9 @@ const Settings = () => {
                 <Button
                   variant={theme === 'light' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setTheme('light')}
+                  onClick={() => updateTheme('light')}
                   className="flex items-center gap-2"
+                  disabled={isPreferenceSaving}
                 >
                   <Sun className="h-4 w-4" />
                   {t('settings.themeLight')}
@@ -356,8 +359,9 @@ const Settings = () => {
                 <Button
                   variant={theme === 'dark' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setTheme('dark')}
+                  onClick={() => updateTheme('dark')}
                   className="flex items-center gap-2"
+                  disabled={isPreferenceSaving}
                 >
                   <Moon className="h-4 w-4" />
                   {t('settings.themeDark')}
@@ -365,8 +369,9 @@ const Settings = () => {
                 <Button
                   variant={theme === 'system' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setTheme('system')}
+                  onClick={() => updateTheme('system')}
                   className="flex items-center gap-2"
+                  disabled={isPreferenceSaving}
                 >
                   <Monitor className="h-4 w-4" />
                   {t('settings.themeSystem')}

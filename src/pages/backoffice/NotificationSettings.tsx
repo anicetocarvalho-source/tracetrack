@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useBrowserNotifications } from '@/hooks/useBrowserNotifications';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { toast } from 'sonner';
 
 interface NotificationSettings {
@@ -67,8 +68,26 @@ function saveSettings(settings: NotificationSettings): void {
 export default function NotificationSettings() {
   const { t } = useTranslation();
   const { permission, requestPermission, playAlert } = useBrowserNotifications();
+  const { preferences, updateNotificationSettings, isSaving, isLoading: isPrefsLoading } = useUserPreferences();
   const [settings, setSettings] = useState<NotificationSettings>(loadSettings);
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Sync with user preferences from database
+  useEffect(() => {
+    if (!isPrefsLoading && preferences.notifications) {
+      const dbNotifs = preferences.notifications;
+      setSettings(prev => ({
+        ...prev,
+        browserNotificationsEnabled: dbNotifs.enableBrowserNotifications ?? prev.browserNotificationsEnabled,
+        notifyOnCritical: dbNotifs.notifyOnCritical ?? prev.notifyOnCritical,
+        notifyOnWarning: dbNotifs.notifyOnWarning ?? prev.notifyOnWarning,
+        notifyOnBreach: dbNotifs.notifyOnBreach ?? prev.notifyOnBreach,
+        audioAlertsEnabled: dbNotifs.enableAudioAlerts ?? prev.audioAlertsEnabled,
+        soundType: (dbNotifs.soundType as 'beep' | 'chime' | 'alert') ?? prev.soundType,
+        audioVolume: dbNotifs.volume ?? prev.audioVolume,
+      }));
+    }
+  }, [preferences.notifications, isPrefsLoading]);
 
   const updateSetting = <K extends keyof NotificationSettings>(
     key: K,
@@ -78,10 +97,23 @@ export default function NotificationSettings() {
     setHasChanges(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // Save to localStorage for local use
     saveSettings(settings);
     // Also update the audio setting in the hook's localStorage
     localStorage.setItem('sla-audio-alerts', String(settings.audioAlertsEnabled));
+    
+    // Save to database for persistence across devices
+    await updateNotificationSettings({
+      enableBrowserNotifications: settings.browserNotificationsEnabled,
+      notifyOnCritical: settings.notifyOnCritical,
+      notifyOnWarning: settings.notifyOnWarning,
+      notifyOnBreach: settings.notifyOnBreach,
+      enableAudioAlerts: settings.audioAlertsEnabled,
+      soundType: settings.soundType,
+      volume: settings.audioVolume,
+    });
+    
     setHasChanges(false);
     toast.success(t('notificationSettings.saved'));
   };
@@ -120,13 +152,13 @@ export default function NotificationSettings() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleReset} disabled={!hasChanges}>
+            <Button variant="outline" onClick={handleReset} disabled={!hasChanges || isSaving}>
               <RotateCcw className="w-4 h-4 mr-2" />
               {t('notificationSettings.reset')}
             </Button>
-            <Button onClick={handleSave} disabled={!hasChanges}>
+            <Button onClick={handleSave} disabled={!hasChanges || isSaving}>
               <Save className="w-4 h-4 mr-2" />
-              {t('notificationSettings.save')}
+              {isSaving ? t('common.saving') : t('notificationSettings.save')}
             </Button>
           </div>
         </div>
