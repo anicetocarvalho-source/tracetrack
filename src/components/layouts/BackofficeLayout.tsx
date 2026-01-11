@@ -44,6 +44,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 interface BackofficeLayoutProps {
@@ -305,49 +310,74 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
             <PreferencesSyncIndicator />
             
             {/* Quick Actions Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Zap className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('quickActions.title')}</span>
-                  <ChevronDown className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>{t('quickActions.title')}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate('/backoffice/shipments/new')}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t('quickActions.createShipment')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/backoffice/action-required')}>
-                  <AlertTriangle className="mr-2 h-4 w-4" />
-                  {t('quickActions.viewExceptions')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/backoffice/customer-requests')}>
-                  <FileText className="mr-2 h-4 w-4" />
-                  {t('quickActions.viewRequests')}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate('/backoffice/sla-breach-report')}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  {t('quickActions.slaBreaches')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/backoffice/scorecards')}>
-                  <BarChart3 className="mr-2 h-4 w-4" />
-                  {t('quickActions.viewScorecards')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-2">
+                        <Zap className="h-4 w-4" />
+                        <span className="hidden sm:inline">{t('quickActions.title')}</span>
+                        <ChevronDown className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>{t('quickActions.title')}</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate('/backoffice/shipments/new')}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        {t('quickActions.createShipment')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/backoffice/action-required')}>
+                        <AlertTriangle className="mr-2 h-4 w-4" />
+                        {t('quickActions.viewExceptions')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/backoffice/customer-requests')}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        {t('quickActions.viewRequests')}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate('/backoffice/sla-breach-report')}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        {t('quickActions.slaBreaches')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/backoffice/scorecards')}>
+                        <BarChart3 className="mr-2 h-4 w-4" />
+                        {t('quickActions.viewScorecards')}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t('quickActions.tooltip', 'Quick access to common actions')}</p>
+              </TooltipContent>
+            </Tooltip>
             
             <BackofficeTour />
             <div data-tour="help-button">
               <HelpMenu userRole={role} />
             </div>
-            <div data-tour="theme-toggle">
-              <ThemeToggle />
-            </div>
-            <LanguageSwitcher />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div data-tour="theme-toggle">
+                  <ThemeToggle />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t('settings.toggleTheme')}</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <LanguageSwitcher />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t('settings.changeLanguage', 'Change language')}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </header>
 

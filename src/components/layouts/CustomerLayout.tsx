@@ -19,6 +19,11 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { CustomerHelpMenu } from '@/components/CustomerHelpMenu';
 import { CustomerTour } from '@/components/tour/CustomerTour';
 import { CustomerNotifications } from '@/components/portal/CustomerNotifications';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 interface CustomerLayoutProps {
@@ -174,9 +179,36 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
             <div data-tour="customer-help">
               <CustomerHelpMenu />
             </div>
-            <CustomerNotifications />
-            <ThemeToggle />
-            <LanguageSwitcher />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <CustomerNotifications />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t('notifications.title', 'Notifications')}</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <ThemeToggle />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t('settings.toggleTheme')}</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <LanguageSwitcher />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t('settings.changeLanguage', 'Change language')}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </header>
 
