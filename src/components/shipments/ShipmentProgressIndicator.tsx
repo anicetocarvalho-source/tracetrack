@@ -1,4 +1,5 @@
 import { Check, Circle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { ShipmentStatus, SHIPMENT_STATUSES, STATUS_LABELS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
@@ -117,13 +118,79 @@ export function ShipmentProgressIndicator({
   const progressPercentage = getProgressPercentage();
   const stages = compact ? COMPACT_STAGES : PROGRESS_STAGES.map(s => ({ status: s, label: STATUS_LABELS[s] }));
 
+  // Animation variants
+  const progressBarVariants = {
+    initial: { width: 0 },
+    animate: { 
+      width: `${progressPercentage}%`,
+      transition: { 
+        duration: 0.8, 
+        ease: [0.4, 0, 0.2, 1] as const
+      }
+    }
+  };
+
+  const stageIndicatorVariants = {
+    pending: { 
+      scale: 1,
+      backgroundColor: 'hsl(var(--muted))',
+    },
+    current: { 
+      scale: 1,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut" as const
+      }
+    },
+    completed: { 
+      scale: 1,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut" as const
+      }
+    }
+  };
+
+  const checkIconVariants = {
+    hidden: { scale: 0, opacity: 0 },
+    visible: { 
+      scale: 1, 
+      opacity: 1,
+      transition: {
+        type: "spring" as const,
+        stiffness: 500,
+        damping: 25
+      }
+    }
+  };
+
+  const labelVariants = {
+    pending: { opacity: 0.6 },
+    active: { 
+      opacity: 1,
+      transition: { duration: 0.3 }
+    }
+  };
+
   if (isCancelled) {
     return (
       <div className={cn("flex items-center gap-2 text-xs text-muted-foreground", className)}>
         <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-          <div className="h-full bg-muted-foreground/50 w-full" />
+          <motion.div 
+            className="h-full bg-muted-foreground/50"
+            initial={{ width: 0 }}
+            animate={{ width: '100%' }}
+            transition={{ duration: 0.5 }}
+          />
         </div>
-        <span className="font-medium text-muted-foreground">Cancelled</span>
+        <motion.span 
+          className="font-medium text-muted-foreground"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          Cancelled
+        </motion.span>
       </div>
     );
   }
@@ -132,9 +199,26 @@ export function ShipmentProgressIndicator({
     return (
       <div className={cn("flex items-center gap-2 text-xs text-destructive", className)}>
         <div className="flex-1 h-1.5 rounded-full bg-destructive/20 overflow-hidden">
-          <div className="h-full bg-destructive animate-pulse w-full" />
+          <motion.div 
+            className="h-full bg-destructive"
+            animate={{ 
+              opacity: [0.5, 1, 0.5],
+            }}
+            transition={{ 
+              duration: 1.5, 
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            style={{ width: '100%' }}
+          />
         </div>
-        <span className="font-medium">On Hold</span>
+        <motion.span 
+          className="font-medium"
+          animate={{ opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
+          On Hold
+        </motion.span>
       </div>
     );
   }
@@ -144,12 +228,15 @@ export function ShipmentProgressIndicator({
       {/* Progress Bar */}
       <div className="relative">
         <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-          <div 
+          <motion.div 
             className={cn(
-              "h-full rounded-full transition-all duration-500",
+              "h-full rounded-full",
               isDelivered ? "bg-green-500" : "bg-primary"
             )}
-            style={{ width: `${progressPercentage}%` }}
+            variants={progressBarVariants}
+            initial="initial"
+            animate="animate"
+            key={currentStatus} // Re-animate when status changes
           />
         </div>
       </div>
@@ -160,32 +247,63 @@ export function ShipmentProgressIndicator({
           const status = getCompactStageStatus(stage.status);
           
           return (
-            <div 
+            <motion.div 
               key={stage.status}
               className="flex flex-col items-center gap-1"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.3 }}
             >
-              <div 
+              <motion.div 
                 className={cn(
-                  "w-3 h-3 rounded-full flex items-center justify-center transition-all",
+                  "w-3 h-3 rounded-full flex items-center justify-center",
                   status === 'completed' && "bg-green-500 text-white",
                   status === 'current' && "bg-primary text-primary-foreground ring-2 ring-primary/30",
                   status === 'pending' && "bg-muted border border-muted-foreground/30"
                 )}
+                variants={stageIndicatorVariants}
+                animate={status}
+                whileHover={{ scale: 1.15 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
-                {status === 'completed' && <Check className="w-2 h-2" />}
-                {status === 'current' && <Circle className="w-1.5 h-1.5 fill-current" />}
-              </div>
-              <span 
+                {status === 'completed' && (
+                  <motion.div
+                    variants={checkIconVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    <Check className="w-2 h-2" />
+                  </motion.div>
+                )}
+                {status === 'current' && (
+                  <motion.div
+                    animate={{ 
+                      scale: [1, 1.3, 1],
+                      opacity: [1, 0.8, 1]
+                    }}
+                    transition={{ 
+                      duration: 1.5, 
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  >
+                    <Circle className="w-1.5 h-1.5 fill-current" />
+                  </motion.div>
+                )}
+              </motion.div>
+              <motion.span 
                 className={cn(
                   "text-[10px] leading-tight text-center max-w-[50px]",
                   status === 'completed' && "text-green-600 font-medium",
                   status === 'current' && "text-primary font-semibold",
                   status === 'pending' && "text-muted-foreground"
                 )}
+                variants={labelVariants}
+                animate={status === 'pending' ? 'pending' : 'active'}
               >
                 {stage.label}
-              </span>
-            </div>
+              </motion.span>
+            </motion.div>
           );
         })}
       </div>
