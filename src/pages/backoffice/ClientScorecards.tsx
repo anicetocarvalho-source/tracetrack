@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { BackofficeLayout } from "@/components/layouts/BackofficeLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -354,11 +355,12 @@ export default function ClientScorecards() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t("scorecards.title", "Client Scorecards")}</h1>
-          <p className="text-muted-foreground">
+    <BackofficeLayout>
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold">{t("scorecards.title", "Client Scorecards")}</h1>
+            <p className="text-muted-foreground">
             {t("scorecards.description", "Generate and view monthly performance summaries for clients")}
           </p>
         </div>
@@ -897,6 +899,7 @@ export default function ClientScorecards() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </BackofficeLayout>
   );
 }
