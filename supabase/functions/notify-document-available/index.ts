@@ -189,17 +189,32 @@ serve(async (req) => {
 
     console.log("Email sent successfully:", emailResponse);
 
+    // Get the user who triggered this notification from the Authorization header
+    const authHeader = req.headers.get("Authorization");
+    let actorUserId = null;
+    if (authHeader) {
+      try {
+        const token = authHeader.replace("Bearer ", "");
+        const { data: { user } } = await supabase.auth.getUser(token);
+        actorUserId = user?.id || null;
+      } catch (e) {
+        console.log("Could not extract user from token");
+      }
+    }
+
     // Log the notification in audit log
     await supabase.from("audit_log").insert({
       entity_type: "shipment_document",
       entity_id: documentId,
       action: "DOCUMENT_NOTIFICATION_SENT",
+      actor_user_id: actorUserId,
       metadata_json: {
         shipment_id: shipmentId,
         shipment_ref: shipment.shipment_ref,
         filename,
         document_type: documentType,
         recipients: allEmails,
+        recipients_count: allEmails.length,
       },
     });
 
