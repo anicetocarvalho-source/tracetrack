@@ -58,6 +58,7 @@ export default function CustomerRequests() {
 
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [clientFilter, setClientFilter] = useState<string>('ALL');
+  const [requestTypeFilter, setRequestTypeFilter] = useState<string>('ALL');
   const [shipmentRefSearch, setShipmentRefSearch] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
@@ -130,13 +131,18 @@ export default function CustomerRequests() {
     },
   });
 
-  // Filter requests based on client and shipment reference
+  // Filter requests based on client, request type, and shipment reference
   const filteredRequests = useMemo(() => {
     if (!requests) return [];
     
     return requests.filter((request) => {
       // Client filter
       if (clientFilter !== 'ALL' && request.shipment?.client_id !== clientFilter) {
+        return false;
+      }
+      
+      // Request type filter
+      if (requestTypeFilter !== 'ALL' && request.request_type !== requestTypeFilter) {
         return false;
       }
       
@@ -152,9 +158,9 @@ export default function CustomerRequests() {
       
       return true;
     });
-  }, [requests, clientFilter, shipmentRefSearch]);
+  }, [requests, clientFilter, requestTypeFilter, shipmentRefSearch]);
 
-  const hasActiveFilters = clientFilter !== 'ALL' || shipmentRefSearch.trim() !== '';
+  const hasActiveFilters = clientFilter !== 'ALL' || requestTypeFilter !== 'ALL' || shipmentRefSearch.trim() !== '';
 
   // Pagination calculations
   const totalItems = filteredRequests.length;
@@ -172,6 +178,7 @@ export default function CustomerRequests() {
   const clearAllFilters = () => {
     setStatusFilter('ALL');
     setClientFilter('ALL');
+    setRequestTypeFilter('ALL');
     setShipmentRefSearch('');
     setCurrentPage(1);
   };
@@ -284,6 +291,21 @@ export default function CustomerRequests() {
                   {clients?.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
                       {client.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Request type filter */}
+              <Select value={requestTypeFilter} onValueChange={(v) => handleFilterChange(setRequestTypeFilter, v)}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder={t('requests.filterByType')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">{t('requests.allTypes')}</SelectItem>
+                  {Object.entries(REQUEST_TYPE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
                     </SelectItem>
                   ))}
                 </SelectContent>
