@@ -1,4 +1,31 @@
 {
+  "aiSuggestion": {
+    "title": "Suggested Next Action",
+    "analyzing": "Analyzing shipment...",
+    "analyzingDesc": "AI is analyzing shipment data to suggest the best action",
+    "unavailable": "Suggestion unavailable",
+    "tryAgain": "Try again later",
+    "showAgain": "Show AI suggestion",
+    "recommendedStatus": "Recommended status",
+    "reason": "Reason",
+    "apply": "Apply",
+    "dismiss": "Dismiss",
+    "applied": "Suggestion applied successfully",
+    "applyError": "Error applying suggestion",
+    "priority": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "actionType": {
+      "status_change": "Status Change",
+      "escalate": "Escalate",
+      "request_docs": "Request Docs",
+      "inform_client": "Inform Client",
+      "investigate": "Investigate",
+      "wait": "Wait"
+    }
+  },
   "tracking": {
     "timeline": "Tracking Timeline",
     "noEvents": "No tracking events yet",

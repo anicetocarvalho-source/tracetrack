@@ -1,4 +1,31 @@
 {
+  "aiSuggestion": {
+    "title": "Próxima Ação Sugerida",
+    "analyzing": "A analisar envio...",
+    "analyzingDesc": "A IA está a analisar os dados do envio para sugerir a melhor ação",
+    "unavailable": "Sugestão indisponível",
+    "tryAgain": "Tente novamente mais tarde",
+    "showAgain": "Mostrar sugestão de IA",
+    "recommendedStatus": "Estado recomendado",
+    "reason": "Motivo",
+    "apply": "Aplicar",
+    "dismiss": "Ignorar",
+    "applied": "Sugestão aplicada com sucesso",
+    "applyError": "Erro ao aplicar sugestão",
+    "priority": {
+      "high": "Alta",
+      "medium": "Média",
+      "low": "Baixa"
+    },
+    "actionType": {
+      "status_change": "Mudança de Estado",
+      "escalate": "Escalar",
+      "request_docs": "Solicitar Docs",
+      "inform_client": "Informar Cliente",
+      "investigate": "Investigar",
+      "wait": "Aguardar"
+    }
+  },
   "common": {
     "search": "Pesquisar",
     "loading": "Carregando...",
