@@ -130,9 +130,6 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
               <p className="text-sm font-medium truncate text-foreground">{profile?.name}</p>
               <p className="text-xs text-muted-foreground truncate">{t('nav.customer')}</p>
             </div>
-            <div data-tour="customer-help">
-              <CustomerHelpMenu />
-            </div>
           </div>
           <Button
             variant="ghost"
@@ -174,6 +171,9 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
           
           <div className="flex items-center gap-1 sm:gap-2">
             <CustomerTour />
+            <div data-tour="customer-help">
+              <CustomerHelpMenu />
+            </div>
             <CustomerNotifications />
             <ThemeToggle />
             <LanguageSwitcher />
