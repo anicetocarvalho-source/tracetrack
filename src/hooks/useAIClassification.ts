@@ -77,7 +77,7 @@ export function useAIClassification({ entityType, entityId }: UseAIClassificatio
       await supabase.from('audit_log').insert([{
         entity_type: entityType,
         entity_id: entityId || null,
-        action: 'AI_CLASSIFICATION',
+        action: 'AI_CLASSIFICATION_ACCEPTED',
         actor_user_id: user.id,
         metadata_json: {
           ai_suggestion: toJson(aiSuggestion),
