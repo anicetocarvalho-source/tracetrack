@@ -131,7 +131,9 @@
     "open": "Open",
     "inProgress": "In Progress",
     "allStatuses": "All Statuses",
-    "startProgress": "Start"
+    "startProgress": "Start",
+    "myRequests": "My Requests",
+    "requestSubmitted": "Request submitted successfully"
   },
   "nav": {
     "dashboard": "Dashboard",
