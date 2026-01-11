@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Upload, ChevronLeft, ChevronRight, AlertTriangle, CheckSquare, X } from 'lucide-react';
+import { Plus, Search, Upload, ChevronLeft, ChevronRight, AlertTriangle, CheckSquare, X, Package, Clock, TruckIcon, CheckCircle2, AlertCircle, Filter, LayoutGrid, List } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,8 +24,22 @@ import { DateRange } from 'react-day-picker';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import type { ExceptionSeverity } from '@/lib/constants';
+import { Toggle } from '@/components/ui/toggle';
 
 const PAGE_SIZE = 20;
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+};
 
 export default function Shipments() {
   const { t } = useTranslation();
@@ -35,6 +50,8 @@ export default function Shipments() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [page, setPage] = useState(0);
+  const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -73,6 +90,25 @@ export default function Shipments() {
       const { data, error, count } = await query;
       if (error) throw error;
       return { shipments: data, totalCount: count || 0 };
+    },
+  });
+
+  // Fetch stats for quick overview
+  const { data: stats } = useQuery({
+    queryKey: ['shipments-stats'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('shipments')
+        .select('current_status');
+      if (error) throw error;
+      
+      const total = data.length;
+      const inTransit = data.filter(s => s.current_status === 'IN_TRANSIT').length;
+      const delivered = data.filter(s => s.current_status === 'DELIVERED').length;
+      const pending = data.filter(s => ['RECEIVED', 'REGISTERED', 'DOCS_VALIDATION', 'PROCESSING'].includes(s.current_status)).length;
+      const issues = data.filter(s => ['ON_HOLD_INCIDENT', 'CANCELLED'].includes(s.current_status)).length;
+      
+      return { total, inTransit, delivered, pending, issues };
     },
   });
 
@@ -124,6 +160,7 @@ export default function Shipments() {
     },
     onSuccess: (_, { ids, newStatus }) => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
+      queryClient.invalidateQueries({ queryKey: ['shipments-stats'] });
       toast.success(t('shipments.bulkUpdateSuccess', { count: ids.length, status: t(`status.${newStatus}`) }));
       setSelectedIds(new Set());
       setBulkStatusDialogOpen(false);
@@ -161,234 +198,537 @@ export default function Shipments() {
     bulkUpdateMutation.mutate({ ids: Array.from(selectedIds), newStatus: bulkNewStatus });
   };
 
+  const statsCards = [
+    {
+      label: t('shipments.totalShipments'),
+      value: stats?.total || 0,
+      icon: Package,
+      color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+      iconBg: 'bg-blue-500/20',
+    },
+    {
+      label: t('shipments.inTransit'),
+      value: stats?.inTransit || 0,
+      icon: TruckIcon,
+      color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+      iconBg: 'bg-amber-500/20',
+    },
+    {
+      label: t('shipments.delivered'),
+      value: stats?.delivered || 0,
+      icon: CheckCircle2,
+      color: 'bg-green-500/10 text-green-600 dark:text-green-400',
+      iconBg: 'bg-green-500/20',
+    },
+    {
+      label: t('shipments.pending'),
+      value: stats?.pending || 0,
+      icon: Clock,
+      color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
+      iconBg: 'bg-purple-500/20',
+    },
+    {
+      label: t('shipments.issues'),
+      value: stats?.issues || 0,
+      icon: AlertCircle,
+      color: 'bg-red-500/10 text-red-600 dark:text-red-400',
+      iconBg: 'bg-red-500/20',
+    },
+  ];
+
   return (
     <BackofficeLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <motion.div 
+        className="space-y-6"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {/* Header */}
+        <motion.div 
+          variants={itemVariants}
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        >
           <div>
-            <h1 className="text-2xl font-bold">{t('shipments.title')}</h1>
-            <p className="text-muted-foreground">{t('shipments.subtitle')}</p>
+            <h1 className="text-3xl font-bold tracking-tight">{t('shipments.title')}</h1>
+            <p className="text-muted-foreground mt-1">{t('shipments.subtitle')}</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowImportDialog(true)}>
-              <Upload className="w-4 h-4 mr-2" />
-              {t('shipments.importCSV')}
+            <Button variant="outline" onClick={() => setShowImportDialog(true)} className="gap-2">
+              <Upload className="w-4 h-4" />
+              <span className="hidden sm:inline">{t('shipments.importCSV')}</span>
             </Button>
-            <Button onClick={() => navigate('/backoffice/shipments/new')}>
-              <Plus className="w-4 h-4 mr-2" />
+            <Button onClick={() => navigate('/backoffice/shipments/new')} className="gap-2">
+              <Plus className="w-4 h-4" />
               {t('shipments.newShipment')}
             </Button>
           </div>
-        </div>
+        </motion.div>
 
         <CSVImportDialog open={showImportDialog} onOpenChange={setShowImportDialog} />
 
-        {/* Filters */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder={t('shipments.searchPlaceholder')}
-                  className="pl-10"
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setPage(0);
-                  }}
-                />
-              </div>
-              <Select 
-                value={statusFilter} 
-                onValueChange={(value) => {
-                  setStatusFilter(value);
+        {/* Stats Cards */}
+        <motion.div 
+          variants={itemVariants}
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"
+        >
+          {statsCards.map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.05 }}
+            >
+              <Card className={`${stat.color} border-0 hover:shadow-md transition-all duration-300 cursor-pointer group`}
+                onClick={() => {
+                  if (stat.label === t('shipments.inTransit')) {
+                    setStatusFilter('IN_TRANSIT');
+                  } else if (stat.label === t('shipments.delivered')) {
+                    setStatusFilter('DELIVERED');
+                  } else if (stat.label === t('shipments.issues')) {
+                    setStatusFilter('ON_HOLD_INCIDENT');
+                  } else {
+                    setStatusFilter('all');
+                  }
                   setPage(0);
                 }}
               >
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue placeholder={t('common.all')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('common.all')}</SelectItem>
-                  {SHIPMENT_STATUSES.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {t(`status.${status}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <DateRangePickerCompact
-                dateRange={dateRange}
-                onDateRangeChange={(range) => {
-                  setDateRange(range);
-                  setPage(0);
-                }}
-                placeholder={t('dateRange.selectRange')}
-                className="w-full sm:w-auto"
-              />
-            </div>
-          </CardContent>
-        </Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium opacity-80">{stat.label}</p>
+                      <p className="text-2xl font-bold mt-1 group-hover:scale-105 transition-transform">
+                        {stat.value}
+                      </p>
+                    </div>
+                    <div className={`${stat.iconBg} p-3 rounded-xl`}>
+                      <stat.icon className="w-5 h-5" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
 
-        {/* Bulk Actions Bar */}
-        {someSelected && (
-          <Card className="bg-primary/5 border-primary/20">
-            <CardContent className="py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <CheckSquare className="w-5 h-5 text-primary" />
-                  <span className="font-medium">
-                    {t('shipments.selectedCount', { count: selectedIds.size })}
-                  </span>
+        {/* Search and Filters */}
+        <motion.div variants={itemVariants}>
+          <Card className="border-muted/50">
+            <CardContent className="p-4">
+              <div className="flex flex-col gap-4">
+                {/* Main Search Row */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder={t('shipments.searchPlaceholder')}
+                      className="pl-10 h-10"
+                      value={search}
+                      onChange={(e) => {
+                        setSearch(e.target.value);
+                        setPage(0);
+                      }}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowFilters(!showFilters)}
+                      className={showFilters ? 'bg-muted' : ''}
+                    >
+                      <Filter className="w-4 h-4 mr-2" />
+                      {t('common.filters')}
+                      {(statusFilter !== 'all' || dateRange) && (
+                        <Badge variant="secondary" className="ml-2 h-5 px-1.5">
+                          {(statusFilter !== 'all' ? 1 : 0) + (dateRange ? 1 : 0)}
+                        </Badge>
+                      )}
+                    </Button>
+                    <div className="flex border rounded-md">
+                      <Toggle
+                        pressed={viewMode === 'table'}
+                        onPressedChange={() => setViewMode('table')}
+                        className="rounded-r-none border-r"
+                        aria-label="Table view"
+                      >
+                        <List className="w-4 h-4" />
+                      </Toggle>
+                      <Toggle
+                        pressed={viewMode === 'cards'}
+                        onPressedChange={() => setViewMode('cards')}
+                        className="rounded-l-none"
+                        aria-label="Card view"
+                      >
+                        <LayoutGrid className="w-4 h-4" />
+                      </Toggle>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setBulkStatusDialogOpen(true)}
-                  >
-                    {t('shipments.bulkUpdateStatus')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedIds(new Set())}
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    {t('common.clear')}
-                  </Button>
-                </div>
+
+                {/* Expandable Filters */}
+                <AnimatePresence>
+                  {showFilters && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="flex flex-col sm:flex-row gap-3 pt-3 border-t">
+                        <Select 
+                          value={statusFilter} 
+                          onValueChange={(value) => {
+                            setStatusFilter(value);
+                            setPage(0);
+                          }}
+                        >
+                          <SelectTrigger className="w-full sm:w-[200px]">
+                            <SelectValue placeholder={t('common.all')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">{t('common.all')}</SelectItem>
+                            {SHIPMENT_STATUSES.map((status) => (
+                              <SelectItem key={status} value={status}>
+                                {t(`status.${status}`)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <DateRangePickerCompact
+                          dateRange={dateRange}
+                          onDateRangeChange={(range) => {
+                            setDateRange(range);
+                            setPage(0);
+                          }}
+                          placeholder={t('dateRange.selectRange')}
+                          className="w-full sm:w-auto"
+                        />
+                        {(statusFilter !== 'all' || dateRange) && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              setStatusFilter('all');
+                              setDateRange(undefined);
+                              setPage(0);
+                            }}
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            {t('common.clearFilters')}
+                          </Button>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </CardContent>
           </Card>
-        )}
+        </motion.div>
 
-        {/* Table */}
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">
-                      <Checkbox
-                        checked={allSelected}
-                        onCheckedChange={toggleSelectAll}
-                        aria-label={t('common.selectAll')}
-                      />
-                    </TableHead>
-                    <TableHead>{t('shipments.shipmentRef')}</TableHead>
-                    <TableHead>{t('shipments.client')}</TableHead>
-                    <TableHead>{t('shipments.shippingLine')}</TableHead>
-                    <TableHead>{t('shipments.blReference')}</TableHead>
-                    <TableHead>{t('shipments.containers')}</TableHead>
-                    <TableHead>{t('common.status')}</TableHead>
-                    <TableHead>{t('shipments.createdAt')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {isLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8">
-                        {t('common.loading')}
-                      </TableCell>
+        {/* Bulk Actions Bar */}
+        <AnimatePresence>
+          {someSelected && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <Card className="bg-primary/5 border-primary/20">
+                <CardContent className="py-3 px-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-primary/10 p-2 rounded-lg">
+                        <CheckSquare className="w-5 h-5 text-primary" />
+                      </div>
+                      <span className="font-medium">
+                        {t('shipments.selectedCount', { count: selectedIds.size })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => setBulkStatusDialogOpen(true)}
+                      >
+                        {t('shipments.bulkUpdateStatus')}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedIds(new Set())}
+                      >
+                        <X className="w-4 h-4 mr-1" />
+                        {t('common.clear')}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Content - Table or Cards View */}
+        <motion.div variants={itemVariants}>
+          {viewMode === 'table' ? (
+            <Card className="border-muted/50 overflow-hidden">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/30 hover:bg-muted/30">
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={allSelected}
+                          onCheckedChange={toggleSelectAll}
+                          aria-label={t('common.selectAll')}
+                        />
+                      </TableHead>
+                      <TableHead className="font-semibold">{t('shipments.shipmentRef')}</TableHead>
+                      <TableHead className="font-semibold">{t('shipments.client')}</TableHead>
+                      <TableHead className="font-semibold">{t('shipments.shippingLine')}</TableHead>
+                      <TableHead className="font-semibold">{t('shipments.blReference')}</TableHead>
+                      <TableHead className="font-semibold">{t('shipments.containers')}</TableHead>
+                      <TableHead className="font-semibold">{t('common.status')}</TableHead>
+                      <TableHead className="font-semibold">{t('shipments.createdAt')}</TableHead>
                     </TableRow>
-                  ) : shipments.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                        {t('shipments.noShipments')}
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    shipments.map((shipment: any) => {
-                      const exception = exceptionsByShipment[shipment.id];
-                      const isSelected = selectedIds.has(shipment.id);
-                      return (
-                        <TableRow 
-                          key={shipment.id} 
-                          className={`cursor-pointer hover:bg-muted/50 ${exception?.severity === 'P1' ? 'bg-destructive/5' : ''} ${isSelected ? 'bg-primary/5' : ''}`}
-                        >
-                          <TableCell onClick={(e) => e.stopPropagation()}>
-                            <Checkbox
-                              checked={isSelected}
-                              onCheckedChange={() => toggleSelect(shipment.id)}
-                              aria-label={t('common.selectRow')}
-                            />
-                          </TableCell>
-                          <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)}>
-                            <div className="flex items-center gap-2">
-                              <div>
-                                <p className="font-medium">{shipment.shipment_ref}</p>
-                                <p className="text-sm text-muted-foreground">{shipment.client_ref}</p>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-12">
+                          <div className="flex flex-col items-center gap-3">
+                            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                            <span className="text-muted-foreground">{t('common.loading')}</span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : shipments.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-12">
+                          <div className="flex flex-col items-center gap-3">
+                            <Package className="w-12 h-12 text-muted-foreground/50" />
+                            <p className="text-muted-foreground">{t('shipments.noShipments')}</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      shipments.map((shipment: any, index: number) => {
+                        const exception = exceptionsByShipment[shipment.id];
+                        const isSelected = selectedIds.has(shipment.id);
+                        return (
+                          <motion.tr 
+                            key={shipment.id}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.02 }}
+                            className={`cursor-pointer hover:bg-muted/50 transition-colors ${exception?.severity === 'P1' ? 'bg-destructive/5' : ''} ${isSelected ? 'bg-primary/5' : ''}`}
+                          >
+                            <TableCell onClick={(e) => e.stopPropagation()}>
+                              <Checkbox
+                                checked={isSelected}
+                                onCheckedChange={() => toggleSelect(shipment.id)}
+                                aria-label={t('common.selectRow')}
+                              />
+                            </TableCell>
+                            <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)}>
+                              <div className="flex items-center gap-2">
+                                <div>
+                                  <p className="font-semibold text-foreground">{shipment.shipment_ref}</p>
+                                  <p className="text-sm text-muted-foreground">{shipment.client_ref}</p>
+                                </div>
+                                {exception && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Badge className={`${SEVERITY_CLASSES[exception.severity]} flex items-center gap-1 animate-pulse`}>
+                                          <AlertTriangle className="h-3 w-3" />
+                                          {SEVERITY_LABELS[exception.severity]}
+                                          {exception.count > 1 && ` (${exception.count})`}
+                                        </Badge>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        {exception.count} {t('exceptions.openExceptions').toLowerCase()}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
                               </div>
-                              {exception && (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Badge className={`${SEVERITY_CLASSES[exception.severity]} flex items-center gap-1`}>
-                                        <AlertTriangle className="h-3 w-3" />
-                                        {SEVERITY_LABELS[exception.severity]}
-                                        {exception.count > 1 && ` (${exception.count})`}
-                                      </Badge>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      {exception.count} {t('exceptions.openExceptions').toLowerCase()}
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)}>{shipment.client?.name}</TableCell>
-                          <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)}>{shipment.shipping_line}</TableCell>
-                          <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)} className="font-mono text-sm">{shipment.bl_reference}</TableCell>
-                          <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)}>{shipment.containers?.length || 0}</TableCell>
-                          <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)}>
-                            <StatusBadge status={shipment.current_status} />
-                          </TableCell>
-                          <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)} className="text-muted-foreground">
-                            {safeFormatDate(shipment.created_at, 'MMM d, yyyy')}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-            
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t">
-                <span className="text-sm text-muted-foreground">
-                  {t('common.showing')} {page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, totalCount)} {t('common.of')} {totalCount}
-                </span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage(p => p - 1)}
-                    disabled={!hasPrevPage}
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
-                  <span className="text-sm">
-                    {page + 1} / {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage(p => p + 1)}
-                    disabled={!hasNextPage}
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </div>
+                            </TableCell>
+                            <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)} className="font-medium">
+                              {shipment.client?.name}
+                            </TableCell>
+                            <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)}>
+                              {shipment.shipping_line}
+                            </TableCell>
+                            <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)} className="font-mono text-sm">
+                              {shipment.bl_reference}
+                            </TableCell>
+                            <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)}>
+                              <Badge variant="outline" className="font-medium">
+                                {shipment.containers?.length || 0}
+                              </Badge>
+                            </TableCell>
+                            <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)}>
+                              <StatusBadge status={shipment.current_status} />
+                            </TableCell>
+                            <TableCell onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)} className="text-muted-foreground">
+                              {safeFormatDate(shipment.created_at, 'MMM d, yyyy')}
+                            </TableCell>
+                          </motion.tr>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
               </div>
-            )}
-          </CardContent>
-        </Card>
+              
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/20">
+                  <span className="text-sm text-muted-foreground">
+                    {t('common.showing')} <span className="font-medium text-foreground">{page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, totalCount)}</span> {t('common.of')} <span className="font-medium text-foreground">{totalCount}</span>
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage(p => p - 1)}
+                      disabled={!hasPrevPage}
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <span className="text-sm font-medium px-2">
+                      {page + 1} / {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage(p => p + 1)}
+                      disabled={!hasNextPage}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </Card>
+          ) : (
+            /* Cards View */
+            <div className="space-y-4">
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <span className="text-muted-foreground mt-3">{t('common.loading')}</span>
+                </div>
+              ) : shipments.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Package className="w-12 h-12 text-muted-foreground/50" />
+                  <p className="text-muted-foreground mt-3">{t('shipments.noShipments')}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {shipments.map((shipment: any, index: number) => {
+                    const exception = exceptionsByShipment[shipment.id];
+                    const isSelected = selectedIds.has(shipment.id);
+                    return (
+                      <motion.div
+                        key={shipment.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.03 }}
+                      >
+                        <Card 
+                          className={`cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${exception?.severity === 'P1' ? 'border-destructive/50 bg-destructive/5' : ''} ${isSelected ? 'ring-2 ring-primary bg-primary/5' : ''}`}
+                          onClick={() => navigate(`/backoffice/shipments/${shipment.id}`)}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-center gap-2">
+                                <Checkbox
+                                  checked={isSelected}
+                                  onCheckedChange={() => toggleSelect(shipment.id)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  aria-label={t('common.selectRow')}
+                                />
+                                <div>
+                                  <p className="font-semibold">{shipment.shipment_ref}</p>
+                                  <p className="text-sm text-muted-foreground">{shipment.client_ref}</p>
+                                </div>
+                              </div>
+                              <StatusBadge status={shipment.current_status} />
+                            </div>
+
+                            {exception && (
+                              <Badge className={`${SEVERITY_CLASSES[exception.severity]} flex items-center gap-1 w-fit mb-3 animate-pulse`}>
+                                <AlertTriangle className="h-3 w-3" />
+                                {SEVERITY_LABELS[exception.severity]} - {exception.count} {t('exceptions.openExceptions').toLowerCase()}
+                              </Badge>
+                            )}
+
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">{t('shipments.client')}</span>
+                                <span className="font-medium">{shipment.client?.name}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">{t('shipments.shippingLine')}</span>
+                                <span>{shipment.shipping_line}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">{t('shipments.containers')}</span>
+                                <Badge variant="outline">{shipment.containers?.length || 0}</Badge>
+                              </div>
+                              <div className="flex justify-between pt-2 border-t">
+                                <span className="text-muted-foreground">{t('shipments.createdAt')}</span>
+                                <span className="text-muted-foreground">{safeFormatDate(shipment.created_at, 'MMM d, yyyy')}</span>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Pagination for Cards View */}
+              {totalPages > 1 && (
+                <Card className="border-muted/50">
+                  <CardContent className="py-3 px-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        {t('common.showing')} <span className="font-medium text-foreground">{page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, totalCount)}</span> {t('common.of')} <span className="font-medium text-foreground">{totalCount}</span>
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPage(p => p - 1)}
+                          disabled={!hasPrevPage}
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </Button>
+                        <span className="text-sm font-medium px-2">
+                          {page + 1} / {totalPages}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPage(p => p + 1)}
+                          disabled={!hasNextPage}
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+        </motion.div>
 
         {/* Bulk Status Update Dialog */}
         <Dialog open={bulkStatusDialogOpen} onOpenChange={setBulkStatusDialogOpen}>
@@ -426,7 +766,7 @@ export default function Shipments() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
+      </motion.div>
     </BackofficeLayout>
   );
 }
