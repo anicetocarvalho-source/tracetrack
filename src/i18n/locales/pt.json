@@ -62,7 +62,8 @@
     "loadMore": "Carregar mais",
     "selectAll": "Selecionar todos",
     "selectRow": "Selecionar linha",
-    "updating": "A atualizar..."
+    "updating": "A atualizar...",
+    "you": "você"
   },
   "notifications": {
     "enableTitle": "Ativar Alertas SLA",
@@ -240,7 +241,14 @@
     "showingRequests": "A mostrar {{count}} de {{total}} pedidos",
     "searchPlaceholder": "Pesquisar por envio ou mensagem...",
     "resolved": "Resolvido",
-    "resolvedBy": "Resolvido por {{name}}"
+    "resolvedBy": "Resolvido por {{name}}",
+    "comments": "Comentários",
+    "noComments": "Sem comentários ainda. Adicione um comentário para dar seguimento ao pedido.",
+    "addCommentPlaceholder": "Escreva o seu comentário ou follow-up...",
+    "sendComment": "Enviar",
+    "commentAdded": "Comentário adicionado",
+    "commentError": "Falha ao adicionar comentário",
+    "cannotCommentResolved": "Não é possível adicionar comentários a pedidos resolvidos"
   },
   "nav": {
     "dashboard": "Painel",

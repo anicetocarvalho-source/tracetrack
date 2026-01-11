@@ -62,7 +62,8 @@
     "loadMore": "Load more",
     "selectAll": "Select all",
     "selectRow": "Select row",
-    "updating": "Updating..."
+    "updating": "Updating...",
+    "you": "you"
   },
   "notifications": {
     "enableTitle": "Enable SLA Alerts",
@@ -240,7 +241,14 @@
     "showingRequests": "Showing {{count}} of {{total}} requests",
     "searchPlaceholder": "Search by shipment or message...",
     "resolved": "Resolved",
-    "resolvedBy": "Resolved by {{name}}"
+    "resolvedBy": "Resolved by {{name}}",
+    "comments": "Comments",
+    "noComments": "No comments yet. Add a comment to follow up on your request.",
+    "addCommentPlaceholder": "Write your comment or follow-up...",
+    "sendComment": "Send",
+    "commentAdded": "Comment added",
+    "commentError": "Failed to add comment",
+    "cannotCommentResolved": "Cannot add comments to resolved requests"
   },
   "nav": {
     "dashboard": "Dashboard",

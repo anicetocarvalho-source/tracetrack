@@ -62,7 +62,8 @@
     "loadMore": "Charger plus",
     "selectAll": "Tout sélectionner",
     "selectRow": "Sélectionner la ligne",
-    "updating": "Mise à jour..."
+    "updating": "Mise à jour...",
+    "you": "vous"
   },
   "notifications": {
     "enableTitle": "Activer les Alertes SLA",
@@ -240,7 +241,14 @@
     "showingRequests": "Affichage de {{count}} sur {{total}} demandes",
     "searchPlaceholder": "Rechercher par expédition ou message...",
     "resolved": "Résolu",
-    "resolvedBy": "Résolu par {{name}}"
+    "resolvedBy": "Résolu par {{name}}",
+    "comments": "Commentaires",
+    "noComments": "Aucun commentaire encore. Ajoutez un commentaire pour suivre votre demande.",
+    "addCommentPlaceholder": "Écrivez votre commentaire ou suivi...",
+    "sendComment": "Envoyer",
+    "commentAdded": "Commentaire ajouté",
+    "commentError": "Échec de l'ajout du commentaire",
+    "cannotCommentResolved": "Impossible d'ajouter des commentaires aux demandes résolues"
   },
   "nav": {
     "dashboard": "Tableau de bord",

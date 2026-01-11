@@ -10,13 +10,13 @@ import {
   Package,
   Search,
   Filter,
-  AlertCircle
+  AlertCircle,
+  ChevronDown
 } from 'lucide-react';
 import { CustomerLayout } from '@/components/layouts/CustomerLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -24,12 +24,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { CustomerRequest, RequestStatus, REQUEST_TYPE_LABELS, REQUEST_STATUS_LABELS } from '@/types/documents';
 import { formatDistanceToNow, format } from 'date-fns';
 import { pt, enUS, fr } from 'date-fns/locale';
-import { SubmitRequestDialog } from '@/components/requests/SubmitRequestDialog';
+import { RequestComments } from '@/components/requests/RequestComments';
 
 const getLocale = (lang: string) => {
   switch (lang) {
@@ -293,68 +298,79 @@ export default function MyRequests() {
             ) : (
               <div className="space-y-4">
                 {filteredRequests.map((request) => (
-                  <div
-                    key={request.id}
-                    className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                      <div className="flex-1 space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="outline" className="font-mono">
-                            {REQUEST_TYPE_LABELS[request.request_type]}
-                          </Badge>
-                          <Badge 
-                            variant={getStatusVariant(request.status)}
-                            className="flex items-center gap-1"
-                          >
-                            {getStatusIcon(request.status)}
-                            {REQUEST_STATUS_LABELS[request.status]}
-                          </Badge>
+                  <Collapsible key={request.id}>
+                    <div className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                        <div className="flex-1 space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant="outline" className="font-mono">
+                              {REQUEST_TYPE_LABELS[request.request_type]}
+                            </Badge>
+                            <Badge 
+                              variant={getStatusVariant(request.status)}
+                              className="flex items-center gap-1"
+                            >
+                              {getStatusIcon(request.status)}
+                              {REQUEST_STATUS_LABELS[request.status]}
+                            </Badge>
+                          </div>
+                          
+                          <p className="text-sm text-foreground line-clamp-2">
+                            {request.message}
+                          </p>
+                          
+                          {request.shipment && (
+                            <Link 
+                              to={`/portal/shipments/${request.shipment_id}`}
+                              className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                            >
+                              <Package className="w-3.5 h-3.5" />
+                              {request.shipment.shipment_ref}
+                              <span className="text-muted-foreground">
+                                ({request.shipment.client_ref})
+                              </span>
+                            </Link>
+                          )}
+                          
+                          {request.status === 'RESOLVED' && request.resolution_note && (
+                            <div className="mt-2 p-3 rounded-md bg-green-500/10 border border-green-500/20">
+                              <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
+                                {t('requests.resolution')}
+                              </p>
+                              <p className="text-sm text-foreground">
+                                {request.resolution_note}
+                              </p>
+                              {request.resolver && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {t('requests.resolvedBy', { name: request.resolver.name })} •{' '}
+                                  {request.resolved_at && format(new Date(request.resolved_at), 'PPp', { locale })}
+                                </p>
+                              )}
+                            </div>
+                          )}
                         </div>
                         
-                        <p className="text-sm text-foreground line-clamp-2">
-                          {request.message}
-                        </p>
-                        
-                        {request.shipment && (
-                          <Link 
-                            to={`/portal/shipments/${request.shipment_id}`}
-                            className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-                          >
-                            <Package className="w-3.5 h-3.5" />
-                            {request.shipment.shipment_ref}
-                            <span className="text-muted-foreground">
-                              ({request.shipment.client_ref})
-                            </span>
-                          </Link>
-                        )}
-                        
-                        {request.status === 'RESOLVED' && request.resolution_note && (
-                          <div className="mt-2 p-3 rounded-md bg-green-500/10 border border-green-500/20">
-                            <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-1">
-                              {t('requests.resolution')}
-                            </p>
-                            <p className="text-sm text-foreground">
-                              {request.resolution_note}
-                            </p>
-                            {request.resolver && (
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {t('requests.resolvedBy', { name: request.resolver.name })} •{' '}
-                                {request.resolved_at && format(new Date(request.resolved_at), 'PPp', { locale })}
-                              </p>
-                            )}
-                          </div>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground whitespace-nowrap">
+                            {formatDistanceToNow(new Date(request.created_at), { 
+                              addSuffix: true, 
+                              locale 
+                            })}
+                          </span>
+                          <CollapsibleTrigger className="p-1.5 rounded-md hover:bg-muted transition-colors group">
+                            <ChevronDown className="w-4 h-4 text-muted-foreground group-data-[state=open]:rotate-180 transition-transform" />
+                          </CollapsibleTrigger>
+                        </div>
                       </div>
                       
-                      <div className="text-sm text-muted-foreground whitespace-nowrap">
-                        {formatDistanceToNow(new Date(request.created_at), { 
-                          addSuffix: true, 
-                          locale 
-                        })}
-                      </div>
+                      <CollapsibleContent className="mt-4 pt-4 border-t">
+                        <RequestComments 
+                          requestId={request.id} 
+                          requestStatus={request.status} 
+                        />
+                      </CollapsibleContent>
                     </div>
-                  </div>
+                  </Collapsible>
                 ))}
               </div>
             )}
