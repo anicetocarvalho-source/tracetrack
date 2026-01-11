@@ -235,7 +235,8 @@
     "scorecards": "Fiches Client",
     "scorecard": "Ma Fiche",
     "customer": "Client",
-    "customerRequests": "Demandes Clients"
+    "customerRequests": "Demandes Clients",
+    "customerPortal": "Portail Client"
   },
   "scorecards": {
     "title": "Fiches Client",

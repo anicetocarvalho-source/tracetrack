@@ -66,7 +66,6 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
         <div className="h-16 flex items-center justify-between px-4 border-b border-yellow-500 bg-dhl-yellow">
           <div className="flex items-center gap-2">
             <img src={dhlLogoRed} alt="DHL" className="h-6 w-auto" />
-            <span className="font-semibold text-sm text-foreground">Customer Portal</span>
           </div>
           <Button 
             variant="ghost" 
@@ -158,6 +157,7 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
           >
             <Menu className="w-5 h-5" />
           </Button>
+          <h1 className="text-lg font-semibold text-foreground">{t('nav.customerPortal')}</h1>
           <div className="flex-1" />
           <div className="flex items-center gap-2">
             <ThemeToggle />
