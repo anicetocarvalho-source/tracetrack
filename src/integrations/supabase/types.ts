@@ -322,6 +322,38 @@ export type Database = {
         }
         Relationships: []
       }
+      request_comment_reads: {
+        Row: {
+          created_at: string
+          id: string
+          last_read_at: string
+          request_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_read_at?: string
+          request_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_read_at?: string
+          request_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_comment_reads_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "customer_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       request_comments: {
         Row: {
           created_at: string

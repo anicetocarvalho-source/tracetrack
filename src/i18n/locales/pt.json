@@ -248,6 +248,7 @@
     "sendComment": "Enviar",
     "commentAdded": "Comentário adicionado",
     "commentError": "Falha ao adicionar comentário",
+    "unreadComments": "não lidos",
     "cannotCommentResolved": "Não é possível adicionar comentários a pedidos resolvidos"
   },
   "nav": {

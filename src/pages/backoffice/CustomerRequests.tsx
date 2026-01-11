@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -19,6 +19,7 @@ import {
   ChevronDown,
   MessageCircle,
 } from 'lucide-react';
+import { useUnreadComments } from '@/hooks/useUnreadComments';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -141,6 +142,32 @@ export default function CustomerRequests() {
       })) as unknown as CustomerRequest[];
     },
   });
+
+  // Get request IDs for unread comments tracking
+  const requestIds = useMemo(() => 
+    (requests || []).map(r => r.id), 
+    [requests]
+  );
+
+  // Track unread comments
+  const { getUnreadCount, markAsRead, totalUnread } = useUnreadComments(requestIds);
+
+  // Track which collapsibles are open to mark as read
+  const [openRequests, setOpenRequests] = useState<Set<string>>(new Set());
+
+  const handleCollapsibleChange = (requestId: string, isOpen: boolean) => {
+    setOpenRequests(prev => {
+      const next = new Set(prev);
+      if (isOpen) {
+        next.add(requestId);
+        // Mark comments as read when opening
+        markAsRead(requestId);
+      } else {
+        next.delete(requestId);
+      }
+      return next;
+    });
+  };
 
   // Filter requests based on client, request type, date range, and shipment reference
   const filteredRequests = useMemo(() => {
@@ -269,8 +296,8 @@ export default function CustomerRequests() {
     }
   };
 
-  const openRequests = filteredRequests?.filter((r) => r.status === 'OPEN').length || 0;
-  const inProgressRequests = filteredRequests?.filter((r) => r.status === 'IN_PROGRESS').length || 0;
+  const openRequestsCount = filteredRequests?.filter((r) => r.status === 'OPEN').length || 0;
+  const inProgressRequestsCount = filteredRequests?.filter((r) => r.status === 'IN_PROGRESS').length || 0;
 
   return (
     <BackofficeLayout>
@@ -282,10 +309,16 @@ export default function CustomerRequests() {
           </div>
           <div className="flex items-center gap-4">
             <div className="flex gap-2">
-              <Badge variant="destructive">{openRequests} {t('requests.open')}</Badge>
+              <Badge variant="destructive">{openRequestsCount} {t('requests.open')}</Badge>
               <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">
-                {inProgressRequests} {t('requests.inProgress')}
+                {inProgressRequestsCount} {t('requests.inProgress')}
               </Badge>
+              {totalUnread > 0 && (
+                <Badge variant="outline" className="border-primary text-primary bg-primary/10">
+                  <MessageCircle className="w-3 h-3 mr-1" />
+                  {totalUnread} {t('requests.unreadComments')}
+                </Badge>
+              )}
             </div>
           </div>
         </div>
@@ -410,108 +443,120 @@ export default function CustomerRequests() {
             ) : (
               <>
                 <div className="space-y-3">
-                  {paginatedRequests.map((request) => (
-                  <Collapsible key={request.id}>
-                    <div className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-2">
-                            <Badge variant="secondary">
-                              {REQUEST_TYPE_LABELS[request.request_type as RequestType]}
-                            </Badge>
-                            <Badge
-                              variant="outline"
-                              className={getStatusClass(request.status as RequestStatus)}
-                            >
-                              {getStatusIcon(request.status as RequestStatus)}
-                              <span className="ml-1">
-                                {REQUEST_STATUS_LABELS[request.status as RequestStatus]}
-                              </span>
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(request.created_at), {
-                                addSuffix: true,
-                              })}
-                            </span>
-                          </div>
+                  {paginatedRequests.map((request) => {
+                    const unreadCount = getUnreadCount(request.id);
+                    return (
+                      <Collapsible 
+                        key={request.id}
+                        open={openRequests.has(request.id)}
+                        onOpenChange={(isOpen) => handleCollapsibleChange(request.id, isOpen)}
+                      >
+                        <div className={`p-4 border rounded-lg hover:bg-muted/50 transition-colors ${unreadCount > 0 ? 'border-primary/50 bg-primary/5' : ''}`}>
+                          <div className="flex items-start gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap mb-2">
+                                <Badge variant="secondary">
+                                  {REQUEST_TYPE_LABELS[request.request_type as RequestType]}
+                                </Badge>
+                                <Badge
+                                  variant="outline"
+                                  className={getStatusClass(request.status as RequestStatus)}
+                                >
+                                  {getStatusIcon(request.status as RequestStatus)}
+                                  <span className="ml-1">
+                                    {REQUEST_STATUS_LABELS[request.status as RequestStatus]}
+                                  </span>
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">
+                                  {formatDistanceToNow(new Date(request.created_at), {
+                                    addSuffix: true,
+                                  })}
+                                </span>
+                              </div>
 
-                          <div className="mb-2">
-                            <button
-                              className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
-                              onClick={() =>
-                                navigate(`/backoffice/shipments/${request.shipment_id}`)
-                              }
-                            >
-                              {request.shipment?.shipment_ref}
-                              <ChevronRight className="w-3 h-3" />
-                            </button>
-                            <p className="text-xs text-muted-foreground">
-                              {request.shipment?.client?.name} • {request.creator?.name}
-                            </p>
-                          </div>
+                              <div className="mb-2">
+                                <button
+                                  className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
+                                  onClick={() =>
+                                    navigate(`/backoffice/shipments/${request.shipment_id}`)
+                                  }
+                                >
+                                  {request.shipment?.shipment_ref}
+                                  <ChevronRight className="w-3 h-3" />
+                                </button>
+                                <p className="text-xs text-muted-foreground">
+                                  {request.shipment?.client?.name} • {request.creator?.name}
+                                </p>
+                              </div>
 
-                          <p className="text-sm line-clamp-2">{request.message}</p>
+                              <p className="text-sm line-clamp-2">{request.message}</p>
 
-                          {request.status === 'RESOLVED' && request.resolution_note && (
-                            <div className="p-2 bg-muted rounded mt-2">
-                              <p className="text-xs text-muted-foreground">
-                                {t('requests.resolution')}: {request.resolution_note}
-                              </p>
+                              {request.status === 'RESOLVED' && request.resolution_note && (
+                                <div className="p-2 bg-muted rounded mt-2">
+                                  <p className="text-xs text-muted-foreground">
+                                    {t('requests.resolution')}: {request.resolution_note}
+                                  </p>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
 
-                        <div className="flex flex-col gap-1 flex-shrink-0">
-                          {request.status === 'OPEN' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                updateStatusMutation.mutate({
-                                  requestId: request.id,
-                                  status: 'IN_PROGRESS',
-                                })
-                              }
-                              disabled={updateStatusMutation.isPending}
-                            >
-                              <Clock className="w-3 h-3 mr-1" />
-                              {t('requests.startProgress')}
-                            </Button>
-                          )}
-                          {request.status !== 'RESOLVED' && canResolve && (
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                setResolveDialog({ open: true, request });
-                                setResolutionNote('');
-                              }}
-                            >
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              {t('requests.resolve')}
-                            </Button>
-                          )}
-                          <CollapsibleTrigger asChild>
-                            <Button size="sm" variant="ghost" className="gap-1">
-                              <MessageCircle className="w-3 h-3" />
-                              {t('requests.comments')}
-                              <ChevronDown className="w-3 h-3 transition-transform group-data-[state=open]:rotate-180" />
-                            </Button>
-                          </CollapsibleTrigger>
+                            <div className="flex flex-col gap-1 flex-shrink-0">
+                              {request.status === 'OPEN' && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    updateStatusMutation.mutate({
+                                      requestId: request.id,
+                                      status: 'IN_PROGRESS',
+                                    })
+                                  }
+                                  disabled={updateStatusMutation.isPending}
+                                >
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  {t('requests.startProgress')}
+                                </Button>
+                              )}
+                              {request.status !== 'RESOLVED' && canResolve && (
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    setResolveDialog({ open: true, request });
+                                    setResolutionNote('');
+                                  }}
+                                >
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  {t('requests.resolve')}
+                                </Button>
+                              )}
+                              <CollapsibleTrigger asChild>
+                                <Button size="sm" variant="ghost" className="gap-1 relative">
+                                  <MessageCircle className="w-3 h-3" />
+                                  {t('requests.comments')}
+                                  {unreadCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                                      {unreadCount}
+                                    </span>
+                                  )}
+                                  <ChevronDown className="w-3 h-3 transition-transform group-data-[state=open]:rotate-180" />
+                                </Button>
+                              </CollapsibleTrigger>
+                            </div>
+                          </div>
+                          
+                          <CollapsibleContent className="mt-4 pt-4 border-t">
+                            <RequestComments 
+                              requestId={request.id} 
+                              requestStatus={request.status as RequestStatus}
+                              shipmentRef={request.shipment?.shipment_ref}
+                              clientName={request.shipment?.client?.name}
+                              requestType={request.request_type}
+                            />
+                          </CollapsibleContent>
                         </div>
-                      </div>
-                      
-                      <CollapsibleContent className="mt-4 pt-4 border-t">
-                        <RequestComments 
-                          requestId={request.id} 
-                          requestStatus={request.status as RequestStatus}
-                          shipmentRef={request.shipment?.shipment_ref}
-                          clientName={request.shipment?.client?.name}
-                          requestType={request.request_type}
-                        />
-                      </CollapsibleContent>
-                    </div>
-                  </Collapsible>
-                ))}
+                      </Collapsible>
+                    );
+                  })}
                 </div>
 
                 {/* Pagination Controls */}
