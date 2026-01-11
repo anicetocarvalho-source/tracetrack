@@ -156,17 +156,14 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
               <HelpMenu userRole={role} />
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <BackofficeTour />
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-white hover:bg-white/10"
-              onClick={handleSignOut}
-            >
-              <LogOut className="w-4 h-4 mr-2 shrink-0" />
-              <span className="truncate">{t('common.signOut')}</span>
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-white hover:bg-white/10"
+            onClick={handleSignOut}
+          >
+            <LogOut className="w-4 h-4 mr-2 shrink-0" />
+            <span className="truncate">{t('common.signOut')}</span>
+          </Button>
         </div>
       </aside>
 
@@ -185,6 +182,7 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
           <div className="flex-1" />
           <div className="flex items-center gap-2">
             <PreferencesSyncIndicator />
+            <BackofficeTour />
             <div data-tour="theme-toggle">
               <ThemeToggle />
             </div>

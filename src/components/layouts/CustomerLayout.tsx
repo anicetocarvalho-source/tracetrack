@@ -134,17 +134,14 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
               <CustomerHelpMenu />
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <CustomerTour />
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-foreground hover:bg-black/10"
-              onClick={handleSignOut}
-            >
-              <LogOut className="w-4 h-4 mr-2 shrink-0" />
-              <span className="truncate">{t('common.signOut')}</span>
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-foreground hover:bg-black/10"
+            onClick={handleSignOut}
+          >
+            <LogOut className="w-4 h-4 mr-2 shrink-0" />
+            <span className="truncate">{t('common.signOut')}</span>
+          </Button>
         </div>
       </aside>
 
@@ -184,6 +181,7 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
               </div>
               <span className="text-sm font-medium text-foreground">{profile?.name}</span>
             </div>
+            <CustomerTour />
             <CustomerNotifications />
             <ThemeToggle />
             <LanguageSwitcher />
