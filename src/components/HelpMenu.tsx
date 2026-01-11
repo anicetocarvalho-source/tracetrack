@@ -12,6 +12,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ModuleInfo {
   icon: React.ElementType;
@@ -133,12 +134,19 @@ export function HelpMenu({ userRole }: HelpMenuProps) {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="outline" size="icon">
-          <HelpCircle className="h-5 w-5" />
-          <span className="sr-only">{t('common.help')}</span>
-        </Button>
-      </SheetTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon">
+              <HelpCircle className="h-5 w-5" />
+              <span className="sr-only">{t('common.help')}</span>
+            </Button>
+          </SheetTrigger>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{t('common.help')}</p>
+        </TooltipContent>
+      </Tooltip>
       <SheetContent side="right" className="w-full sm:w-[400px] p-0">
         <SheetHeader className="p-6 pb-4 bg-dhl-red text-white">
           <SheetTitle className="text-white flex items-center gap-2">
