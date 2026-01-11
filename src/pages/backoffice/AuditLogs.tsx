@@ -28,8 +28,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { FileText, Filter, X, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
-import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
+import { safeFormatDate } from '@/lib/utils';
 import type { AuditLog, Profile } from '@/types/database';
 
 const ENTITY_TYPES = ['shipment', 'tracking_event', 'client', 'user', 'AUTH', 'EMAIL'];
@@ -241,7 +241,7 @@ const AuditLogs = () => {
                 logs.map((log) => (
                   <TableRow key={log.id}>
                     <TableCell className="font-mono text-sm">
-                      {format(new Date(log.timestamp), 'MMM dd, yyyy HH:mm:ss')}
+                      {safeFormatDate(log.timestamp, 'MMM dd, yyyy HH:mm:ss')}
                     </TableCell>
                     <TableCell>
                       <Badge variant={getEntityBadgeVariant(log.entity_type)}>
@@ -317,7 +317,7 @@ const AuditLogs = () => {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">{t('auditLogs.timestamp')}</p>
-                  <p className="font-mono">{format(new Date(selectedLog.timestamp), 'PPpp')}</p>
+                  <p className="font-mono">{safeFormatDate(selectedLog.timestamp, 'PPpp')}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">{t('auditLogs.user')}</p>

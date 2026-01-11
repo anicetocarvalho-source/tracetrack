@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import {
   ArrowLeft,
   Plus,
@@ -35,6 +35,7 @@ import { EditShipmentDrawer } from '@/components/shipments/EditShipmentDrawer';
 import { supabase } from '@/integrations/supabase/client';
 import { Shipment, TrackingEvent, ShipmentContainer, ShipmentException, ExceptionRule } from '@/types/database';
 import { ShipmentStatus, SEVERITY_LABELS, EXCEPTION_STATUS_LABELS } from '@/lib/constants';
+import { safeFormatDate } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useRealtimeShipmentSLA } from '@/hooks/useRealtimeSLA';
@@ -407,47 +408,37 @@ export default function ShipmentDetail() {
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">{t('shipments.forecastShippingLine')}</p>
                     <p className="font-medium">
-                      {shipment.forecast_shipping_line
-                        ? format(new Date(shipment.forecast_shipping_line), 'MMM d, yyyy')
-                        : '—'}
+                      {safeFormatDate(shipment.forecast_shipping_line, 'MMM d, yyyy', '—')}
                     </p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">{t('shipments.forecastTerminal')}</p>
                     <p className="font-medium">
-                      {shipment.forecast_terminal
-                        ? format(new Date(shipment.forecast_terminal), 'MMM d, yyyy')
-                        : '—'}
+                      {safeFormatDate(shipment.forecast_terminal, 'MMM d, yyyy', '—')}
                     </p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">{t('shipments.dischargeDate')}</p>
                     <p className="font-medium">
-                      {shipment.discharge_date
-                        ? format(new Date(shipment.discharge_date), 'MMM d, yyyy')
-                        : '—'}
+                      {safeFormatDate(shipment.discharge_date, 'MMM d, yyyy', '—')}
                     </p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">{t('shipments.serviceRequestDate')}</p>
                     <p className="font-medium">
-                      {shipment.service_request_date
-                        ? format(new Date(shipment.service_request_date), 'MMM d, yyyy')
-                        : '—'}
+                      {safeFormatDate(shipment.service_request_date, 'MMM d, yyyy', '—')}
                     </p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">{t('shipments.docsReceivedDate')}</p>
                     <p className="font-medium">
-                      {shipment.docs_received_date
-                        ? format(new Date(shipment.docs_received_date), 'MMM d, yyyy')
-                        : '—'}
+                      {safeFormatDate(shipment.docs_received_date, 'MMM d, yyyy', '—')}
                     </p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">{t('shipments.created')}</p>
                     <p className="font-medium">
-                      {format(new Date(shipment.created_at), 'MMM d, yyyy')}
+                      {safeFormatDate(shipment.created_at, 'MMM d, yyyy')}
                     </p>
                   </div>
                 </div>
@@ -586,9 +577,9 @@ export default function ShipmentDetail() {
                             )}
                             
                             <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-                              <span>{t('sla.entered')}: {format(new Date(record.entered_at), 'MMM d, HH:mm')}</span>
+                              <span>{t('sla.entered')}: {safeFormatDate(record.entered_at, 'MMM d, HH:mm')}</span>
                               {record.exited_at && (
-                                <span>{t('sla.exited')}: {format(new Date(record.exited_at), 'MMM d, HH:mm')}</span>
+                                <span>{t('sla.exited')}: {safeFormatDate(record.exited_at, 'MMM d, HH:mm')}</span>
                               )}
                             </div>
                           </div>
@@ -659,14 +650,14 @@ export default function ShipmentDetail() {
                         {exception.status === 'ACKNOWLEDGED' && exception.acknowledged_by_profile && (
                           <p className="text-xs text-muted-foreground">
                             {t('exceptions.acknowledgedBy')}: {exception.acknowledged_by_profile.name}
-                            {exception.acknowledged_at && ` • ${format(new Date(exception.acknowledged_at), 'MMM d, yyyy HH:mm')}`}
+                            {exception.acknowledged_at && ` • ${safeFormatDate(exception.acknowledged_at, 'MMM d, yyyy HH:mm')}`}
                           </p>
                         )}
                         {exception.status === 'RESOLVED' && (
                           <div className="text-xs text-muted-foreground space-y-1">
                             <p>
                               {t('exceptions.resolvedBy')}: {exception.resolved_by_profile?.name || t('common.unknown')}
-                              {exception.resolved_at && ` • ${format(new Date(exception.resolved_at), 'MMM d, yyyy HH:mm')}`}
+                              {exception.resolved_at && ` • ${safeFormatDate(exception.resolved_at, 'MMM d, yyyy HH:mm')}`}
                             </p>
                             {exception.resolution_note && (
                               <p className="italic">"{exception.resolution_note}"</p>
