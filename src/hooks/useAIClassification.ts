@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { AIClassification } from '@/components/shipments/AIClassificationSuggestion';
@@ -7,14 +7,39 @@ import type { Json } from '@/integrations/supabase/types';
 interface UseAIClassificationOptions {
   entityType: 'tracking_event' | 'customer_request';
   entityId?: string;
+  autoClassify?: boolean;
+  debounceMs?: number;
+  minTextLength?: number;
 }
 
-export function useAIClassification({ entityType, entityId }: UseAIClassificationOptions) {
+export function useAIClassification({ 
+  entityType, 
+  entityId,
+  autoClassify = true,
+  debounceMs = 1500,
+  minTextLength = 20,
+}: UseAIClassificationOptions) {
   const { user } = useAuth();
   const [classification, setClassification] = useState<AIClassification | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [wasAccepted, setWasAccepted] = useState(false);
+  const [lastClassifiedText, setLastClassifiedText] = useState<string>('');
+  
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   const classifyText = useCallback(async (text: string, context?: string) => {
     if (!text.trim()) {
@@ -22,9 +47,14 @@ export function useAIClassification({ entityType, entityId }: UseAIClassificatio
       return null;
     }
 
+    // Cancel any pending request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
     setIsLoading(true);
     setError(null);
-    setClassification(null);
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke('classify-incident', {
@@ -44,17 +74,56 @@ export function useAIClassification({ entityType, entityId }: UseAIClassificatio
 
       if (data?.classification) {
         setClassification(data.classification);
+        setLastClassifiedText(text);
         return data.classification as AIClassification;
       }
 
       setError('No classification result received');
       return null;
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return null;
+      }
       console.error('Classification error:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
       return null;
     } finally {
       setIsLoading(false);
+    }
+  }, []);
+
+  // Auto-classify with debouncing
+  const autoClassifyText = useCallback((text: string, context?: string) => {
+    // Clear previous timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Don't classify if already accepted, text too short, or same text
+    if (wasAccepted || text.trim().length < minTextLength) {
+      return;
+    }
+
+    // Don't re-classify the same text
+    if (text.trim() === lastClassifiedText.trim()) {
+      return;
+    }
+
+    // Set new timer
+    debounceTimerRef.current = setTimeout(() => {
+      classifyText(text, context);
+    }, debounceMs);
+  }, [wasAccepted, minTextLength, lastClassifiedText, debounceMs, classifyText]);
+
+  // Cancel pending auto-classification
+  const cancelAutoClassify = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
     }
   }, []);
 
@@ -137,14 +206,17 @@ export function useAIClassification({ entityType, entityId }: UseAIClassificatio
     setClassification(null);
     setError(null);
     setWasAccepted(false);
+    setLastClassifiedText('');
   }, [classification, user, entityType, entityId]);
 
   const reset = useCallback(() => {
+    cancelAutoClassify();
     setClassification(null);
     setError(null);
     setIsLoading(false);
     setWasAccepted(false);
-  }, []);
+    setLastClassifiedText('');
+  }, [cancelAutoClassify]);
 
   return {
     classification,
@@ -152,6 +224,8 @@ export function useAIClassification({ entityType, entityId }: UseAIClassificatio
     error,
     wasAccepted,
     classifyText,
+    autoClassifyText,
+    cancelAutoClassify,
     acceptClassification,
     dismissClassification,
     reset,

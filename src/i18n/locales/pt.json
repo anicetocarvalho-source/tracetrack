@@ -1222,6 +1222,7 @@
     "applyChanges": "Aplicar Alterações",
     "dismiss": "Dispensar",
     "accepted": "Classificação aceite",
-    "appliedClassification": "Classificação Aplicada"
+    "appliedClassification": "Classificação Aplicada",
+    "autoAnalyzing": "IA irá analisar quando terminar de escrever..."
   }
 }
