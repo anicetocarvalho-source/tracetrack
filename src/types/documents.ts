@@ -49,11 +49,12 @@ export interface CustomerRequest {
   resolved_at: string | null;
   resolution_note: string | null;
   // Joined fields
-  creator?: Profile;
-  resolver?: Profile;
+  creator?: { id: string; name: string } | null;
+  resolver?: { id: string; name: string } | null;
   shipment?: {
     shipment_ref: string;
     client_ref: string;
-    client?: { name: string };
+    client_id?: string;
+    client?: { id?: string; name: string };
   };
 }

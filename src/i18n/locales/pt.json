@@ -143,6 +143,12 @@
     "open": "Aberto",
     "inProgress": "Em Progresso",
     "allStatuses": "Todos os Estados",
+    "allClients": "Todos os Clientes",
+    "filterByStatus": "Filtrar por estado",
+    "filterByClient": "Filtrar por cliente",
+    "searchShipmentRef": "Pesquisar ref. envio...",
+    "clearFilters": "Limpar Filtros",
+    "noMatchingRequests": "Nenhum pedido corresponde aos filtros atuais",
     "startProgress": "Iniciar",
     "myRequests": "Meus Pedidos",
     "requestSubmitted": "Pedido submetido com sucesso"

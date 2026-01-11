@@ -137,6 +137,12 @@
     "open": "Open",
     "inProgress": "In Progress",
     "allStatuses": "All Statuses",
+    "allClients": "All Clients",
+    "filterByStatus": "Filter by status",
+    "filterByClient": "Filter by client",
+    "searchShipmentRef": "Search shipment ref...",
+    "clearFilters": "Clear Filters",
+    "noMatchingRequests": "No requests match the current filters",
     "startProgress": "Start",
     "myRequests": "My Requests",
     "requestSubmitted": "Request submitted successfully"

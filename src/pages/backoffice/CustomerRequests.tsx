@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ import {
   AlertCircle,
   ChevronRight,
   Filter,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +33,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -52,6 +54,8 @@ export default function CustomerRequests() {
   const queryClient = useQueryClient();
 
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [clientFilter, setClientFilter] = useState<string>('ALL');
+  const [shipmentRefSearch, setShipmentRefSearch] = useState<string>('');
   const [resolveDialog, setResolveDialog] = useState<{
     open: boolean;
     request: CustomerRequest | null;
@@ -59,6 +63,23 @@ export default function CustomerRequests() {
   const [resolutionNote, setResolutionNote] = useState('');
 
   const canResolve = role === 'SUPERVISOR' || role === 'MANAGER';
+
+  type ClientOption = { id: string; name: string };
+  
+  // Fetch clients for the filter dropdown
+  const { data: clients } = useQuery<ClientOption[]>({
+    queryKey: ['clients-filter'],
+    queryFn: async () => {
+      // @ts-expect-error - Supabase deep type instantiation issue
+      const { data, error } = await supabase
+        .from('clients')
+        .select('id, name')
+        .eq('is_active', true)
+        .order('name');
+      if (error) throw error;
+      return (data || []) as ClientOption[];
+    },
+  });
 
   const { data: requests, isLoading } = useQuery({
     queryKey: ['all-customer-requests', statusFilter],
@@ -70,7 +91,8 @@ export default function CustomerRequests() {
           shipment:shipments(
             shipment_ref,
             client_ref,
-            client:clients(name)
+            client_id,
+            client:clients(id, name)
           )
         `)
         .order('created_at', { ascending: false });
@@ -99,9 +121,41 @@ export default function CustomerRequests() {
         ...r,
         creator: profileMap.get(r.created_by) || null,
         resolver: r.resolved_by ? profileMap.get(r.resolved_by) || null : null,
-      })) as CustomerRequest[];
+      })) as unknown as CustomerRequest[];
     },
   });
+
+  // Filter requests based on client and shipment reference
+  const filteredRequests = useMemo(() => {
+    if (!requests) return [];
+    
+    return requests.filter((request) => {
+      // Client filter
+      if (clientFilter !== 'ALL' && request.shipment?.client_id !== clientFilter) {
+        return false;
+      }
+      
+      // Shipment reference search
+      if (shipmentRefSearch.trim()) {
+        const searchTerm = shipmentRefSearch.toLowerCase().trim();
+        const shipmentRef = request.shipment?.shipment_ref?.toLowerCase() || '';
+        const clientRef = request.shipment?.client_ref?.toLowerCase() || '';
+        if (!shipmentRef.includes(searchTerm) && !clientRef.includes(searchTerm)) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+  }, [requests, clientFilter, shipmentRefSearch]);
+
+  const hasActiveFilters = clientFilter !== 'ALL' || shipmentRefSearch.trim() !== '';
+
+  const clearAllFilters = () => {
+    setStatusFilter('ALL');
+    setClientFilter('ALL');
+    setShipmentRefSearch('');
+  };
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({
@@ -161,8 +215,8 @@ export default function CustomerRequests() {
     }
   };
 
-  const openRequests = requests?.filter((r) => r.status === 'OPEN').length || 0;
-  const inProgressRequests = requests?.filter((r) => r.status === 'IN_PROGRESS').length || 0;
+  const openRequests = filteredRequests?.filter((r) => r.status === 'OPEN').length || 0;
+  const inProgressRequests = filteredRequests?.filter((r) => r.status === 'IN_PROGRESS').length || 0;
 
   return (
     <BackofficeLayout>
@@ -185,11 +239,13 @@ export default function CustomerRequests() {
         {/* Filters */}
         <Card>
           <CardContent className="pt-4">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
               <Filter className="w-4 h-4 text-muted-foreground" />
+              
+              {/* Status filter */}
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-48">
-                  <SelectValue />
+                  <SelectValue placeholder={t('requests.filterByStatus')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ALL">{t('requests.allStatuses')}</SelectItem>
@@ -198,6 +254,47 @@ export default function CustomerRequests() {
                   <SelectItem value="RESOLVED">{REQUEST_STATUS_LABELS.RESOLVED}</SelectItem>
                 </SelectContent>
               </Select>
+
+              {/* Client filter */}
+              <Select value={clientFilter} onValueChange={setClientFilter}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder={t('requests.filterByClient')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">{t('requests.allClients')}</SelectItem>
+                  {clients?.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Shipment reference search */}
+              <div className="relative">
+                <Input
+                  placeholder={t('requests.searchShipmentRef')}
+                  value={shipmentRefSearch}
+                  onChange={(e) => setShipmentRefSearch(e.target.value)}
+                  className="w-56"
+                />
+                {shipmentRefSearch && (
+                  <button
+                    onClick={() => setShipmentRefSearch('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Clear all filters */}
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+                  <X className="w-4 h-4 mr-1" />
+                  {t('requests.clearFilters')}
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -215,14 +312,19 @@ export default function CustomerRequests() {
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
               </div>
-            ) : !requests || requests.length === 0 ? (
+            ) : !filteredRequests || filteredRequests.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <p>{t('requests.noRequestsInbox')}</p>
+                <p>{hasActiveFilters ? t('requests.noMatchingRequests') : t('requests.noRequestsInbox')}</p>
+                {hasActiveFilters && (
+                  <Button variant="link" onClick={clearAllFilters} className="mt-2">
+                    {t('requests.clearFilters')}
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
-                {requests.map((request) => (
+                {filteredRequests.map((request) => (
                   <div
                     key={request.id}
                     className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
