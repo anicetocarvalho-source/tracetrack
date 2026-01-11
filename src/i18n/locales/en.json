@@ -235,7 +235,9 @@
     "ratesComparison": "Performance Rates Comparison",
     "noYoyData": "No data available for {{month}} {{year}}",
     "generateYoyHint": "Generate a scorecard for the same period last year to see year-over-year comparison",
-    "found": "scorecard(s) found"
+    "found": "scorecard(s) found",
+    "notificationSent": "Email notification sent to client",
+    "notificationFailed": "Failed to send email notification"
   },
   "portal": {
     "scorecard": "Performance Scorecard",

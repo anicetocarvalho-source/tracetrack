@@ -240,7 +240,9 @@
     "ratesComparison": "Comparaison des Taux de Performance",
     "noYoyData": "Aucune donnée disponible pour {{month}} {{year}}",
     "generateYoyHint": "Générez une fiche pour la même période l'année dernière pour voir la comparaison année par année",
-    "found": "fiche(s) trouvée(s)"
+    "found": "fiche(s) trouvée(s)",
+    "notificationSent": "Notification par email envoyée au client",
+    "notificationFailed": "Échec de l'envoi de la notification par email"
   },
   "portal": {
     "scorecard": "Fiche de Performance",

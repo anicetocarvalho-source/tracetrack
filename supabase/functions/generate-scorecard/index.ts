@@ -337,6 +337,26 @@ Deno.serve(async (req) => {
 
     console.log('[generate-scorecard] Scorecard generated successfully:', scorecard.id);
 
+    // Send notification to client
+    try {
+      const origin = req.headers.get('origin') || '';
+      await fetch(`${supabaseUrl}/functions/v1/notify-scorecard-available`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseServiceKey}`,
+        },
+        body: JSON.stringify({
+          scorecardId: scorecard.id,
+          portalUrl: origin,
+        }),
+      });
+      console.log('[generate-scorecard] Notification sent to client');
+    } catch (notifyError) {
+      console.error('[generate-scorecard] Failed to send notification:', notifyError);
+      // Don't fail the whole request if notification fails
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
