@@ -550,7 +550,14 @@
     "user": "User",
     "entityId": "Entity ID",
     "noLogsFound": "No audit logs found",
-    "loadingLogs": "Loading logs..."
+    "loadingLogs": "Loading logs...",
+    "selectedCount": "{{count}} selected",
+    "exportCSV": "Export CSV",
+    "exportJSON": "Export JSON",
+    "exportSelectedCSV": "Export CSV",
+    "exportSelectedJSON": "Export JSON",
+    "exportSuccess": "Successfully exported {{count}} log entries",
+    "noLogsToExport": "No logs to export"
   },
   "roles": {
     "MANAGER": "Manager",

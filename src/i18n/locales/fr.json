@@ -550,7 +550,14 @@
     "user": "Utilisateur",
     "entityId": "ID de l'Entité",
     "noLogsFound": "Aucun journal d'audit trouvé",
-    "loadingLogs": "Chargement des journaux..."
+    "loadingLogs": "Chargement des journaux...",
+    "selectedCount": "{{count}} sélectionné(s)",
+    "exportCSV": "Exporter CSV",
+    "exportJSON": "Exporter JSON",
+    "exportSelectedCSV": "Exporter CSV",
+    "exportSelectedJSON": "Exporter JSON",
+    "exportSuccess": "{{count}} entrées de journal exportées avec succès",
+    "noLogsToExport": "Aucun journal à exporter"
   },
   "roles": {
     "MANAGER": "Gestionnaire",

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { DateRange } from 'react-day-picker';
@@ -7,6 +7,8 @@ import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -28,10 +30,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { FileText, Filter, X, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { FileText, Filter, X, ChevronLeft, ChevronRight, Eye, Download, CheckSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { safeFormatDate } from '@/lib/utils';
 import { DateRangePickerCompact } from '@/components/ui/date-range-picker';
+import { toast } from 'sonner';
 import type { AuditLog, Profile } from '@/types/database';
 
 const ENTITY_TYPES = ['shipment', 'tracking_event', 'client', 'user', 'AUTH', 'EMAIL'];
@@ -44,6 +47,9 @@ const AuditLogs = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [page, setPage] = useState(0);
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+  
+  // Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { data: users = [] } = useQuery({
     queryKey: ['audit-users'],
@@ -136,12 +142,120 @@ const AuditLogs = () => {
     }
   };
 
+  // Selection helpers
+  const allSelected = logs.length > 0 && logs.every((log) => selectedIds.has(log.id));
+  const someSelected = selectedIds.size > 0;
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(logs.map((log) => log.id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedIds(newSet);
+  };
+
+  // Get selected logs for export
+  const selectedLogs = useMemo(() => {
+    return logs.filter((log) => selectedIds.has(log.id));
+  }, [logs, selectedIds]);
+
+  // Export functions
+  const exportToCSV = () => {
+    const logsToExport = selectedLogs.length > 0 ? selectedLogs : logs;
+    
+    if (logsToExport.length === 0) {
+      toast.error(t('auditLogs.noLogsToExport'));
+      return;
+    }
+
+    const headers = ['Timestamp', 'Entity Type', 'Action', 'User', 'Entity ID', 'IP Address', 'Metadata'];
+    const rows = logsToExport.map((log) => [
+      safeFormatDate(log.timestamp, 'yyyy-MM-dd HH:mm:ss'),
+      log.entity_type,
+      log.action,
+      getUserName(log.actor_user_id),
+      log.entity_id || '',
+      log.ip_address || '',
+      log.metadata_json ? JSON.stringify(log.metadata_json) : '',
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `audit-logs-${format(new Date(), 'yyyy-MM-dd-HHmmss')}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success(t('auditLogs.exportSuccess', { count: logsToExport.length }));
+  };
+
+  const exportToJSON = () => {
+    const logsToExport = selectedLogs.length > 0 ? selectedLogs : logs;
+    
+    if (logsToExport.length === 0) {
+      toast.error(t('auditLogs.noLogsToExport'));
+      return;
+    }
+
+    const exportData = logsToExport.map((log) => ({
+      timestamp: log.timestamp,
+      entity_type: log.entity_type,
+      action: log.action,
+      user: getUserName(log.actor_user_id),
+      entity_id: log.entity_id,
+      ip_address: log.ip_address,
+      metadata: log.metadata_json,
+    }));
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `audit-logs-${format(new Date(), 'yyyy-MM-dd-HHmmss')}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success(t('auditLogs.exportSuccess', { count: logsToExport.length }));
+  };
+
   return (
     <BackofficeLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('auditLogs.title')}</h1>
-          <p className="text-muted-foreground">{t('auditLogs.subtitle')}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{t('auditLogs.title')}</h1>
+            <p className="text-muted-foreground">{t('auditLogs.subtitle')}</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={exportToCSV}>
+              <Download className="w-4 h-4 mr-2" />
+              {t('auditLogs.exportCSV')}
+            </Button>
+            <Button variant="outline" onClick={exportToJSON}>
+              <Download className="w-4 h-4 mr-2" />
+              {t('auditLogs.exportJSON')}
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -200,11 +314,60 @@ const AuditLogs = () => {
           </div>
         </div>
 
+        {/* Bulk Actions Bar */}
+        {someSelected && (
+          <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CheckSquare className="w-5 h-5 text-primary" />
+                  <span className="font-medium">
+                    {t('auditLogs.selectedCount', { count: selectedIds.size })}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={exportToCSV}
+                  >
+                    <Download className="w-4 h-4 mr-1" />
+                    {t('auditLogs.exportSelectedCSV')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={exportToJSON}
+                  >
+                    <Download className="w-4 h-4 mr-1" />
+                    {t('auditLogs.exportSelectedJSON')}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedIds(new Set())}
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    {t('common.clear')}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Logs Table */}
         <div className="rounded-lg border bg-card">
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={toggleSelectAll}
+                    aria-label={t('common.selectAll')}
+                  />
+                </TableHead>
                 <TableHead>{t('auditLogs.timestamp')}</TableHead>
                 <TableHead>{t('auditLogs.entity')}</TableHead>
                 <TableHead>{t('auditLogs.action')}</TableHead>
@@ -216,7 +379,7 @@ const AuditLogs = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     <div className="flex items-center justify-center gap-2">
                       <FileText className="h-5 w-5 animate-pulse" />
                       <span>{t('auditLogs.loadingLogs')}</span>
@@ -225,43 +388,53 @@ const AuditLogs = () => {
                 </TableRow>
               ) : logs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     {t('auditLogs.noLogsFound')}
                   </TableCell>
                 </TableRow>
               ) : (
-                logs.map((log) => (
-                  <TableRow key={log.id}>
-                    <TableCell className="font-mono text-sm">
-                      {safeFormatDate(log.timestamp, 'MMM dd, yyyy HH:mm:ss')}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getEntityBadgeVariant(log.entity_type)}>
-                        {log.entity_type.replace('_', ' ')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getActionBadgeVariant(log.action)}>
-                        {log.action.replace('_', ' ')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{getUserName(log.actor_user_id)}</TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      {log.entity_id ? log.entity_id.slice(0, 8) + '...' : '-'}
-                    </TableCell>
-                    <TableCell>
-                      {log.metadata_json && Object.keys(log.metadata_json).length > 0 && (
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => setSelectedLog(log)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))
+                logs.map((log) => {
+                  const isSelected = selectedIds.has(log.id);
+                  return (
+                    <TableRow key={log.id} className={isSelected ? 'bg-primary/5' : ''}>
+                      <TableCell>
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() => toggleSelect(log.id)}
+                          aria-label={t('common.selectRow')}
+                        />
+                      </TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {safeFormatDate(log.timestamp, 'MMM dd, yyyy HH:mm:ss')}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getEntityBadgeVariant(log.entity_type)}>
+                          {log.entity_type.replace('_', ' ')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getActionBadgeVariant(log.action)}>
+                          {log.action.replace('_', ' ')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{getUserName(log.actor_user_id)}</TableCell>
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {log.entity_id ? log.entity_id.slice(0, 8) + '...' : '-'}
+                      </TableCell>
+                      <TableCell>
+                        {log.metadata_json && Object.keys(log.metadata_json).length > 0 && (
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => setSelectedLog(log)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
