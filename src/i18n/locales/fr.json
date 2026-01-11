@@ -921,5 +921,40 @@
         "features": ["Configuration système", "Paramètres globaux", "Intégrations", "Préférences d'affichage"]
       }
     }
+  },
+  "customerHelp": {
+    "title": "Centre d'Aide",
+    "subtitle": "Guide du portail client",
+    "intro": "Bienvenue sur le Portail Client DHL. Ici, vous pouvez suivre vos expéditions, consulter vos performances et communiquer avec nous.",
+    "mainFeatures": "Fonctionnalités principales",
+    "needMoreHelp": "Besoin de plus d'aide?",
+    "contactInfo": "Contactez votre représentant DHL pour une assistance supplémentaire ou pour clarifier des questions sur vos expéditions.",
+    "modules": {
+      "myShipments": {
+        "title": "Mes Expéditions",
+        "description": "Visualisez et suivez toutes vos expéditions en temps réel avec des informations de suivi détaillées.",
+        "features": ["Liste complète de vos expéditions", "Recherche par référence ou BL", "Statut actuel et historique des événements", "Filtres par période et statut", "Voir les détails complets de chaque expédition"]
+      },
+      "scorecard": {
+        "title": "Mon Scorecard",
+        "description": "Consultez vos résumés de performance mensuels avec les métriques de conformité SLA et les taux de livraison.",
+        "features": ["Scorecards par mois et année", "Taux de livraison à temps", "Conformité SLA", "Graphiques de tendances", "Distribution par statut"]
+      },
+      "profile": {
+        "title": "Profil",
+        "description": "Consultez les informations de votre compte et vos coordonnées enregistrées sur la plateforme.",
+        "features": ["Données personnelles", "Informations du compte", "Date d'inscription", "Dernier accès"]
+      },
+      "documents": {
+        "title": "Documents",
+        "description": "Accédez aux documents associés à vos expéditions, tels que les preuves de livraison, connaissements et factures.",
+        "features": ["Voir les documents par expédition", "Télécharger les documents", "Aperçu des PDFs et images", "Types: POD, BL, Facture et autres"]
+      },
+      "requests": {
+        "title": "Demandes",
+        "description": "Soumettez des demandes de service liées à vos expéditions, comme des demandes de mise à jour ou des téléchargements de documents.",
+        "features": ["Créer de nouvelles demandes", "Suivre le statut des demandes", "Voir l'historique des demandes", "Recevoir des notifications de résolution"]
+      }
+    }
   }
 }

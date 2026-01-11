@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { CustomerHelpMenu } from '@/components/CustomerHelpMenu';
 import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 interface CustomerLayoutProps {
@@ -66,6 +67,7 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <LanguageSwitcher />
+            <CustomerHelpMenu />
             <div className="hidden sm:flex items-center gap-2 mr-2">
               <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
                 <span className="text-sm font-medium">

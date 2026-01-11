@@ -921,5 +921,40 @@
         "features": ["Configurações de sistema", "Parâmetros globais", "Integrações", "Preferências de exibição"]
       }
     }
+  },
+  "customerHelp": {
+    "title": "Centro de Ajuda",
+    "subtitle": "Guia do portal do cliente",
+    "intro": "Bem-vindo ao Portal do Cliente DHL. Aqui pode acompanhar os seus envios, visualizar o seu desempenho e comunicar connosco.",
+    "mainFeatures": "Funcionalidades principais",
+    "needMoreHelp": "Precisa de mais ajuda?",
+    "contactInfo": "Entre em contacto com o seu representante DHL para assistência adicional ou esclarecimento de dúvidas sobre os seus envios.",
+    "modules": {
+      "myShipments": {
+        "title": "Meus Envios",
+        "description": "Visualize e acompanhe todos os seus envios em tempo real com informações detalhadas de rastreamento.",
+        "features": ["Lista completa dos seus envios", "Pesquisa por referência ou BL", "Estado atual e histórico de eventos", "Filtros por período e estado", "Ver detalhes completos de cada envio"]
+      },
+      "scorecard": {
+        "title": "Meu Scorecard",
+        "description": "Visualize os seus resumos mensais de desempenho com métricas de conformidade SLA e taxa de entrega.",
+        "features": ["Scorecards por mês e ano", "Taxa de entrega no prazo", "Conformidade com SLA", "Gráficos de tendências", "Distribuição por estado de envio"]
+      },
+      "profile": {
+        "title": "Perfil",
+        "description": "Visualize as informações da sua conta e dados de contacto registados na plataforma.",
+        "features": ["Dados pessoais", "Informações da conta", "Data de registo", "Último acesso"]
+      },
+      "documents": {
+        "title": "Documentos",
+        "description": "Aceda aos documentos associados aos seus envios, como provas de entrega, conhecimentos de embarque e faturas.",
+        "features": ["Ver documentos por envio", "Descarregar documentos", "Pré-visualização de PDFs e imagens", "Tipos: POD, BL, Fatura e outros"]
+      },
+      "requests": {
+        "title": "Pedidos",
+        "description": "Submeta pedidos de serviço relacionados aos seus envios, como solicitações de atualização ou upload de documentos.",
+        "features": ["Criar novos pedidos", "Acompanhar estado dos pedidos", "Ver histórico de pedidos", "Receber notificações de resolução"]
+      }
+    }
   }
 }
