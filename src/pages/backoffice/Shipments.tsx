@@ -13,8 +13,8 @@ import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { SHIPMENT_STATUSES, ShipmentStatus, SEVERITY_LABELS, SEVERITY_CLASSES } from '@/lib/constants';
-import { format } from 'date-fns';
 import { CSVImportDialog } from '@/components/shipments/CSVImportDialog';
+import { safeFormatDate } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import type { ExceptionSeverity } from '@/lib/constants';
 
@@ -223,7 +223,7 @@ export default function Shipments() {
                             <StatusBadge status={shipment.current_status} />
                           </TableCell>
                           <TableCell className="text-muted-foreground">
-                            {format(new Date(shipment.created_at), 'MMM d, yyyy')}
+                            {safeFormatDate(shipment.created_at, 'MMM d, yyyy')}
                           </TableCell>
                         </TableRow>
                       );
