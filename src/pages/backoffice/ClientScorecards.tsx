@@ -15,6 +15,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
+import { DateRangePickerCompact } from "@/components/ui/date-range-picker";
+import { DateRange } from "react-day-picker";
+import { format } from "date-fns";
 
 const MONTHS = [
   { value: 1, label: "January" },
@@ -92,6 +95,7 @@ export default function ClientScorecards() {
   const [selectedScorecard, setSelectedScorecard] = useState<Scorecard | null>(null);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [customEmails, setCustomEmails] = useState("");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   // Fetch clients
   const { data: clients = [] } = useQuery({
@@ -108,7 +112,7 @@ export default function ClientScorecards() {
 
   // Fetch existing scorecards
   const { data: scorecards = [], isLoading: scorecardsLoading } = useQuery({
-    queryKey: ["scorecards", selectedClient],
+    queryKey: ["scorecards", selectedClient, dateRange?.from, dateRange?.to],
     queryFn: async () => {
       let query = supabase
         .from("client_scorecards")
@@ -121,6 +125,14 @@ export default function ClientScorecards() {
       
       if (selectedClient) {
         query = query.eq("client_id", selectedClient);
+      }
+
+      if (dateRange?.from) {
+        query = query.gte("generated_at", format(dateRange.from, "yyyy-MM-dd"));
+      }
+
+      if (dateRange?.to) {
+        query = query.lte("generated_at", format(dateRange.to, "yyyy-MM-dd") + "T23:59:59");
       }
       
       const { data, error } = await query;
@@ -361,10 +373,15 @@ export default function ClientScorecards() {
           <div>
             <h1 className="text-2xl font-bold">{t("scorecards.title", "Client Scorecards")}</h1>
             <p className="text-muted-foreground">
-            {t("scorecards.description", "Generate and view monthly performance summaries for clients")}
-          </p>
+              {t("scorecards.description", "Generate and view monthly performance summaries for clients")}
+            </p>
+          </div>
+          <DateRangePickerCompact
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
+            placeholder={t("dateRange.filterByGenerated", "Filter by generated date")}
+          />
         </div>
-      </div>
 
       {/* Generator Section - Manager Only */}
       {isManager && (
