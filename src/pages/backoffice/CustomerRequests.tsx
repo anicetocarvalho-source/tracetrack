@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { DateRange } from 'react-day-picker';
 import {
   MessageSquare,
   Loader2,
@@ -37,6 +38,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { DateRangePickerCompact } from '@/components/ui/date-range-picker';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -60,6 +62,7 @@ export default function CustomerRequests() {
   const [clientFilter, setClientFilter] = useState<string>('ALL');
   const [requestTypeFilter, setRequestTypeFilter] = useState<string>('ALL');
   const [shipmentRefSearch, setShipmentRefSearch] = useState<string>('');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
   const [resolveDialog, setResolveDialog] = useState<{
@@ -131,7 +134,7 @@ export default function CustomerRequests() {
     },
   });
 
-  // Filter requests based on client, request type, and shipment reference
+  // Filter requests based on client, request type, date range, and shipment reference
   const filteredRequests = useMemo(() => {
     if (!requests) return [];
     
@@ -146,6 +149,17 @@ export default function CustomerRequests() {
         return false;
       }
       
+      // Date range filter
+      if (dateRange?.from) {
+        const requestDate = new Date(request.created_at);
+        const fromDate = startOfDay(dateRange.from);
+        const toDate = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+        
+        if (!isWithinInterval(requestDate, { start: fromDate, end: toDate })) {
+          return false;
+        }
+      }
+      
       // Shipment reference search
       if (shipmentRefSearch.trim()) {
         const searchTerm = shipmentRefSearch.toLowerCase().trim();
@@ -158,9 +172,9 @@ export default function CustomerRequests() {
       
       return true;
     });
-  }, [requests, clientFilter, requestTypeFilter, shipmentRefSearch]);
+  }, [requests, clientFilter, requestTypeFilter, dateRange, shipmentRefSearch]);
 
-  const hasActiveFilters = clientFilter !== 'ALL' || requestTypeFilter !== 'ALL' || shipmentRefSearch.trim() !== '';
+  const hasActiveFilters = clientFilter !== 'ALL' || requestTypeFilter !== 'ALL' || shipmentRefSearch.trim() !== '' || dateRange !== undefined;
 
   // Pagination calculations
   const totalItems = filteredRequests.length;
@@ -175,11 +189,17 @@ export default function CustomerRequests() {
     setCurrentPage(1);
   };
 
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    setDateRange(range);
+    setCurrentPage(1);
+  };
+
   const clearAllFilters = () => {
     setStatusFilter('ALL');
     setClientFilter('ALL');
     setRequestTypeFilter('ALL');
     setShipmentRefSearch('');
+    setDateRange(undefined);
     setCurrentPage(1);
   };
 
@@ -331,6 +351,14 @@ export default function CustomerRequests() {
                   </button>
                 )}
               </div>
+
+              {/* Date range filter */}
+              <DateRangePickerCompact
+                dateRange={dateRange}
+                onDateRangeChange={handleDateRangeChange}
+                placeholder={t('requests.filterByDate')}
+                className="w-64"
+              />
 
               {/* Clear all filters */}
               {hasActiveFilters && (
