@@ -264,9 +264,6 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
               <p className="text-sm font-medium truncate text-white">{profile?.name}</p>
               <p className="text-xs text-white/60 truncate">{role}</p>
             </div>
-            <div data-tour="help-button">
-              <HelpMenu userRole={role} />
-            </div>
           </div>
           <Button
             variant="ghost"
@@ -295,6 +292,9 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
           <div className="flex items-center gap-2">
             <PreferencesSyncIndicator />
             <BackofficeTour />
+            <div data-tour="help-button">
+              <HelpMenu userRole={role} />
+            </div>
             <div data-tour="theme-toggle">
               <ThemeToggle />
             </div>
