@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.export-scorecard]
 verify_jwt = false
+
+[functions.monthly-scorecard-batch]
+verify_jwt = false
