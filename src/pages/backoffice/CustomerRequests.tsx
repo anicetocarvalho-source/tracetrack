@@ -10,8 +10,11 @@ import {
   Clock,
   AlertCircle,
   ChevronRight,
+  ChevronLeft,
   Filter,
   X,
+  ChevronsLeft,
+  ChevronsRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -56,6 +59,8 @@ export default function CustomerRequests() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [clientFilter, setClientFilter] = useState<string>('ALL');
   const [shipmentRefSearch, setShipmentRefSearch] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
   const [resolveDialog, setResolveDialog] = useState<{
     open: boolean;
     request: CustomerRequest | null;
@@ -151,10 +156,24 @@ export default function CustomerRequests() {
 
   const hasActiveFilters = clientFilter !== 'ALL' || shipmentRefSearch.trim() !== '';
 
+  // Pagination calculations
+  const totalItems = filteredRequests.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedRequests = filteredRequests.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (filterSetter: (value: string) => void, value: string) => {
+    filterSetter(value);
+    setCurrentPage(1);
+  };
+
   const clearAllFilters = () => {
     setStatusFilter('ALL');
     setClientFilter('ALL');
     setShipmentRefSearch('');
+    setCurrentPage(1);
   };
 
   const updateStatusMutation = useMutation({
@@ -243,7 +262,7 @@ export default function CustomerRequests() {
               <Filter className="w-4 h-4 text-muted-foreground" />
               
               {/* Status filter */}
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onValueChange={(v) => handleFilterChange(setStatusFilter, v)}>
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder={t('requests.filterByStatus')} />
                 </SelectTrigger>
@@ -256,7 +275,7 @@ export default function CustomerRequests() {
               </Select>
 
               {/* Client filter */}
-              <Select value={clientFilter} onValueChange={setClientFilter}>
+              <Select value={clientFilter} onValueChange={(v) => handleFilterChange(setClientFilter, v)}>
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder={t('requests.filterByClient')} />
                 </SelectTrigger>
@@ -275,7 +294,10 @@ export default function CustomerRequests() {
                 <Input
                   placeholder={t('requests.searchShipmentRef')}
                   value={shipmentRefSearch}
-                  onChange={(e) => setShipmentRefSearch(e.target.value)}
+                  onChange={(e) => {
+                    setShipmentRefSearch(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="w-56"
                 />
                 {shipmentRefSearch && (
@@ -301,11 +323,16 @@ export default function CustomerRequests() {
 
         {/* Request List */}
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <MessageSquare className="w-5 h-5" />
               {t('requests.inbox')}
             </CardTitle>
+            {totalItems > 0 && (
+              <span className="text-sm text-muted-foreground font-normal">
+                {t('common.showing')} {startIndex + 1}-{endIndex} {t('common.of')} {totalItems}
+              </span>
+            )}
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -323,8 +350,9 @@ export default function CustomerRequests() {
                 )}
               </div>
             ) : (
-              <div className="space-y-3">
-                {filteredRequests.map((request) => (
+              <>
+                <div className="space-y-3">
+                  {paginatedRequests.map((request) => (
                   <div
                     key={request.id}
                     className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -410,7 +438,56 @@ export default function CustomerRequests() {
                     </div>
                   </div>
                 ))}
-              </div>
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between pt-4 border-t mt-4">
+                    <div className="text-sm text-muted-foreground">
+                      {t('common.showing')} {startIndex + 1}-{endIndex} {t('common.of')} {totalItems}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronsLeft className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </Button>
+                      <div className="flex items-center gap-1 px-2">
+                        <span className="text-sm font-medium">{currentPage}</span>
+                        <span className="text-sm text-muted-foreground">/</span>
+                        <span className="text-sm text-muted-foreground">{totalPages}</span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                      >
+                        <ChevronsRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
