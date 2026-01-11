@@ -82,17 +82,41 @@ export function DocumentList({ shipmentId, isCustomer = false }: DocumentListPro
   });
 
   const toggleVisibilityMutation = useMutation({
-    mutationFn: async ({ docId, visible }: { docId: string; visible: boolean }) => {
+    mutationFn: async ({ docId, visible, filename, documentType }: { docId: string; visible: boolean; filename: string; documentType: string }) => {
       const { error } = await supabase
         .from('shipment_documents')
         .update({ visible_to_client: visible })
         .eq('id', docId);
 
       if (error) throw error;
+
+      // If making visible to client, send notification
+      if (visible) {
+        try {
+          const { error: notifyError } = await supabase.functions.invoke('notify-document-available', {
+            body: {
+              documentId: docId,
+              shipmentId,
+              filename,
+              documentType,
+            },
+          });
+
+          if (notifyError) {
+            console.error('Error sending document notification:', notifyError);
+          }
+        } catch (err) {
+          console.error('Failed to send document notification:', err);
+        }
+      }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['shipment-documents', shipmentId] });
-      toast({ title: t('documents.visibilityUpdated') });
+      toast({ 
+        title: variables.visible 
+          ? t('documents.visibilityUpdatedNotified') 
+          : t('documents.visibilityUpdated') 
+      });
     },
     onError: () => {
       toast({ title: t('documents.visibilityError'), variant: 'destructive' });
@@ -269,6 +293,8 @@ export function DocumentList({ shipmentId, isCustomer = false }: DocumentListPro
                       toggleVisibilityMutation.mutate({
                         docId: doc.id,
                         visible: !doc.visible_to_client,
+                        filename: doc.filename,
+                        documentType: doc.document_type,
                       })
                     }
                     disabled={toggleVisibilityMutation.isPending}

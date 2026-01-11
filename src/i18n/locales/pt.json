@@ -144,6 +144,7 @@
     "deleteConfirmTitle": "Eliminar Documento",
     "deleteConfirmDescription": "Tem a certeza que deseja eliminar \"{{filename}}\"? Esta ação não pode ser desfeita.",
     "visibilityUpdated": "Visibilidade do documento atualizada",
+    "visibilityUpdatedNotified": "Documento disponibilizado e cliente notificado",
     "visibilityError": "Falha ao atualizar visibilidade",
     "hideFromClient": "Ocultar do cliente",
     "showToClient": "Mostrar ao cliente",
