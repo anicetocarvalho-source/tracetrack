@@ -182,7 +182,7 @@ export default function Clients() {
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {format(new Date(client.created_at), 'MMM d, yyyy')}
+                      {client.created_at ? format(new Date(client.created_at), 'MMM d, yyyy') : '-'}
                     </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" onClick={() => openEdit(client)}>
