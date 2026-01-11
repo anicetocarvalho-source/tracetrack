@@ -499,7 +499,20 @@
     "shipmentVolume": "Shipment Volume (normalized)",
     "qualityScore": "Quality (100 - incident rate)",
     "exceptionBreakdown": "Exception Breakdown by Client",
-    "exceptionsDistribution": "Distribution of exceptions by severity level"
+    "exceptionsDistribution": "Distribution of exceptions by severity level",
+    "clientStatistics": "Client Statistics",
+    "clientStatisticsDesc": "Overview of client portfolio and metrics",
+    "emailConfigDistribution": "Email Configuration",
+    "emailConfigDistributionDesc": "Distribution of clients by notification settings",
+    "clientsOverTime": "Clients Over Time",
+    "clientsOverTimeDesc": "New clients added in the last 6 months",
+    "topClientsByVolume": "Top Clients by Volume",
+    "topClientsByVolumeDesc": "Clients with the highest number of shipments",
+    "deliveryRateByClient": "Delivery Rate by Client",
+    "deliveryRateByClientDesc": "Percentage of shipments delivered by client",
+    "newClients": "New Clients",
+    "deliveryRate": "Delivery Rate",
+    "active": "active"
   },
   "shipments": {
     "title": "Shipments",

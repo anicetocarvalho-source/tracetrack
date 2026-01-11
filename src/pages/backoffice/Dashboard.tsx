@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { NotificationPermissionBanner } from '@/components/notifications/NotificationPermissionBanner';
 import { ScorecardWidget } from '@/components/dashboard/ScorecardWidget';
 import { ClientComparisonCharts } from '@/components/dashboard/ClientComparisonCharts';
+import { ClientStatsCharts } from '@/components/dashboard/ClientStatsCharts';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import {
   BarChart,
@@ -1336,6 +1337,11 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Client Statistics Charts */}
+        <div className="pt-4">
+          <ClientStatsCharts />
+        </div>
 
         {/* Client Comparison Charts */}
         <div className="pt-4">

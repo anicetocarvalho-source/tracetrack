@@ -491,7 +491,20 @@
     "shipmentVolume": "Volume de Envios (normalizado)",
     "qualityScore": "Qualidade (100 - taxa de incidentes)",
     "exceptionBreakdown": "Distribuição de Exceções por Cliente",
-    "exceptionsDistribution": "Distribuição de exceções por nível de severidade"
+    "exceptionsDistribution": "Distribuição de exceções por nível de severidade",
+    "clientStatistics": "Estatísticas de Clientes",
+    "clientStatisticsDesc": "Visão geral do portfólio de clientes e métricas",
+    "emailConfigDistribution": "Configuração de Emails",
+    "emailConfigDistributionDesc": "Distribuição de clientes por configuração de notificações",
+    "clientsOverTime": "Clientes ao Longo do Tempo",
+    "clientsOverTimeDesc": "Novos clientes adicionados nos últimos 6 meses",
+    "topClientsByVolume": "Top Clientes por Volume",
+    "topClientsByVolumeDesc": "Clientes com maior número de envios",
+    "deliveryRateByClient": "Taxa de Entrega por Cliente",
+    "deliveryRateByClientDesc": "Percentagem de envios entregues por cliente",
+    "newClients": "Novos Clientes",
+    "deliveryRate": "Taxa de Entrega",
+    "active": "ativos"
   },
   "shipments": {
     "title": "Envios",
