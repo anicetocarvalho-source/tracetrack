@@ -8,7 +8,6 @@ import {
   Eye,
   EyeOff,
   Trash2,
-  Upload,
   Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,7 +39,6 @@ export function DocumentList({ shipmentId, isCustomer = false }: DocumentListPro
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [showUpload, setShowUpload] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; doc: ShipmentDocument | null }>({
     open: false,
     doc: null,
@@ -155,10 +153,7 @@ export function DocumentList({ shipmentId, isCustomer = false }: DocumentListPro
         <p className="text-sm text-muted-foreground">
           {documents?.length || 0} {t('documents.documentsCount')}
         </p>
-        <Button size="sm" onClick={() => setShowUpload(true)}>
-          <Upload className="w-4 h-4 mr-2" />
-          {t('documents.upload')}
-        </Button>
+        <DocumentUploadDialog shipmentId={shipmentId} isCustomer={isCustomer} />
       </div>
 
       {!documents || documents.length === 0 ? (
@@ -237,13 +232,6 @@ export function DocumentList({ shipmentId, isCustomer = false }: DocumentListPro
           ))}
         </div>
       )}
-
-      <DocumentUploadDialog
-        open={showUpload}
-        onOpenChange={setShowUpload}
-        shipmentId={shipmentId}
-        isCustomer={isCustomer}
-      />
 
       <AlertDialog
         open={deleteDialog.open}
