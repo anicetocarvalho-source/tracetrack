@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { User, Building2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
+import { NotificationPreferences } from '@/components/portal/NotificationPreferences';
 
 export default function Profile() {
   const { t } = useTranslation();
@@ -71,6 +72,8 @@ export default function Profile() {
             </CardContent>
           </Card>
         </div>
+
+        <NotificationPreferences />
 
         <Card>
           <CardHeader>
