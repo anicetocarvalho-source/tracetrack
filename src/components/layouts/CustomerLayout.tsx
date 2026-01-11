@@ -148,18 +148,39 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header data-tour="customer-header" className="h-16 border-b flex items-center px-4 lg:px-6 bg-card">
+        <header data-tour="customer-header" className="h-16 border-b flex items-center px-4 lg:px-6 bg-gradient-to-r from-card to-muted/30">
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden mr-2"
+            className="lg:hidden mr-3"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="w-5 h-5" />
           </Button>
-          <h1 className="text-lg font-semibold text-foreground">{t('nav.customerPortal')}</h1>
+          
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-xl bg-dhl-yellow/20 border border-dhl-yellow/30">
+              <Package className="w-5 h-5 text-dhl-red" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-foreground">{t('nav.customerPortal')}</h1>
+              <p className="text-xs text-muted-foreground hidden sm:block">
+                {t('common.welcome')}, {profile?.name?.split(' ')[0] || t('nav.customer')}
+              </p>
+            </div>
+          </div>
+          
           <div className="flex-1" />
-          <div className="flex items-center gap-2">
+          
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="hidden md:flex items-center gap-2 mr-2 px-3 py-1.5 rounded-full bg-muted/50">
+              <div className="w-7 h-7 rounded-full bg-dhl-red flex items-center justify-center">
+                <span className="text-xs font-medium text-white">
+                  {profile?.name?.charAt(0).toUpperCase() || 'U'}
+                </span>
+              </div>
+              <span className="text-sm font-medium text-foreground">{profile?.name}</span>
+            </div>
             <ThemeToggle />
             <LanguageSwitcher />
           </div>
