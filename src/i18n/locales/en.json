@@ -106,7 +106,10 @@
     "showToClient": "Show to client",
     "preview": "Preview",
     "previewError": "Failed to load document preview",
-    "previewNotSupported": "Preview not available for this file type"
+    "previewNotSupported": "Preview not available for this file type",
+    "downloadAll": "Download All",
+    "bulkDownloadSuccess": "Documents downloaded successfully",
+    "bulkDownloadError": "Failed to download documents"
   },
   "requests": {
     "title": "Customer Requests",

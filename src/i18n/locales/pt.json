@@ -107,6 +107,9 @@
     "preview": "Pré-visualizar",
     "previewError": "Falha ao carregar pré-visualização do documento",
     "previewNotSupported": "Pré-visualização não disponível para este tipo de ficheiro",
+    "downloadAll": "Descarregar Todos",
+    "bulkDownloadSuccess": "Documentos descarregados com sucesso",
+    "bulkDownloadError": "Falha ao descarregar documentos",
     "types": {
       "POD": "Prova de Entrega",
       "BL": "Conhecimento de Embarque",
