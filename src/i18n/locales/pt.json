@@ -665,13 +665,20 @@
     "clientName": "Nome do Cliente",
     "notificationEmails": "Emails de Notificação",
     "noClients": "Nenhum cliente encontrado",
+    "noClientsDesc": "Os seus clientes aparecerão aqui assim que forem criados",
     "noEmailsConfigured": "Nenhum email configurado",
     "addEmailAddress": "Adicionar endereço de email",
     "emailNotificationHint": "Estes emails receberão notificações para atualizações de envios",
     "clientCreated": "Cliente criado",
     "clientUpdated": "Cliente atualizado",
     "clientNameRequired": "Nome do cliente é obrigatório",
-    "failedToSaveClient": "Falha ao guardar cliente"
+    "failedToSaveClient": "Falha ao guardar cliente",
+    "totalClients": "Total de Clientes",
+    "withEmails": "Com Emails",
+    "withoutEmails": "Sem Emails",
+    "recentlyAdded": "Adicionados Recentemente",
+    "searchPlaceholder": "Pesquisar por nome ou email...",
+    "clients": "clientes"
   },
   "users": {
     "title": "Utilizadores",

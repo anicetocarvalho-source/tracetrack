@@ -671,13 +671,20 @@
     "clientName": "Client Name",
     "notificationEmails": "Notification Emails",
     "noClients": "No clients found",
+    "noClientsDesc": "Your clients will appear here once created",
     "noEmailsConfigured": "No emails configured",
     "addEmailAddress": "Add email address",
     "emailNotificationHint": "These emails will receive notifications for shipment updates",
     "clientCreated": "Client created",
     "clientUpdated": "Client updated",
     "clientNameRequired": "Client name is required",
-    "failedToSaveClient": "Failed to save client"
+    "failedToSaveClient": "Failed to save client",
+    "totalClients": "Total Clients",
+    "withEmails": "With Emails",
+    "withoutEmails": "Without Emails",
+    "recentlyAdded": "Recently Added",
+    "searchPlaceholder": "Search by name or email...",
+    "clients": "clients"
   },
   "users": {
     "title": "Users",
