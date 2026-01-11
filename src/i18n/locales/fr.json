@@ -1221,6 +1221,7 @@
     "applyChanges": "Appliquer",
     "dismiss": "Ignorer",
     "accepted": "Classification acceptée",
-    "appliedClassification": "Classification Appliquée"
+    "appliedClassification": "Classification Appliquée",
+    "autoAnalyzing": "L'IA analysera lorsque vous aurez fini de taper..."
   }
 }

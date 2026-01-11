@@ -92,17 +92,27 @@ export function AddTrackingEventDrawer({
     isLoading: isClassifying,
     error: classificationError,
     wasAccepted,
-    classifyText,
+    autoClassifyText,
     acceptClassification,
     dismissClassification,
     reset: resetClassification,
   } = useAIClassification({
     entityType: 'tracking_event',
     entityId: shipmentId,
+    autoClassify: true,
+    debounceMs: 1500,
+    minTextLength: 20,
   });
 
   const noteValue = form.watch('note');
   const statusValue = form.watch('status');
+
+  // Auto-classify when note changes
+  useEffect(() => {
+    if (open && noteValue.trim().length >= 20 && !wasAccepted) {
+      autoClassifyText(noteValue, `Status: ${statusValue}`);
+    }
+  }, [noteValue, statusValue, open, wasAccepted, autoClassifyText]);
 
   // Reset classification when drawer closes
   useEffect(() => {
@@ -110,12 +120,6 @@ export function AddTrackingEventDrawer({
       resetClassification();
     }
   }, [open, resetClassification]);
-
-  const handleRequestClassification = async () => {
-    if (noteValue.trim()) {
-      await classifyText(noteValue, `Status: ${statusValue}`);
-    }
-  };
 
   const handleAcceptClassification = async (cls: AIClassification) => {
     await acceptClassification(cls);
@@ -297,8 +301,8 @@ export function AddTrackingEventDrawer({
               error={classificationError}
               onAccept={handleAcceptClassification}
               onDismiss={handleDismissClassification}
-              onRequestClassification={handleRequestClassification}
               hasText={noteValue.trim().length > 0}
+              autoMode={true}
             />
 
             {/* Show accepted classification */}

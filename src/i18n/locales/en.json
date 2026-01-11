@@ -1228,6 +1228,7 @@
     "applyChanges": "Apply Changes",
     "dismiss": "Dismiss",
     "accepted": "Classification accepted",
-    "appliedClassification": "Applied Classification"
+    "appliedClassification": "Applied Classification",
+    "autoAnalyzing": "AI will analyze when you finish typing..."
   }
 }

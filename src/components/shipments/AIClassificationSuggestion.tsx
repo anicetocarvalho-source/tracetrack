@@ -51,8 +51,8 @@ interface AIClassificationSuggestionProps {
   error: string | null;
   onAccept: (classification: AIClassification) => void;
   onDismiss: () => void;
-  onRequestClassification: () => void;
   hasText: boolean;
+  autoMode?: boolean;
 }
 
 export function AIClassificationSuggestion({
@@ -61,8 +61,8 @@ export function AIClassificationSuggestion({
   error,
   onAccept,
   onDismiss,
-  onRequestClassification,
   hasText,
+  autoMode = true,
 }: AIClassificationSuggestionProps) {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(true);
@@ -105,27 +105,24 @@ export function AIClassificationSuggestion({
     }
   };
 
-  // Show request classification button if no classification and has text
+  // In auto mode, show hint when waiting for text; otherwise show nothing
   if (!classification && !isLoading && !error) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-4"
-      >
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onRequestClassification}
-          disabled={!hasText}
-          className="w-full border-dashed border-primary/50 hover:border-primary hover:bg-primary/5"
+    if (autoMode && hasText) {
+      // Auto mode: show subtle hint that AI is ready
+      return (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mb-4"
         >
-          <Sparkles className="w-4 h-4 mr-2 text-primary" />
-          {t('classification.analyzeWithAI', 'Analyze with AI')}
-        </Button>
-      </motion.div>
-    );
+          <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 px-3 bg-muted/30 rounded-lg">
+            <Sparkles className="w-3 h-3" />
+            <span>{t('classification.autoAnalyzing', 'AI will analyze when you finish typing...')}</span>
+          </div>
+        </motion.div>
+      );
+    }
+    return null;
   }
 
   return (
@@ -173,10 +170,9 @@ export function AIClassificationSuggestion({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={onRequestClassification}
-                disabled={!hasText}
+                onClick={onDismiss}
               >
-                {t('common.retry', 'Retry')}
+                {t('common.close', 'Close')}
               </Button>
             </div>
           </Card>

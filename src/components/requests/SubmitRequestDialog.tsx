@@ -55,14 +55,24 @@ export function SubmitRequestDialog({
     isLoading: isClassifying,
     error: classificationError,
     wasAccepted,
-    classifyText,
+    autoClassifyText,
     acceptClassification,
     dismissClassification,
     reset: resetClassification,
   } = useAIClassification({
     entityType: 'customer_request',
     entityId: shipmentId,
+    autoClassify: true,
+    debounceMs: 1500,
+    minTextLength: 20,
   });
+
+  // Auto-classify when message changes
+  useEffect(() => {
+    if (open && message.trim().length >= 20 && !wasAccepted) {
+      autoClassifyText(message, `Request Type: ${requestType}`);
+    }
+  }, [message, requestType, open, wasAccepted, autoClassifyText]);
 
   // Reset classification when dialog closes
   useEffect(() => {
@@ -73,12 +83,6 @@ export function SubmitRequestDialog({
       setIncidentCause(undefined);
     }
   }, [open, resetClassification]);
-
-  const handleRequestClassification = async () => {
-    if (message.trim()) {
-      await classifyText(message, `Request Type: ${requestType}`);
-    }
-  };
 
   const handleAcceptClassification = async (cls: AIClassification) => {
     await acceptClassification(cls);
@@ -265,8 +269,8 @@ export function SubmitRequestDialog({
             error={classificationError}
             onAccept={handleAcceptClassification}
             onDismiss={handleDismissClassification}
-            onRequestClassification={handleRequestClassification}
             hasText={message.trim().length > 0}
+            autoMode={true}
           />
 
           {/* Show accepted classification */}
