@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 import {
   ArrowLeft,
   Plus,
@@ -17,8 +17,9 @@ import {
   CheckCircle,
   Clock,
   MessageSquare,
-  Radio,
   Files,
+  Anchor,
+  MapPin,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,6 +38,7 @@ import { DocumentList } from '@/components/documents/DocumentList';
 import { DocumentUploadDialog } from '@/components/documents/DocumentUploadDialog';
 import { ShipmentRequestsPanel } from '@/components/requests/ShipmentRequestsPanel';
 import { TimelineSummary } from '@/components/shipments/TimelineSummary';
+import { ShipmentProgressIndicator } from '@/components/shipments/ShipmentProgressIndicator';
 import { supabase } from '@/integrations/supabase/client';
 import { Shipment, TrackingEvent, ShipmentContainer, ShipmentException, ExceptionRule } from '@/types/database';
 import { ShipmentStatus, SEVERITY_LABELS, EXCEPTION_STATUS_LABELS } from '@/lib/constants';
@@ -327,39 +329,96 @@ export default function ShipmentDetail() {
     );
   }
 
+  const latestEvent = trackingEvents?.[0];
+  const openExceptions = exceptions?.filter(e => e.status !== 'RESOLVED') || [];
+
   return (
     <BackofficeLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/backoffice/shipments')}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold">{shipment.shipment_ref}</h1>
-                <StatusBadge status={shipment.current_status as ShipmentStatus} />
+        {/* Header with prominent status */}
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => navigate('/backoffice/shipments')}
+                className="mt-1 shrink-0"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-2">
+                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{shipment.shipment_ref}</h1>
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={shipment.current_status as ShipmentStatus} className="text-sm px-3 py-1" />
+                    {openExceptions.length > 0 && (
+                      <Badge variant="destructive" className="gap-1">
+                        <AlertTriangle className="w-3 h-3" />
+                        {openExceptions.length} {t('exceptions.open')}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1.5">
+                    <Anchor className="w-3.5 h-3.5" />
+                    {t('shipments.clientRef')}: <span className="font-medium text-foreground">{shipment.client_ref}</span>
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Building2 className="w-3.5 h-3.5" />
+                    {shipment.client?.name}
+                  </span>
+                  {shipment.file_number && (
+                    <span className="flex items-center gap-1.5">
+                      <FileText className="w-3.5 h-3.5" />
+                      {shipment.file_number}
+                    </span>
+                  )}
+                </div>
               </div>
-              <p className="text-muted-foreground">
-                {t('shipments.clientRef')}: {shipment.client_ref}
-                {shipment.file_number && ` • ${t('shipments.fileNumber')}: ${shipment.file_number}`}
-              </p>
+            </div>
+            <div className="flex gap-2 sm:shrink-0">
+              {canEdit && (
+                <Button variant="outline" onClick={() => setShowEditShipment(true)}>
+                  <Pencil className="w-4 h-4 mr-2" />
+                  {t('common.edit')}
+                </Button>
+              )}
+              <Button onClick={() => setShowAddEvent(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                {t('shipments.addEvent')}
+              </Button>
             </div>
           </div>
-          <div className="flex gap-2">
-            {canEdit && (
-              <Button variant="outline" onClick={() => setShowEditShipment(true)}>
-                <Pencil className="w-4 h-4 mr-2" />
-                {t('common.edit')}
-              </Button>
-            )}
-            <Button onClick={() => setShowAddEvent(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              {t('shipments.addEvent')}
-            </Button>
-          </div>
         </div>
+
+        {/* Progress Indicator */}
+        <Card className="overflow-hidden border-none shadow-md bg-gradient-to-br from-card to-muted/30">
+          <CardContent className="p-6">
+            <ShipmentProgressIndicator 
+              currentStatus={shipment.current_status as ShipmentStatus} 
+              compact
+            />
+            {latestEvent && (
+              <div className="mt-4 pt-4 border-t border-border/50 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  <Clock className="w-3.5 h-3.5" />
+                  {t('shipments.lastUpdate')}: 
+                  <span className="font-medium text-foreground">
+                    {format(new Date(latestEvent.event_datetime), 'MMM d, yyyy HH:mm')}
+                  </span>
+                </span>
+                {latestEvent.location && (
+                  <span className="flex items-center gap-1.5 text-muted-foreground">
+                    <MapPin className="w-3.5 h-3.5" />
+                    {latestEvent.location}
+                  </span>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* AI Timeline Summary */}
         <TimelineSummary 
@@ -371,37 +430,77 @@ export default function ShipmentDetail() {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Info */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Quick Info Cards */}
+            <div className="grid gap-4 sm:grid-cols-3">
+              {/* Client Card */}
+              <Card className="relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -translate-y-10 translate-x-10" />
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Building2 className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-muted-foreground mb-0.5">{t('shipments.client')}</p>
+                      <p className="font-semibold truncate">{shipment.client?.name}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* BL Reference Card */}
+              <Card className="relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-secondary/10 rounded-full -translate-y-10 translate-x-10" />
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-secondary/20">
+                      <Ship className="w-4 h-4 text-secondary-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-muted-foreground mb-0.5">{t('shipments.blReference')}</p>
+                      <p className="font-mono font-semibold truncate">{shipment.bl_reference}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Containers Card */}
+              <Card className="relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-accent/30 rounded-full -translate-y-10 translate-x-10" />
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-accent">
+                      <Package className="w-4 h-4 text-accent-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-muted-foreground mb-0.5">{t('shipments.containers')}</p>
+                      <p className="font-semibold">{containers?.length || 0} {t('shipments.units')}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
             {/* Shipment Details */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Ship className="w-5 h-5" />
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Ship className="w-4 h-4 text-primary" />
                   {t('shipments.shipmentDetails')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{t('shipments.client')}</p>
-                    <p className="font-medium flex items-center gap-2">
-                      <Building2 className="w-4 h-4 text-muted-foreground" />
-                      {shipment.client?.name}
-                    </p>
+                  <div className="p-4 rounded-xl bg-muted/50 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('shipments.shippingLine')}</p>
+                    <p className="font-semibold">{shipment.shipping_line}</p>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{t('shipments.assignedOperator')}</p>
-                    <p className="font-medium flex items-center gap-2">
+                  <div className="p-4 rounded-xl bg-muted/50 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('shipments.assignedOperator')}</p>
+                    <p className="font-semibold flex items-center gap-2">
                       <User className="w-4 h-4 text-muted-foreground" />
                       {shipment.assigned_operator || '—'}
                     </p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{t('shipments.shippingLine')}</p>
-                    <p className="font-medium">{shipment.shipping_line}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{t('shipments.blReference')}</p>
-                    <p className="font-medium font-mono">{shipment.bl_reference}</p>
                   </div>
                 </div>
               </CardContent>
@@ -409,47 +508,59 @@ export default function ShipmentDetail() {
 
             {/* Dates & Forecasts */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Calendar className="w-4 h-4 text-primary" />
                   {t('shipments.datesForecasts')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{t('shipments.forecastShippingLine')}</p>
-                    <p className="font-medium">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="p-4 rounded-xl bg-muted/50 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      {t('shipments.forecastShippingLine')}
+                    </p>
+                    <p className="font-semibold">
                       {safeFormatDate(shipment.forecast_shipping_line, 'MMM d, yyyy', '—')}
                     </p>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{t('shipments.forecastTerminal')}</p>
-                    <p className="font-medium">
+                  <div className="p-4 rounded-xl bg-muted/50 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      {t('shipments.forecastTerminal')}
+                    </p>
+                    <p className="font-semibold">
                       {safeFormatDate(shipment.forecast_terminal, 'MMM d, yyyy', '—')}
                     </p>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{t('shipments.dischargeDate')}</p>
-                    <p className="font-medium">
+                  <div className="p-4 rounded-xl bg-muted/50 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      {t('shipments.dischargeDate')}
+                    </p>
+                    <p className="font-semibold">
                       {safeFormatDate(shipment.discharge_date, 'MMM d, yyyy', '—')}
                     </p>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{t('shipments.serviceRequestDate')}</p>
-                    <p className="font-medium">
+                  <div className="p-4 rounded-xl bg-muted/50 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      {t('shipments.serviceRequestDate')}
+                    </p>
+                    <p className="font-semibold">
                       {safeFormatDate(shipment.service_request_date, 'MMM d, yyyy', '—')}
                     </p>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{t('shipments.docsReceivedDate')}</p>
-                    <p className="font-medium">
+                  <div className="p-4 rounded-xl bg-muted/50 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      {t('shipments.docsReceivedDate')}
+                    </p>
+                    <p className="font-semibold">
                       {safeFormatDate(shipment.docs_received_date, 'MMM d, yyyy', '—')}
                     </p>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">{t('shipments.created')}</p>
-                    <p className="font-medium">
+                  <div className="p-4 rounded-xl bg-muted/50 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      {t('shipments.created')}
+                    </p>
+                    <p className="font-semibold">
                       {safeFormatDate(shipment.created_at, 'MMM d, yyyy')}
                     </p>
                   </div>
@@ -458,45 +569,52 @@ export default function ShipmentDetail() {
             </Card>
 
             {/* Containers */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="w-5 h-5" />
-                  {t('shipments.containers')} ({containers?.length || 0})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {!containers || containers.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">{t('shipments.noContainers')}</p>
-                ) : (
-                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {containers && containers.length > 0 && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Package className="w-4 h-4 text-primary" />
+                    {t('shipments.containers')}
+                    <Badge variant="secondary" className="ml-1">{containers.length}</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {containers.map((container) => (
                       <div
                         key={container.id}
-                        className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                        className="flex items-center justify-between p-4 bg-muted/50 rounded-xl border border-border/50 hover:border-primary/30 transition-colors"
                       >
-                        <span className="font-mono text-sm">{container.container_number}</span>
-                        <span className="text-xs text-muted-foreground px-2 py-0.5 bg-background rounded">
+                        <div className="flex items-center gap-3">
+                          <div className="p-1.5 rounded-lg bg-background">
+                            <Package className="w-4 h-4 text-muted-foreground" />
+                          </div>
+                          <span className="font-mono text-sm font-medium">{container.container_number}</span>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
                           {container.container_type}
-                        </span>
+                        </Badge>
                       </div>
                     ))}
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
 
             {/* SLA Performance */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Clock className="w-4 h-4 text-primary" />
                   {t('sla.performance')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {!slaRecords || slaRecords.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">{t('sla.noSlaData')}</p>
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Clock className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                    <p className="text-sm">{t('sla.noSlaData')}</p>
+                  </div>
                 ) : (
                   <div className="space-y-4">
                     {/* Live Countdown Timer for Active SLA */}
@@ -504,7 +622,7 @@ export default function ShipmentDetail() {
                       const activeSla = slaRecords.find(r => !r.exited_at && r.sla_config?.max_hours);
                       if (activeSla && activeSla.sla_config?.max_hours) {
                         return (
-                          <div className="p-4 border-2 border-primary rounded-lg bg-primary/5">
+                          <div className="p-4 border-2 border-primary rounded-xl bg-primary/5">
                             <div className="flex items-center justify-between mb-3">
                               <h4 className="font-semibold flex items-center gap-2">
                                 <Clock className="w-4 h-4 text-primary" />
@@ -543,7 +661,11 @@ export default function ShipmentDetail() {
                         return (
                           <div
                             key={record.id}
-                            className={`p-3 border rounded-lg ${isBreach ? 'border-destructive bg-destructive/5' : isActive ? 'border-primary bg-primary/5' : ''}`}
+                            className={`p-4 border rounded-xl transition-colors ${
+                              isBreach ? 'border-destructive bg-destructive/5' : 
+                              isActive ? 'border-primary bg-primary/5' : 
+                              'bg-muted/30'
+                            }`}
                           >
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-2">
@@ -561,7 +683,7 @@ export default function ShipmentDetail() {
                                     {t('sla.breached')}
                                   </Badge>
                                 ) : record.exited_at ? (
-                                  <Badge variant="outline" className="text-xs border-green-500 text-green-600">
+                                  <Badge variant="outline" className="text-xs border-green-500 text-green-600 dark:text-green-400">
                                     <CheckCircle className="w-3 h-3 mr-1" />
                                     {t('sla.ok')}
                                   </Badge>
@@ -605,24 +727,36 @@ export default function ShipmentDetail() {
 
             {/* Exceptions */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5" />
-                  {t('exceptions.title')} ({exceptions?.length || 0})
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <AlertTriangle className="w-4 h-4 text-primary" />
+                  {t('exceptions.title')}
+                  {exceptions && exceptions.length > 0 && (
+                    <Badge variant={openExceptions.length > 0 ? 'destructive' : 'secondary'} className="ml-1">
+                      {exceptions.length}
+                    </Badge>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {!exceptions || exceptions.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">{t('exceptions.noExceptions')}</p>
+                  <div className="text-center py-8 text-muted-foreground">
+                    <CheckCircle className="w-10 h-10 mx-auto mb-3 opacity-30 text-green-500" />
+                    <p className="text-sm">{t('exceptions.noExceptions')}</p>
+                  </div>
                 ) : (
                   <div className="space-y-3">
                     {exceptions.map((exception) => (
                       <div
                         key={exception.id}
-                        className="p-4 border rounded-lg space-y-3"
+                        className={`p-4 rounded-xl border space-y-3 transition-colors ${
+                          exception.status === 'OPEN' ? 'border-destructive/50 bg-destructive/5' :
+                          exception.status === 'ACKNOWLEDGED' ? 'border-amber-500/50 bg-amber-500/5' :
+                          'bg-muted/30'
+                        }`}
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <Badge
                               variant={exception.severity === 'P1' ? 'destructive' : 'secondary'}
                               className={
@@ -641,8 +775,8 @@ export default function ShipmentDetail() {
                                 exception.status === 'OPEN'
                                   ? 'border-destructive text-destructive'
                                   : exception.status === 'ACKNOWLEDGED'
-                                  ? 'border-yellow-500 text-yellow-600'
-                                  : 'border-green-500 text-green-600'
+                                  ? 'border-amber-500 text-amber-600 dark:text-amber-400'
+                                  : 'border-green-500 text-green-600 dark:text-green-400'
                               }
                             >
                               {exception.status === 'OPEN' && <AlertTriangle className="w-3 h-3 mr-1" />}
@@ -651,7 +785,7 @@ export default function ShipmentDetail() {
                               {EXCEPTION_STATUS_LABELS[exception.status]}
                             </Badge>
                           </div>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
                             {formatDistanceToNow(new Date(exception.detected_at), { addSuffix: true })}
                           </span>
                         </div>
@@ -679,7 +813,7 @@ export default function ShipmentDetail() {
                         
                         {/* Action buttons */}
                         {exception.status !== 'RESOLVED' && (
-                          <div className="flex gap-2 pt-2 border-t">
+                          <div className="flex gap-2 pt-2 border-t border-border/50">
                             {exception.status === 'OPEN' && (
                               <Button
                                 size="sm"
@@ -700,7 +834,7 @@ export default function ShipmentDetail() {
                                   setResolutionNote('');
                                 }}
                               >
-                                <MessageSquare className="w-4 h-4 mr-1" />
+                                <CheckCircle className="w-4 h-4 mr-1" />
                                 {t('exceptions.resolve')}
                               </Button>
                             )}
@@ -715,9 +849,9 @@ export default function ShipmentDetail() {
 
             {/* Documents */}
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Files className="w-5 h-5" />
+              <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Files className="w-4 h-4 text-primary" />
                   {t('documents.title')}
                 </CardTitle>
                 <DocumentUploadDialog shipmentId={id!} />
@@ -729,9 +863,9 @@ export default function ShipmentDetail() {
 
             {/* Customer Requests */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5" />
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <MessageSquare className="w-4 h-4 text-primary" />
                   {t('requests.title')}
                 </CardTitle>
               </CardHeader>
@@ -741,19 +875,21 @@ export default function ShipmentDetail() {
             </Card>
           </div>
 
-          {/* Timeline */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  {t('tracking.timeline')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TrackingTimeline events={trackingEvents || []} showVisibility />
-              </CardContent>
-            </Card>
+          {/* Timeline Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="lg:sticky lg:top-6">
+              <Card className="overflow-hidden">
+                <CardHeader className="pb-3 bg-muted/30">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <FileText className="w-4 h-4 text-primary" />
+                    {t('tracking.timeline')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <TrackingTimeline events={trackingEvents || []} showVisibility />
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
