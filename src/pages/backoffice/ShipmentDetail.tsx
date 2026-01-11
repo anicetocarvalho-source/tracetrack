@@ -35,6 +35,7 @@ import { SLACountdownTimer } from '@/components/shipments/SLACountdownTimer';
 import { EditShipmentDrawer } from '@/components/shipments/EditShipmentDrawer';
 import { DocumentList } from '@/components/documents/DocumentList';
 import { DocumentUploadDialog } from '@/components/documents/DocumentUploadDialog';
+import { ShipmentRequestsPanel } from '@/components/requests/ShipmentRequestsPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { Shipment, TrackingEvent, ShipmentContainer, ShipmentException, ExceptionRule } from '@/types/database';
 import { ShipmentStatus, SEVERITY_LABELS, EXCEPTION_STATUS_LABELS } from '@/lib/constants';
@@ -715,6 +716,19 @@ export default function ShipmentDetail() {
               </CardHeader>
               <CardContent>
                 <DocumentList shipmentId={id!} isCustomer={false} />
+              </CardContent>
+            </Card>
+
+            {/* Customer Requests */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5" />
+                  {t('requests.title')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ShipmentRequestsPanel shipmentId={id!} />
               </CardContent>
             </Card>
           </div>
