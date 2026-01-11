@@ -147,15 +147,15 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
               <HelpMenu userRole={role} />
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2">
             <BackofficeTour />
             <Button
               variant="ghost"
-              className="flex-1 justify-start text-white hover:bg-white/10"
+              className="w-full justify-start text-white hover:bg-white/10"
               onClick={handleSignOut}
             >
-              <LogOut className="w-4 h-4 mr-2" />
-              {t('common.signOut')}
+              <LogOut className="w-4 h-4 mr-2 shrink-0" />
+              <span className="truncate">{t('common.signOut')}</span>
             </Button>
           </div>
         </div>
