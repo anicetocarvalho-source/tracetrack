@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { NotificationPermissionBanner } from '@/components/notifications/NotificationPermissionBanner';
 import { ScorecardWidget } from '@/components/dashboard/ScorecardWidget';
+import { ClientComparisonCharts } from '@/components/dashboard/ClientComparisonCharts';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import {
   BarChart,
@@ -1335,6 +1336,12 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Client Comparison Charts */}
+        <div className="pt-4">
+          <h2 className="text-xl font-semibold mb-4">{t('dashboard.clientComparison', 'Client Comparison')}</h2>
+          <ClientComparisonCharts />
+        </div>
       </div>
     </BackofficeLayout>
   );
