@@ -84,7 +84,13 @@
     "exceptionAlerts": "Exception Alerts",
     "exceptionAlertsDesc": "Receive alerts when exceptions are detected on your shipments",
     "documentNotifications": "Document Notifications",
-    "documentNotificationsDesc": "Get notified when new documents are uploaded to your shipments"
+    "documentNotificationsDesc": "Get notified when new documents are uploaded to your shipments",
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "noNotifications": "No notifications",
+    "newDocument": "New document available",
+    "requestResolved": "Request resolved",
+    "trackingUpdate": "Tracking update"
   },
   "preferences": {
     "loading": "Loading preferences...",

@@ -84,7 +84,13 @@
     "exceptionAlerts": "Alertas de Exceções",
     "exceptionAlertsDesc": "Receba alertas quando forem detetadas exceções nos seus envios",
     "documentNotifications": "Notificações de Documentos",
-    "documentNotificationsDesc": "Seja notificado quando novos documentos forem carregados nos seus envios"
+    "documentNotificationsDesc": "Seja notificado quando novos documentos forem carregados nos seus envios",
+    "title": "Notificações",
+    "markAllRead": "Marcar todas como lidas",
+    "noNotifications": "Sem notificações",
+    "newDocument": "Novo documento disponível",
+    "requestResolved": "Pedido resolvido",
+    "trackingUpdate": "Atualização de rastreamento"
   },
   "preferences": {
     "loading": "A carregar preferências...",

@@ -17,6 +17,7 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { CustomerHelpMenu } from '@/components/CustomerHelpMenu';
 import { CustomerTour } from '@/components/tour/CustomerTour';
+import { CustomerNotifications } from '@/components/portal/CustomerNotifications';
 import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 interface CustomerLayoutProps {
@@ -181,6 +182,7 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
               </div>
               <span className="text-sm font-medium text-foreground">{profile?.name}</span>
             </div>
+            <CustomerNotifications />
             <ThemeToggle />
             <LanguageSwitcher />
           </div>
