@@ -104,7 +104,11 @@
     "invalidEmail": "Adresse email invalide",
     "emailExists": "Email déjà ajouté",
     "noRecipients": "Veuillez ajouter au moins un destinataire",
-    "noSummary": "Aucun résumé disponible à envoyer"
+    "noSummary": "Aucun résumé disponible à envoyer",
+    "copyToClipboard": "Copier dans le presse-papiers",
+    "copied": "Copié!",
+    "copiedDesc": "Résumé copié dans le presse-papiers",
+    "copyError": "Échec de la copie dans le presse-papiers"
   },
   "documents": {
     "title": "Documents",

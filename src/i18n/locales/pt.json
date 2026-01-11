@@ -104,7 +104,11 @@
     "invalidEmail": "Endereço de email inválido",
     "emailExists": "Email já adicionado",
     "noRecipients": "Por favor adicione pelo menos um destinatário",
-    "noSummary": "Nenhum resumo disponível para enviar"
+    "noSummary": "Nenhum resumo disponível para enviar",
+    "copyToClipboard": "Copiar para área de transferência",
+    "copied": "Copiado!",
+    "copiedDesc": "Resumo copiado para área de transferência",
+    "copyError": "Falha ao copiar para área de transferência"
   },
   "documents": {
     "title": "Documentos",
