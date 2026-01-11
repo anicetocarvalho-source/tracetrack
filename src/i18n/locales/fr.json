@@ -1069,6 +1069,7 @@
   },
   "tour": {
     "startTour": "Visite Guidée",
+    "tooltipDescription": "Faites une visite interactive pour découvrir toutes les fonctionnalités de la plateforme",
     "next": "Suivant",
     "previous": "Précédent",
     "finish": "Terminer",

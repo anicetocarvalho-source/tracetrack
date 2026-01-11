@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useTourGuide } from './useTourGuide';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Sparkles } from 'lucide-react';
 
 export function CustomerTour() {
@@ -76,15 +77,22 @@ export function CustomerTour() {
   if (isLoading) return null;
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={startTour}
-      className="gap-2"
-      data-tour="start-tour"
-    >
-      <Sparkles className="h-4 w-4" />
-      <span className="hidden sm:inline">{t('tour.startTour')}</span>
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={startTour}
+          className="gap-2"
+          data-tour="start-tour"
+        >
+          <Sparkles className="h-4 w-4" />
+          <span className="hidden sm:inline">{t('tour.startTour')}</span>
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{t('tour.tooltipDescription')}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }

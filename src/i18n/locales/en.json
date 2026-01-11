@@ -1069,6 +1069,7 @@
   },
   "tour": {
     "startTour": "Guided Tour",
+    "tooltipDescription": "Take an interactive tour to discover all the platform features",
     "next": "Next",
     "previous": "Previous",
     "finish": "Finish",
