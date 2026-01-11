@@ -72,7 +72,19 @@
     "breachAlert": "Alerte de Violation SLA",
     "audioAlerts": "Alertes Audio",
     "audioAlertsDescription": "Jouer des sons d'avertissement lorsque les expéditions atteignent des seuils SLA critiques",
-    "testSound": "Tester le Son"
+    "testSound": "Tester le Son",
+    "emailPreferences": "Notifications par Email",
+    "emailPreferencesDesc": "Choisissez quelles notifications par email vous souhaitez recevoir",
+    "preferencesSaved": "Préférences de notification enregistrées",
+    "preferencesSaveFailed": "Échec de l'enregistrement des préférences de notification",
+    "shipmentUpdates": "Mises à jour des Expéditions",
+    "shipmentUpdatesDesc": "Recevez des emails lorsque vos expéditions changent de statut",
+    "scorecardAvailable": "Scorecard Mensuel",
+    "scorecardAvailableDesc": "Soyez notifié lorsqu'un nouveau scorecard de performance mensuel est disponible",
+    "exceptionAlerts": "Alertes d'Exceptions",
+    "exceptionAlertsDesc": "Recevez des alertes lorsque des exceptions sont détectées sur vos expéditions",
+    "documentNotifications": "Notifications de Documents",
+    "documentNotificationsDesc": "Soyez notifié lorsque de nouveaux documents sont téléchargés sur vos expéditions"
   },
   "preferences": {
     "loading": "Chargement des préférences...",

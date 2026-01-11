@@ -72,7 +72,19 @@
     "breachAlert": "SLA Breach Alert",
     "audioAlerts": "Audio Alerts",
     "audioAlertsDescription": "Play warning sounds when shipments reach critical SLA thresholds",
-    "testSound": "Test Sound"
+    "testSound": "Test Sound",
+    "emailPreferences": "Email Notifications",
+    "emailPreferencesDesc": "Choose which email notifications you want to receive",
+    "preferencesSaved": "Notification preferences saved",
+    "preferencesSaveFailed": "Failed to save notification preferences",
+    "shipmentUpdates": "Shipment Updates",
+    "shipmentUpdatesDesc": "Receive emails when your shipments have status changes",
+    "scorecardAvailable": "Monthly Scorecard",
+    "scorecardAvailableDesc": "Get notified when a new monthly performance scorecard is available",
+    "exceptionAlerts": "Exception Alerts",
+    "exceptionAlertsDesc": "Receive alerts when exceptions are detected on your shipments",
+    "documentNotifications": "Document Notifications",
+    "documentNotificationsDesc": "Get notified when new documents are uploaded to your shipments"
   },
   "preferences": {
     "loading": "Loading preferences...",
