@@ -1,16 +1,13 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
 import {
   MessageSquare,
-  Plus,
   Loader2,
   CheckCircle,
   Clock,
   AlertCircle,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SubmitRequestDialog } from './SubmitRequestDialog';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,7 +25,6 @@ interface CustomerRequestListProps {
 
 export function CustomerRequestList({ shipmentId }: CustomerRequestListProps) {
   const { t } = useTranslation();
-  const [showSubmit, setShowSubmit] = useState(false);
 
   const { data: requests, isLoading } = useQuery({
     queryKey: ['customer-requests', shipmentId],
@@ -100,10 +96,7 @@ export function CustomerRequestList({ shipmentId }: CustomerRequestListProps) {
         <p className="text-sm text-muted-foreground">
           {requests?.length || 0} {t('requests.requestsCount')}
         </p>
-        <Button size="sm" onClick={() => setShowSubmit(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          {t('requests.new')}
-        </Button>
+        <SubmitRequestDialog shipmentId={shipmentId} />
       </div>
 
       {!requests || requests.length === 0 ? (
@@ -154,12 +147,6 @@ export function CustomerRequestList({ shipmentId }: CustomerRequestListProps) {
           ))}
         </div>
       )}
-
-      <SubmitRequestDialog
-        open={showSubmit}
-        onOpenChange={setShowSubmit}
-        shipmentId={shipmentId}
-      />
     </div>
   );
 }

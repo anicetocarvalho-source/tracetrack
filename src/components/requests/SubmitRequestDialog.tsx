@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,6 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -26,16 +27,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { RequestType, REQUEST_TYPE_LABELS } from '@/types/documents';
 
 interface SubmitRequestDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   shipmentId: string;
 }
 
 export function SubmitRequestDialog({
-  open,
-  onOpenChange,
   shipmentId,
 }: SubmitRequestDialogProps) {
+  const [open, setOpen] = useState(false);
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -59,9 +57,10 @@ export function SubmitRequestDialog({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customer-requests', shipmentId] });
+      queryClient.invalidateQueries({ queryKey: ['portal-my-requests', shipmentId] });
       queryClient.invalidateQueries({ queryKey: ['all-customer-requests'] });
-      toast({ title: t('requests.submitSuccess') });
-      onOpenChange(false);
+      toast({ title: t('requests.requestSubmitted') });
+      setOpen(false);
       setMessage('');
       setRequestType('UPDATE_REQUEST');
     },
@@ -83,7 +82,13 @@ export function SubmitRequestDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm">
+          <Plus className="w-4 h-4 mr-2" />
+          {t('requests.submitRequest')}
+        </Button>
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('requests.submitRequest')}</DialogTitle>
@@ -125,7 +130,7 @@ export function SubmitRequestDialog({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={!message.trim() || submitMutation.isPending}>
