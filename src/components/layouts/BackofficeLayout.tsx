@@ -358,16 +358,9 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
             <div data-tour="help-button">
               <HelpMenu userRole={role} />
             </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div data-tour="theme-toggle">
-                  <ThemeToggle />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{t('settings.toggleTheme')}</p>
-              </TooltipContent>
-            </Tooltip>
+            <div data-tour="theme-toggle">
+              <ThemeToggle />
+            </div>
             <Tooltip>
               <TooltipTrigger asChild>
                 <span>
