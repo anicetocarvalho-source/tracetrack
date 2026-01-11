@@ -80,3 +80,6 @@ verify_jwt = false
 
 [functions.classify-incident]
 verify_jwt = false
+
+[functions.suggest-next-action]
+verify_jwt = false

@@ -1,4 +1,31 @@
 {
+  "aiSuggestion": {
+    "title": "Prochaine Action Suggérée",
+    "analyzing": "Analyse de l'expédition...",
+    "analyzingDesc": "L'IA analyse les données d'expédition pour suggérer la meilleure action",
+    "unavailable": "Suggestion indisponible",
+    "tryAgain": "Réessayez plus tard",
+    "showAgain": "Afficher la suggestion IA",
+    "recommendedStatus": "Statut recommandé",
+    "reason": "Raison",
+    "apply": "Appliquer",
+    "dismiss": "Ignorer",
+    "applied": "Suggestion appliquée avec succès",
+    "applyError": "Erreur lors de l'application de la suggestion",
+    "priority": {
+      "high": "Haute",
+      "medium": "Moyenne",
+      "low": "Basse"
+    },
+    "actionType": {
+      "status_change": "Changement de Statut",
+      "escalate": "Escalader",
+      "request_docs": "Demander Docs",
+      "inform_client": "Informer Client",
+      "investigate": "Enquêter",
+      "wait": "Attendre"
+    }
+  },
   "common": {
     "search": "Rechercher",
     "loading": "Chargement...",

@@ -41,6 +41,7 @@ import { DocumentUploadDialog } from '@/components/documents/DocumentUploadDialo
 import { ShipmentRequestsPanel } from '@/components/requests/ShipmentRequestsPanel';
 import { TimelineSummary } from '@/components/shipments/TimelineSummary';
 import { ShipmentProgressIndicator } from '@/components/shipments/ShipmentProgressIndicator';
+import { AINextActionSuggestion } from '@/components/shipments/AINextActionSuggestion';
 import { supabase } from '@/integrations/supabase/client';
 import { Shipment, TrackingEvent, ShipmentContainer, ShipmentException, ExceptionRule } from '@/types/database';
 import { ShipmentStatus, SEVERITY_LABELS, EXCEPTION_STATUS_LABELS } from '@/lib/constants';
@@ -85,6 +86,7 @@ export default function ShipmentDetail() {
   const queryClient = useQueryClient();
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [showEditShipment, setShowEditShipment] = useState(false);
+  const [aiSuggestionDraft, setAiSuggestionDraft] = useState<{ status: ShipmentStatus | null; note: string } | null>(null);
   const [resolveDialog, setResolveDialog] = useState<{ open: boolean; exception: ShipmentException | null }>({
     open: false,
     exception: null,
@@ -473,6 +475,45 @@ export default function ShipmentDetail() {
             clientEmails={shipment?.client?.notification_emails || []}
           />
         </motion.div>
+
+        {/* AI Next Best Action Suggestion */}
+        {shipment.current_status !== 'DELIVERED' && shipment.current_status !== 'CANCELLED' && (
+          <motion.div variants={itemVariants}>
+            <AINextActionSuggestion
+              shipmentId={id!}
+              shipmentRef={shipment.shipment_ref}
+              currentStatus={shipment.current_status as ShipmentStatus}
+              clientName={shipment.client?.name || ''}
+              clientRef={shipment.client_ref}
+              shippingLine={shipment.shipping_line}
+              blReference={shipment.bl_reference}
+              createdAt={shipment.created_at}
+              lastEvent={latestEvent ? {
+                status: latestEvent.status as ShipmentStatus,
+                note: latestEvent.note,
+                event_datetime: latestEvent.event_datetime,
+                location: latestEvent.location || undefined,
+              } : undefined}
+              openExceptions={openExceptions.map(e => ({
+                rule_name: e.exception_rule?.name || 'Unknown',
+                severity: e.severity,
+                detected_at: e.detected_at,
+                status: e.status,
+              }))}
+              slaInfo={slaRecords?.find(s => s.exited_at === null) ? {
+                current_status: slaRecords.find(s => s.exited_at === null)!.shipment_status,
+                entered_at: slaRecords.find(s => s.exited_at === null)!.entered_at,
+                max_hours: slaRecords.find(s => s.exited_at === null)!.sla_config?.max_hours,
+                elapsed_hours: slaRecords.find(s => s.exited_at === null)!.elapsed_hours || undefined,
+                breached: slaRecords.find(s => s.exited_at === null)!.breached || false,
+              } : undefined}
+              onApplySuggestion={(status, note) => {
+                setAiSuggestionDraft({ status, note });
+                setShowAddEvent(true);
+              }}
+            />
+          </motion.div>
+        )}
 
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Info */}
