@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { CustomerLayout } from '@/components/layouts/CustomerLayout';
 import { StatusBadge } from '@/components/StatusBadge';
+import { ShipmentProgressIndicator } from '@/components/shipments/ShipmentProgressIndicator';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { safeFormatDate } from '@/lib/utils';
@@ -180,53 +181,58 @@ export default function MyShipments() {
           ) : (
             shipments.map((shipment: any) => (
               <Link key={shipment.id} to={`/portal/shipments/${shipment.id}`}>
-                <Card className={`group h-full border-l-4 transition-all hover:shadow-md hover:border-primary/50 ${getStatusAccentColor(shipment.current_status)}`}>
+              <Card className={`group h-full border-l-4 transition-all hover:shadow-md hover:border-primary/50 ${getStatusAccentColor(shipment.current_status)}`}>
                   <CardContent className="p-5">
-                    {/* Status Badge - Prominent at Top */}
-                    <div className="mb-4">
+                    {/* Header: Status Badge + Reference */}
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="min-w-0">
+                        <h3 className="text-lg font-bold tracking-tight group-hover:text-primary transition-colors truncate">
+                          {shipment.shipment_ref}
+                        </h3>
+                        {shipment.client_ref && (
+                          <p className="text-sm text-muted-foreground truncate">
+                            {shipment.client_ref}
+                          </p>
+                        )}
+                      </div>
                       <StatusBadge 
                         status={shipment.current_status} 
-                        className="text-sm px-3 py-1.5 font-medium"
+                        className="text-xs px-2 py-1 font-medium shrink-0"
+                      />
+                    </div>
+
+                    {/* Progress Indicator */}
+                    <div className="mb-4 py-3 px-2 bg-muted/30 rounded-lg">
+                      <ShipmentProgressIndicator 
+                        currentStatus={shipment.current_status}
                       />
                     </div>
                     
-                    {/* Shipment Reference - Primary Info */}
-                    <div className="mb-4">
-                      <h3 className="text-lg font-bold tracking-tight group-hover:text-primary transition-colors">
-                        {shipment.shipment_ref}
-                      </h3>
-                      {shipment.client_ref && (
-                        <p className="text-sm text-muted-foreground mt-0.5">
-                          {shipment.client_ref}
-                        </p>
-                      )}
-                    </div>
-                    
-                    {/* Details Grid */}
-                    <div className="space-y-2.5 text-sm">
-                      <div className="flex items-center gap-2.5 text-muted-foreground">
-                        <Hash className="w-4 h-4 shrink-0" />
-                        <span className="truncate">BL: {shipment.bl_reference}</span>
+                    {/* Details Grid - Compact */}
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Hash className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate text-xs">{shipment.bl_reference}</span>
                       </div>
                       
-                      <div className="flex items-center gap-2.5 text-muted-foreground">
-                        <Ship className="w-4 h-4 shrink-0" />
-                        <span>{shipment.shipping_line}</span>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Ship className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate text-xs">{shipment.shipping_line}</span>
                       </div>
                       
-                      <div className="flex items-center gap-2.5 text-muted-foreground">
-                        <Package className="w-4 h-4 shrink-0" />
-                        <span>{shipment.containers?.length || 0} {t('shipments.containers').toLowerCase()}</span>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Package className="w-3.5 h-3.5 shrink-0" />
+                        <span className="text-xs">{shipment.containers?.length || 0} {t('shipments.containers').toLowerCase()}</span>
                       </div>
                       
-                      <div className="flex items-center gap-2.5 text-muted-foreground">
-                        <Calendar className="w-4 h-4 shrink-0" />
-                        <span>{safeFormatDate(shipment.created_at, 'dd MMM yyyy')}</span>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Calendar className="w-3.5 h-3.5 shrink-0" />
+                        <span className="text-xs">{safeFormatDate(shipment.created_at, 'dd MMM')}</span>
                       </div>
                     </div>
                     
                     {/* View Details Link */}
-                    <div className="mt-4 pt-4 border-t flex items-center justify-end text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="mt-4 pt-3 border-t flex items-center justify-end text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity">
                       {t('common.viewDetails')}
                       <ArrowRight className="w-4 h-4 ml-1" />
                     </div>
