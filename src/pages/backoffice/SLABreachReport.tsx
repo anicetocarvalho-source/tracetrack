@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -13,9 +12,11 @@ import { AlertTriangle, FileWarning, Clock, Building2, Filter, X, Download, Eye,
 import { useTranslation } from 'react-i18next';
 import { STATUS_LABELS, ShipmentStatus } from '@/lib/constants';
 import { format, subDays, eachDayOfInterval, parseISO } from 'date-fns';
+import { DateRange } from 'react-day-picker';
 import { Link } from 'react-router-dom';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { AreaChart, Area, XAxis, YAxis, BarChart, Bar, Cell } from 'recharts';
+import { DateRangePickerCompact } from '@/components/ui/date-range-picker';
 
 interface SLABreachRecord {
   id: string;
@@ -57,18 +58,16 @@ const SLABreachReport = () => {
   const { t } = useTranslation();
   const [clientFilter, setClientFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [dateFrom, setDateFrom] = useState<string>('');
-  const [dateTo, setDateTo] = useState<string>('');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedBreach, setSelectedBreach] = useState<SLABreachRecord | null>(null);
 
-  const hasActiveFilters = clientFilter !== 'all' || statusFilter !== 'all' || dateFrom || dateTo;
+  const hasActiveFilters = clientFilter !== 'all' || statusFilter !== 'all' || dateRange?.from;
 
   const clearFilters = () => {
     setClientFilter('all');
     setStatusFilter('all');
-    setDateFrom('');
-    setDateTo('');
+    setDateRange(undefined);
     setCurrentPage(1);
   };
 
@@ -87,7 +86,7 @@ const SLABreachReport = () => {
 
   // Fetch breach data
   const { data: breachData, isLoading } = useQuery({
-    queryKey: ['sla-breaches', clientFilter, statusFilter, dateFrom, dateTo, currentPage],
+    queryKey: ['sla-breaches', clientFilter, statusFilter, dateRange?.from, dateRange?.to, currentPage],
     queryFn: async () => {
       let query = supabase
         .from('shipment_sla')
@@ -114,12 +113,12 @@ const SLABreachReport = () => {
         query = query.eq('shipment_status', statusFilter as ShipmentStatus);
       }
 
-      if (dateFrom) {
-        query = query.gte('exited_at', dateFrom);
+      if (dateRange?.from) {
+        query = query.gte('exited_at', format(dateRange.from, 'yyyy-MM-dd'));
       }
 
-      if (dateTo) {
-        query = query.lte('exited_at', dateTo + 'T23:59:59');
+      if (dateRange?.to) {
+        query = query.lte('exited_at', format(dateRange.to, 'yyyy-MM-dd') + 'T23:59:59');
       }
 
       // Pagination
@@ -148,7 +147,7 @@ const SLABreachReport = () => {
 
   // Stats summary
   const { data: stats } = useQuery({
-    queryKey: ['sla-breach-stats', clientFilter, statusFilter, dateFrom, dateTo],
+    queryKey: ['sla-breach-stats', clientFilter, statusFilter, dateRange?.from, dateRange?.to],
     queryFn: async () => {
       let statsQuery = supabase
         .from('shipment_sla')
@@ -166,12 +165,12 @@ const SLABreachReport = () => {
         statsQuery = statsQuery.eq('shipment_status', statusFilter as ShipmentStatus);
       }
 
-      if (dateFrom) {
-        statsQuery = statsQuery.gte('exited_at', dateFrom);
+      if (dateRange?.from) {
+        statsQuery = statsQuery.gte('exited_at', format(dateRange.from, 'yyyy-MM-dd'));
       }
 
-      if (dateTo) {
-        statsQuery = statsQuery.lte('exited_at', dateTo + 'T23:59:59');
+      if (dateRange?.to) {
+        statsQuery = statsQuery.lte('exited_at', format(dateRange.to, 'yyyy-MM-dd') + 'T23:59:59');
       }
 
       const { data, error } = await statsQuery;
@@ -460,7 +459,7 @@ const SLABreachReport = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-5">
+            <div className="grid gap-4 md:grid-cols-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">{t('slaBreachReport.client')}</label>
                 <Select value={clientFilter} onValueChange={(v) => { setClientFilter(v); setCurrentPage(1); }}>
@@ -489,20 +488,12 @@ const SLABreachReport = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">{t('slaBreachReport.dateFrom')}</label>
-                <Input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">{t('slaBreachReport.dateTo')}</label>
-                <Input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-medium">{t('dateRange.dateRange')}</label>
+                <DateRangePickerCompact
+                  dateRange={dateRange}
+                  onDateRangeChange={(range) => { setDateRange(range); setCurrentPage(1); }}
+                  placeholder={t('dateRange.selectRange')}
                 />
               </div>
               <div className="flex items-end">
