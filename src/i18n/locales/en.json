@@ -860,7 +860,20 @@
     "themeDesc": "Select your preferred theme or use system settings",
     "toggleTheme": "Toggle theme",
     "lightMode": "Switch to light mode",
-    "darkMode": "Switch to dark mode"
+    "darkMode": "Switch to dark mode",
+    "aiClassificationSettings": "AI Classification",
+    "aiClassificationSettingsDesc": "Configure automatic AI incident classification",
+    "enableAIClassification": "Enable Automatic AI Classification",
+    "enableAIClassificationDesc": "Automatically analyze text from events and requests",
+    "aiDebounceTime": "Wait Time",
+    "aiDebounceTimeDesc": "Time to wait after typing stops before starting AI analysis",
+    "aiMinTextLength": "Minimum Text Length",
+    "aiMinTextLengthDesc": "Minimum number of characters required to trigger AI analysis",
+    "faster": "faster",
+    "slower": "slower",
+    "characters": "characters",
+    "aiSettingsUpdated": "AI settings updated",
+    "errorUpdatingAISettings": "Error updating AI settings"
   },
   "auditLogs": {
     "title": "Audit Logs",
