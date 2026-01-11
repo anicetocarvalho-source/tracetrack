@@ -10,11 +10,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Plus, X, Ship, Package, MapPin, Users, Clock, AlertTriangle, Loader2, TrendingUp, Target, Mail, Send, BarChart3, Moon, Sun, Monitor } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import { Plus, X, Ship, Package, MapPin, Users, Clock, AlertTriangle, Loader2, TrendingUp, Target, Mail, Send, BarChart3, Moon, Sun, Monitor, Brain } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { useAISettings } from '@/hooks/useAISettings';
 
 interface SystemSetting {
   id: string;
@@ -69,6 +71,7 @@ const Settings = () => {
   const { user, role } = useAuth();
   const { theme } = useTheme();
   const { updateTheme, isSaving: isPreferenceSaving } = useUserPreferences();
+  const { config: aiConfig, updateConfig: updateAIConfig, isUpdating: isAIUpdating } = useAISettings();
   const queryClient = useQueryClient();
   const [newItems, setNewItems] = useState<Record<string, string>>({});
 
@@ -384,7 +387,84 @@ const Settings = () => {
           </CardContent>
         </Card>
 
-        {/* Automation Settings */}
+        {/* AI Classification Settings */}
+        {role === 'MANAGER' && (
+          <Card className="border-purple-500/20">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-purple-500" />
+                <CardTitle className="text-lg">{t('settings.aiClassificationSettings')}</CardTitle>
+              </div>
+              <CardDescription>{t('settings.aiClassificationSettingsDesc')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Enable/Disable AI Classification */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>{t('settings.enableAIClassification')}</Label>
+                  <p className="text-xs text-muted-foreground">{t('settings.enableAIClassificationDesc')}</p>
+                </div>
+                <Switch
+                  checked={aiConfig.enabled}
+                  onCheckedChange={(enabled) => updateAIConfig({ enabled })}
+                  disabled={isAIUpdating}
+                />
+              </div>
+
+              {aiConfig.enabled && (
+                <>
+                  {/* Debounce Time */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label>{t('settings.aiDebounceTime')}</Label>
+                      <span className="text-sm font-medium">{aiConfig.debounce_ms}ms</span>
+                    </div>
+                    <Slider
+                      value={[aiConfig.debounce_ms]}
+                      onValueChange={([value]) => updateAIConfig({ debounce_ms: value })}
+                      min={500}
+                      max={5000}
+                      step={100}
+                      disabled={isAIUpdating}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>500ms ({t('settings.faster')})</span>
+                      <span>5000ms ({t('settings.slower')})</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {t('settings.aiDebounceTimeDesc')}
+                    </p>
+                  </div>
+
+                  {/* Minimum Text Length */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label>{t('settings.aiMinTextLength')}</Label>
+                      <span className="text-sm font-medium">{aiConfig.min_text_length} {t('settings.characters')}</span>
+                    </div>
+                    <Slider
+                      value={[aiConfig.min_text_length]}
+                      onValueChange={([value]) => updateAIConfig({ min_text_length: value })}
+                      min={5}
+                      max={100}
+                      step={5}
+                      disabled={isAIUpdating}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>5 {t('settings.characters')}</span>
+                      <span>100 {t('settings.characters')}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {t('settings.aiMinTextLengthDesc')}
+                    </p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )}
         {role === 'MANAGER' && (
           <Card className="border-primary/20">
             <CardHeader>

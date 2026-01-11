@@ -853,7 +853,20 @@
     "themeDesc": "Sélectionnez votre thème préféré ou utilisez les paramètres système",
     "toggleTheme": "Basculer le thème",
     "lightMode": "Passer en mode clair",
-    "darkMode": "Passer en mode sombre"
+    "darkMode": "Passer en mode sombre",
+    "aiClassificationSettings": "Classification IA",
+    "aiClassificationSettingsDesc": "Configurer la classification automatique des incidents par IA",
+    "enableAIClassification": "Activer la Classification IA Automatique",
+    "enableAIClassificationDesc": "Analyser automatiquement le texte des événements et demandes",
+    "aiDebounceTime": "Temps d'Attente",
+    "aiDebounceTimeDesc": "Temps d'attente après l'arrêt de la saisie avant de lancer l'analyse IA",
+    "aiMinTextLength": "Longueur Minimale du Texte",
+    "aiMinTextLengthDesc": "Nombre minimum de caractères requis pour déclencher l'analyse IA",
+    "faster": "plus rapide",
+    "slower": "plus lent",
+    "characters": "caractères",
+    "aiSettingsUpdated": "Paramètres IA mis à jour",
+    "errorUpdatingAISettings": "Erreur lors de la mise à jour des paramètres IA"
   },
   "auditLogs": {
     "title": "Journaux d'Audit",

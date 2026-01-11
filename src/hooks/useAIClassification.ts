@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useAISettings } from '@/hooks/useAISettings';
 import type { AIClassification } from '@/components/shipments/AIClassificationSuggestion';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -16,9 +17,15 @@ export function useAIClassification({
   entityType, 
   entityId,
   autoClassify = true,
-  debounceMs = 1500,
-  minTextLength = 20,
+  debounceMs,
+  minTextLength,
 }: UseAIClassificationOptions) {
+  const { config: aiSettings } = useAISettings();
+  
+  // Use provided values or fall back to system settings
+  const effectiveDebounceMs = debounceMs ?? aiSettings.debounce_ms;
+  const effectiveMinTextLength = minTextLength ?? aiSettings.min_text_length;
+  const isEnabled = aiSettings.enabled;
   const { user } = useAuth();
   const [classification, setClassification] = useState<AIClassification | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -99,8 +106,8 @@ export function useAIClassification({
       clearTimeout(debounceTimerRef.current);
     }
 
-    // Don't classify if already accepted, text too short, or same text
-    if (wasAccepted || text.trim().length < minTextLength) {
+    // Don't classify if disabled, already accepted, text too short, or same text
+    if (!isEnabled || wasAccepted || text.trim().length < effectiveMinTextLength) {
       return;
     }
 
@@ -112,8 +119,8 @@ export function useAIClassification({
     // Set new timer
     debounceTimerRef.current = setTimeout(() => {
       classifyText(text, context);
-    }, debounceMs);
-  }, [wasAccepted, minTextLength, lastClassifiedText, debounceMs, classifyText]);
+    }, effectiveDebounceMs);
+  }, [isEnabled, wasAccepted, effectiveMinTextLength, lastClassifiedText, effectiveDebounceMs, classifyText]);
 
   // Cancel pending auto-classification
   const cancelAutoClassify = useCallback(() => {

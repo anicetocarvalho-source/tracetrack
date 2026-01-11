@@ -854,7 +854,20 @@
     "themeDesc": "Selecione o seu tema preferido ou use as configurações do sistema",
     "toggleTheme": "Alternar tema",
     "lightMode": "Mudar para modo claro",
-    "darkMode": "Mudar para modo escuro"
+    "darkMode": "Mudar para modo escuro",
+    "aiClassificationSettings": "Classificação AI",
+    "aiClassificationSettingsDesc": "Configurar a classificação automática de incidentes por AI",
+    "enableAIClassification": "Ativar Classificação AI Automática",
+    "enableAIClassificationDesc": "Analisar automaticamente texto de eventos e solicitações",
+    "aiDebounceTime": "Tempo de Espera",
+    "aiDebounceTimeDesc": "Tempo de espera após parar de escrever antes de iniciar a análise AI",
+    "aiMinTextLength": "Comprimento Mínimo do Texto",
+    "aiMinTextLengthDesc": "Número mínimo de caracteres necessário para acionar a análise AI",
+    "faster": "mais rápido",
+    "slower": "mais lento",
+    "characters": "caracteres",
+    "aiSettingsUpdated": "Configurações de AI atualizadas",
+    "errorUpdatingAISettings": "Erro ao atualizar configurações de AI"
   },
   "auditLogs": {
     "title": "Logs de Auditoria",
