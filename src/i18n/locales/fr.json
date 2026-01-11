@@ -59,7 +59,10 @@
     "requiredField": "Champ obligatoire",
     "showing": "Affichage",
     "of": "sur",
-    "loadMore": "Charger plus"
+    "loadMore": "Charger plus",
+    "selectAll": "Tout sélectionner",
+    "selectRow": "Sélectionner la ligne",
+    "updating": "Mise à jour..."
   },
   "notifications": {
     "enableTitle": "Activer les Alertes SLA",
@@ -310,7 +313,14 @@
     "datesForecasts": "Dates et Prévisions",
     "forecasts": "Prévisions",
     "created": "Créé",
-    "addToSystem": "Ajouter une nouvelle expédition au système"
+    "addToSystem": "Ajouter une nouvelle expédition au système",
+    "selectedCount": "{{count}} sélectionné(s)",
+    "bulkUpdateStatus": "Mettre à jour le statut",
+    "bulkUpdateStatusTitle": "Mise à jour en masse",
+    "bulkUpdateStatusDescription": "Mettre à jour le statut de {{count}} expéditions sélectionnées",
+    "selectNewStatus": "Sélectionner le nouveau statut",
+    "bulkUpdateSuccess": "{{count}} expéditions mises à jour avec succès vers {{status}}",
+    "bulkUpdateError": "Échec de la mise à jour des expéditions"
   },
   "tracking": {
     "title": "Suivi d'Expédition",

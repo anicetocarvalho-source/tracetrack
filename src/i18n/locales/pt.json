@@ -59,7 +59,10 @@
     "requiredField": "Campo obrigatório",
     "showing": "A mostrar",
     "of": "de",
-    "loadMore": "Carregar mais"
+    "loadMore": "Carregar mais",
+    "selectAll": "Selecionar todos",
+    "selectRow": "Selecionar linha",
+    "updating": "A atualizar..."
   },
   "notifications": {
     "enableTitle": "Ativar Alertas SLA",
@@ -310,7 +313,14 @@
     "datesForecasts": "Datas e Previsões",
     "forecasts": "Previsões",
     "created": "Criado",
-    "addToSystem": "Adicionar um novo envio ao sistema"
+    "addToSystem": "Adicionar um novo envio ao sistema",
+    "selectedCount": "{{count}} selecionado(s)",
+    "bulkUpdateStatus": "Atualizar Estado",
+    "bulkUpdateStatusTitle": "Atualização em Massa",
+    "bulkUpdateStatusDescription": "Atualizar o estado de {{count}} envios selecionados",
+    "selectNewStatus": "Selecionar novo estado",
+    "bulkUpdateSuccess": "{{count}} envios atualizados com sucesso para {{status}}",
+    "bulkUpdateError": "Falha ao atualizar envios"
   },
   "tracking": {
     "title": "Rastreamento de Envio",
