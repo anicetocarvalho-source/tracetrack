@@ -235,7 +235,8 @@
     "scorecards": "Scorecards de Clientes",
     "scorecard": "Meu Scorecard",
     "customer": "Cliente",
-    "customerRequests": "Pedidos de Clientes"
+    "customerRequests": "Pedidos de Clientes",
+    "customerPortal": "Portal do Cliente"
   },
   "scorecards": {
     "title": "Scorecards de Clientes",
