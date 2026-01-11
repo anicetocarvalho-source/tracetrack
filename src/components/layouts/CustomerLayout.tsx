@@ -173,14 +173,6 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
           <div className="flex-1" />
           
           <div className="flex items-center gap-1 sm:gap-2">
-            <div className="hidden md:flex items-center gap-2 mr-2 px-3 py-1.5 rounded-full bg-muted/50">
-              <div className="w-7 h-7 rounded-full bg-dhl-red flex items-center justify-center">
-                <span className="text-xs font-medium text-white">
-                  {profile?.name?.charAt(0).toUpperCase() || 'U'}
-                </span>
-              </div>
-              <span className="text-sm font-medium text-foreground">{profile?.name}</span>
-            </div>
             <CustomerTour />
             <CustomerNotifications />
             <ThemeToggle />
