@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 import {
   FileText,
   Download,
@@ -11,8 +11,13 @@ import {
   Loader2,
   Search,
   Archive,
+  Bell,
+  Mail,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -53,6 +58,7 @@ export function DocumentList({ shipmentId, isCustomer = false }: DocumentListPro
 
   const canManage = role === 'SUPERVISOR' || role === 'MANAGER';
   const [isDownloadingZip, setIsDownloadingZip] = useState(false);
+  const [isNotificationHistoryOpen, setIsNotificationHistoryOpen] = useState(false);
 
   const { data: documents, isLoading } = useQuery({
     queryKey: ['shipment-documents', shipmentId],
@@ -79,6 +85,42 @@ export function DocumentList({ shipmentId, isCustomer = false }: DocumentListPro
         uploader: profileMap.get(d.uploaded_by) || null,
       })) as ShipmentDocument[];
     },
+  });
+
+  // Fetch notification history for this shipment's documents
+  const { data: notificationHistory } = useQuery({
+    queryKey: ['document-notifications', shipmentId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('audit_log')
+        .select('*')
+        .eq('entity_type', 'shipment_document')
+        .eq('action', 'DOCUMENT_NOTIFICATION_SENT')
+        .order('timestamp', { ascending: false });
+
+      if (error) throw error;
+
+      // Filter by shipment_id in metadata
+      const filtered = data?.filter((log) => {
+        const metadata = log.metadata_json as { shipment_id?: string } | null;
+        return metadata?.shipment_id === shipmentId;
+      }) || [];
+
+      // Get actor names
+      const actorIds = [...new Set(filtered.map((log) => log.actor_user_id).filter(Boolean))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, name, email')
+        .in('id', actorIds as string[]);
+
+      const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
+
+      return filtered.map((log) => ({
+        ...log,
+        actor: log.actor_user_id ? profileMap.get(log.actor_user_id) : null,
+      }));
+    },
+    enabled: !isCustomer,
   });
 
   const toggleVisibilityMutation = useMutation({
@@ -329,6 +371,88 @@ export function DocumentList({ shipmentId, isCustomer = false }: DocumentListPro
             </div>
           ))}
         </div>
+      )}
+
+      {/* Notification History Section */}
+      {!isCustomer && notificationHistory && notificationHistory.length > 0 && (
+        <Collapsible
+          open={isNotificationHistoryOpen}
+          onOpenChange={setIsNotificationHistoryOpen}
+          className="mt-6"
+        >
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" className="w-full justify-between">
+              <div className="flex items-center gap-2">
+                <Bell className="w-4 h-4" />
+                <span>{t('documents.notificationHistory')}</span>
+                <Badge variant="secondary">{notificationHistory.length}</Badge>
+              </div>
+              {isNotificationHistoryOpen ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-3">
+            <div className="border rounded-lg divide-y">
+              {notificationHistory.map((notification) => {
+                const metadata = notification.metadata_json as {
+                  filename?: string;
+                  document_type?: string;
+                  recipients_count?: number;
+                  recipients?: string[];
+                } | null;
+
+                return (
+                  <div
+                    key={notification.id}
+                    className="p-3 flex items-start gap-3 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Mail className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-sm">
+                          {metadata?.filename || t('documents.unknownDocument')}
+                        </span>
+                        {metadata?.document_type && (
+                          <Badge variant="outline" className="text-xs">
+                            {metadata.document_type}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        <span>
+                          {t('documents.notificationSentTo', {
+                            count: metadata?.recipients_count || 0,
+                          })}
+                        </span>
+                        {metadata?.recipients && metadata.recipients.length > 0 && (
+                          <span className="ml-1">
+                            ({metadata.recipients.slice(0, 3).join(', ')}
+                            {metadata.recipients.length > 3 && ` +${metadata.recipients.length - 3}`})
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        <span>
+                          {format(new Date(notification.timestamp), 'dd/MM/yyyy HH:mm')}
+                        </span>
+                        {notification.actor && (
+                          <span className="ml-2">
+                            • {t('documents.sentBy')} {notification.actor.name || notification.actor.email}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       )}
 
       <DocumentPreviewDialog
