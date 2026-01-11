@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { DateRange } from 'react-day-picker';
 import { supabase } from '@/integrations/supabase/client';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,7 @@ import {
 import { FileText, Filter, X, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { safeFormatDate } from '@/lib/utils';
+import { DateRangePickerCompact } from '@/components/ui/date-range-picker';
 import type { AuditLog, Profile } from '@/types/database';
 
 const ENTITY_TYPES = ['shipment', 'tracking_event', 'client', 'user', 'AUTH', 'EMAIL'];
@@ -39,8 +41,7 @@ const AuditLogs = () => {
   const { t } = useTranslation();
   const [entityFilter, setEntityFilter] = useState<string>('all');
   const [userFilter, setUserFilter] = useState<string>('all');
-  const [dateFrom, setDateFrom] = useState<string>('');
-  const [dateTo, setDateTo] = useState<string>('');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [page, setPage] = useState(0);
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
@@ -57,7 +58,7 @@ const AuditLogs = () => {
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['audit-logs', entityFilter, userFilter, dateFrom, dateTo, page],
+    queryKey: ['audit-logs', entityFilter, userFilter, dateRange?.from?.toISOString(), dateRange?.to?.toISOString(), page],
     queryFn: async () => {
       let query = supabase
         .from('audit_log')
@@ -71,11 +72,11 @@ const AuditLogs = () => {
       if (userFilter && userFilter !== 'all') {
         query = query.eq('actor_user_id', userFilter);
       }
-      if (dateFrom) {
-        query = query.gte('timestamp', `${dateFrom}T00:00:00`);
+      if (dateRange?.from) {
+        query = query.gte('timestamp', format(dateRange.from, "yyyy-MM-dd'T'00:00:00"));
       }
-      if (dateTo) {
-        query = query.lte('timestamp', `${dateTo}T23:59:59`);
+      if (dateRange?.to) {
+        query = query.lte('timestamp', format(dateRange.to, "yyyy-MM-dd'T'23:59:59"));
       }
 
       const { data, error, count } = await query;
@@ -93,12 +94,11 @@ const AuditLogs = () => {
   const clearFilters = () => {
     setEntityFilter('all');
     setUserFilter('all');
-    setDateFrom('');
-    setDateTo('');
+    setDateRange(undefined);
     setPage(0);
   };
 
-  const hasActiveFilters = entityFilter !== 'all' || userFilter !== 'all' || dateFrom || dateTo;
+  const hasActiveFilters = entityFilter !== 'all' || userFilter !== 'all' || dateRange?.from;
 
   const getUserName = (userId: string | null) => {
     if (!userId) return t('common.system');
@@ -189,20 +189,12 @@ const AuditLogs = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>{t('auditLogs.fromDate')}</Label>
-              <Input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => { setDateFrom(e.target.value); setPage(0); }}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('auditLogs.toDate')}</Label>
-              <Input
-                type="date"
-                value={dateTo}
-                onChange={(e) => { setDateTo(e.target.value); setPage(0); }}
+            <div className="space-y-2 lg:col-span-2">
+              <Label>{t('dateRange.selectRange')}</Label>
+              <DateRangePickerCompact
+                dateRange={dateRange}
+                onDateRangeChange={(range) => { setDateRange(range); setPage(0); }}
+                className="w-full"
               />
             </div>
           </div>

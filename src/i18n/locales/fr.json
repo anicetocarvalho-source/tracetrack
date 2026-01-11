@@ -688,5 +688,15 @@
     "slaBreachedDescription": "Une expédition a dépassé son délai SLA",
     "statusUpdated": "Statut Mis à Jour",
     "statusUpdatedDescription": "Le statut d'une expédition a été mis à jour"
+  },
+  "dateRange": {
+    "selectRange": "Sélectionner une plage de dates",
+    "last7Days": "7 derniers jours",
+    "last30Days": "30 derniers jours",
+    "last90Days": "90 derniers jours",
+    "allTime": "Toute la période",
+    "customRange": "Plage personnalisée",
+    "from": "De",
+    "to": "À"
   }
 }

@@ -688,5 +688,15 @@
     "slaBreachedDescription": "Uma remessa violou seu limite de SLA",
     "statusUpdated": "Status Atualizado",
     "statusUpdatedDescription": "O status de uma remessa foi atualizado"
+  },
+  "dateRange": {
+    "selectRange": "Selecionar intervalo de datas",
+    "last7Days": "Últimos 7 dias",
+    "last30Days": "Últimos 30 dias",
+    "last90Days": "Últimos 90 dias",
+    "allTime": "Todo o período",
+    "customRange": "Intervalo personalizado",
+    "from": "De",
+    "to": "Até"
   }
 }
