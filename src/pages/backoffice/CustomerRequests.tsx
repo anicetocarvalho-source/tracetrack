@@ -16,6 +16,8 @@ import {
   X,
   ChevronsLeft,
   ChevronsRight,
+  ChevronDown,
+  MessageCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +37,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -43,6 +50,7 @@ import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { RequestComments } from '@/components/requests/RequestComments';
 import {
   CustomerRequest,
   REQUEST_TYPE_LABELS,
@@ -403,90 +411,106 @@ export default function CustomerRequests() {
               <>
                 <div className="space-y-3">
                   {paginatedRequests.map((request) => (
-                  <div
-                    key={request.id}
-                    className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-2">
-                          <Badge variant="secondary">
-                            {REQUEST_TYPE_LABELS[request.request_type as RequestType]}
-                          </Badge>
-                          <Badge
-                            variant="outline"
-                            className={getStatusClass(request.status as RequestStatus)}
-                          >
-                            {getStatusIcon(request.status as RequestStatus)}
-                            <span className="ml-1">
-                              {REQUEST_STATUS_LABELS[request.status as RequestStatus]}
+                  <Collapsible key={request.id}>
+                    <div className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-2">
+                            <Badge variant="secondary">
+                              {REQUEST_TYPE_LABELS[request.request_type as RequestType]}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className={getStatusClass(request.status as RequestStatus)}
+                            >
+                              {getStatusIcon(request.status as RequestStatus)}
+                              <span className="ml-1">
+                                {REQUEST_STATUS_LABELS[request.status as RequestStatus]}
+                              </span>
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {formatDistanceToNow(new Date(request.created_at), {
+                                addSuffix: true,
+                              })}
                             </span>
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(request.created_at), {
-                              addSuffix: true,
-                            })}
-                          </span>
-                        </div>
+                          </div>
 
-                        <div className="mb-2">
-                          <button
-                            className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
-                            onClick={() =>
-                              navigate(`/backoffice/shipments/${request.shipment_id}`)
-                            }
-                          >
-                            {request.shipment?.shipment_ref}
-                            <ChevronRight className="w-3 h-3" />
-                          </button>
-                          <p className="text-xs text-muted-foreground">
-                            {request.shipment?.client?.name} • {request.creator?.name}
-                          </p>
-                        </div>
-
-                        <p className="text-sm line-clamp-2">{request.message}</p>
-
-                        {request.status === 'RESOLVED' && request.resolution_note && (
-                          <div className="p-2 bg-muted rounded mt-2">
+                          <div className="mb-2">
+                            <button
+                              className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
+                              onClick={() =>
+                                navigate(`/backoffice/shipments/${request.shipment_id}`)
+                              }
+                            >
+                              {request.shipment?.shipment_ref}
+                              <ChevronRight className="w-3 h-3" />
+                            </button>
                             <p className="text-xs text-muted-foreground">
-                              {t('requests.resolution')}: {request.resolution_note}
+                              {request.shipment?.client?.name} • {request.creator?.name}
                             </p>
                           </div>
-                        )}
-                      </div>
 
-                      <div className="flex flex-col gap-1 flex-shrink-0">
-                        {request.status === 'OPEN' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              updateStatusMutation.mutate({
-                                requestId: request.id,
-                                status: 'IN_PROGRESS',
-                              })
-                            }
-                            disabled={updateStatusMutation.isPending}
-                          >
-                            <Clock className="w-3 h-3 mr-1" />
-                            {t('requests.startProgress')}
-                          </Button>
-                        )}
-                        {request.status !== 'RESOLVED' && canResolve && (
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setResolveDialog({ open: true, request });
-                              setResolutionNote('');
-                            }}
-                          >
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            {t('requests.resolve')}
-                          </Button>
-                        )}
+                          <p className="text-sm line-clamp-2">{request.message}</p>
+
+                          {request.status === 'RESOLVED' && request.resolution_note && (
+                            <div className="p-2 bg-muted rounded mt-2">
+                              <p className="text-xs text-muted-foreground">
+                                {t('requests.resolution')}: {request.resolution_note}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-1 flex-shrink-0">
+                          {request.status === 'OPEN' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                updateStatusMutation.mutate({
+                                  requestId: request.id,
+                                  status: 'IN_PROGRESS',
+                                })
+                              }
+                              disabled={updateStatusMutation.isPending}
+                            >
+                              <Clock className="w-3 h-3 mr-1" />
+                              {t('requests.startProgress')}
+                            </Button>
+                          )}
+                          {request.status !== 'RESOLVED' && canResolve && (
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setResolveDialog({ open: true, request });
+                                setResolutionNote('');
+                              }}
+                            >
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              {t('requests.resolve')}
+                            </Button>
+                          )}
+                          <CollapsibleTrigger asChild>
+                            <Button size="sm" variant="ghost" className="gap-1">
+                              <MessageCircle className="w-3 h-3" />
+                              {t('requests.comments')}
+                              <ChevronDown className="w-3 h-3 transition-transform group-data-[state=open]:rotate-180" />
+                            </Button>
+                          </CollapsibleTrigger>
+                        </div>
                       </div>
+                      
+                      <CollapsibleContent className="mt-4 pt-4 border-t">
+                        <RequestComments 
+                          requestId={request.id} 
+                          requestStatus={request.status as RequestStatus}
+                          shipmentRef={request.shipment?.shipment_ref}
+                          clientName={request.shipment?.client?.name}
+                          requestType={request.request_type}
+                        />
+                      </CollapsibleContent>
                     </div>
-                  </div>
+                  </Collapsible>
                 ))}
                 </div>
 
