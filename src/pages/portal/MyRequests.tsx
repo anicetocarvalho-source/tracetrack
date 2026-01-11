@@ -66,7 +66,8 @@ export default function MyRequests() {
           shipment:shipments(
             id,
             shipment_ref,
-            client_ref
+            client_ref,
+            client:clients(name)
           )
         `)
         .eq('created_by', user.id)
@@ -366,7 +367,10 @@ export default function MyRequests() {
                       <CollapsibleContent className="mt-4 pt-4 border-t">
                         <RequestComments 
                           requestId={request.id} 
-                          requestStatus={request.status} 
+                          requestStatus={request.status}
+                          shipmentRef={request.shipment?.shipment_ref}
+                          clientName={(request.shipment as any)?.client?.name}
+                          requestType={request.request_type}
                         />
                       </CollapsibleContent>
                     </div>

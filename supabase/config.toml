@@ -74,3 +74,6 @@ verify_jwt = false
 
 [functions.notify-document-available]
 verify_jwt = false
+
+[functions.notify-new-comment]
+verify_jwt = false

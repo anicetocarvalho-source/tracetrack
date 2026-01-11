@@ -31,9 +31,18 @@ interface RequestComment {
 interface RequestCommentsProps {
   requestId: string;
   requestStatus: RequestStatus;
+  shipmentRef?: string;
+  clientName?: string;
+  requestType?: string;
 }
 
-export function RequestComments({ requestId, requestStatus }: RequestCommentsProps) {
+export function RequestComments({ 
+  requestId, 
+  requestStatus,
+  shipmentRef,
+  clientName,
+  requestType 
+}: RequestCommentsProps) {
   const { t, i18n } = useTranslation();
   const { user, profile } = useAuth();
   const { toast } = useToast();
@@ -115,6 +124,27 @@ export function RequestComments({ requestId, requestStatus }: RequestCommentsPro
         });
 
       if (error) throw error;
+
+      // Send notification email to backoffice (fire and forget)
+      if (shipmentRef && clientName && requestType) {
+        try {
+          await supabase.functions.invoke('notify-new-comment', {
+            body: {
+              request_id: requestId,
+              shipment_ref: shipmentRef,
+              client_name: clientName,
+              request_type: requestType,
+              comment_message: newComment.trim(),
+              commenter_name: profile?.name || 'Customer',
+              commenter_email: profile?.email || user.email || '',
+            },
+          });
+          console.log('Comment notification sent successfully');
+        } catch (notifyError) {
+          console.error('Failed to send comment notification:', notifyError);
+          // Don't throw - the comment was still created successfully
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['request-comments', requestId] });
