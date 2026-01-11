@@ -38,7 +38,7 @@ interface ShipmentRequestsPanelProps {
 
 export function ShipmentRequestsPanel({ shipmentId }: ShipmentRequestsPanelProps) {
   const { t } = useTranslation();
-  const { user, role } = useAuth();
+  const { user, role, profile } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -104,7 +104,7 @@ export function ShipmentRequestsPanel({ shipmentId }: ShipmentRequestsPanelProps
   });
 
   const resolveMutation = useMutation({
-    mutationFn: async ({ requestId, note }: { requestId: string; note: string }) => {
+    mutationFn: async ({ requestId, note, request }: { requestId: string; note: string; request: CustomerRequest }) => {
       const { error } = await supabase
         .from('customer_requests')
         .update({
@@ -116,6 +116,44 @@ export function ShipmentRequestsPanel({ shipmentId }: ShipmentRequestsPanelProps
         .eq('id', requestId);
 
       if (error) throw error;
+
+      // Fetch shipment and customer info for email notification
+      try {
+        const { data: shipmentData } = await supabase
+          .from('shipments')
+          .select('shipment_ref, client_id')
+          .eq('id', shipmentId)
+          .single();
+
+        if (shipmentData) {
+          // Fetch customer email (the creator of the request)
+          const { data: creatorProfile } = await supabase
+            .from('profiles')
+            .select('email, name')
+            .eq('id', request.created_by)
+            .single();
+
+          if (creatorProfile?.email) {
+            // Send email notification
+            await supabase.functions.invoke('notify-request-resolved', {
+              body: {
+                request_id: requestId,
+                shipment_ref: shipmentData.shipment_ref,
+                request_type: request.request_type,
+                original_message: request.message,
+                resolution_note: note,
+                resolved_by_name: profile?.name || 'Operations Team',
+                customer_email: creatorProfile.email,
+                customer_name: creatorProfile.name,
+              },
+            });
+            console.log('Resolution notification sent to:', creatorProfile.email);
+          }
+        }
+      } catch (notifyError) {
+        console.error('Failed to send resolution notification:', notifyError);
+        // Don't fail the mutation if notification fails
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customer-requests', shipmentId] });
@@ -272,9 +310,10 @@ export function ShipmentRequestsPanel({ shipmentId }: ShipmentRequestsPanelProps
                   resolveMutation.mutate({
                     requestId: resolveDialog.request.id,
                     note: resolutionNote.trim(),
+                    request: resolveDialog.request,
                   });
                 }
-              }} 
+              }}
               disabled={!resolutionNote.trim() || resolveMutation.isPending}
             >
               {t('requests.resolve')}
