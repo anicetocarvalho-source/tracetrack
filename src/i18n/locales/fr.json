@@ -143,6 +143,12 @@
     "open": "Ouvert",
     "inProgress": "En Cours",
     "allStatuses": "Tous les Statuts",
+    "allClients": "Tous les Clients",
+    "filterByStatus": "Filtrer par statut",
+    "filterByClient": "Filtrer par client",
+    "searchShipmentRef": "Rechercher réf. expédition...",
+    "clearFilters": "Effacer Filtres",
+    "noMatchingRequests": "Aucune demande ne correspond aux filtres actuels",
     "startProgress": "Commencer",
     "myRequests": "Mes Demandes",
     "requestSubmitted": "Demande soumise avec succès"
