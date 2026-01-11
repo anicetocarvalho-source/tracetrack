@@ -272,7 +272,9 @@
     "scorecard": "Meu Scorecard",
     "customer": "Cliente",
     "customerRequests": "Pedidos de Clientes",
-    "customerPortal": "Portal do Cliente"
+    "customerPortal": "Portal do Cliente",
+    "slaGroup": "SLA",
+    "adminGroup": "Administração"
   },
   "scorecards": {
     "title": "Scorecards de Clientes",

@@ -16,7 +16,11 @@ import {
   Target,
   BellRing,
   Grid3X3,
-  FileBarChart
+  FileBarChart,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  Cog
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -27,10 +31,32 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { PreferencesSyncIndicator } from '@/components/PreferencesSyncIndicator';
 import { HelpMenu } from '@/components/HelpMenu';
 import { BackofficeTour } from '@/components/tour/BackofficeTour';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 interface BackofficeLayoutProps {
   children: ReactNode;
+}
+
+interface NavItem {
+  path: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  roles?: string[];
+  highlight?: boolean;
+}
+
+interface NavGroup {
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  roles?: string[];
+  items: NavItem[];
+}
+
+type NavEntry = NavItem | NavGroup;
+
+function isNavGroup(entry: NavEntry): entry is NavGroup {
+  return 'items' in entry;
 }
 
 export function BackofficeLayout({ children }: BackofficeLayoutProps) {
@@ -39,22 +65,39 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
   const navigate = useNavigate();
   const { profile, role, signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [openGroups, setOpenGroups] = useState<string[]>(['sla', 'admin']);
 
-  const navItems = [
+  const navEntries: NavEntry[] = [
     { path: '/backoffice', label: t('nav.dashboard'), icon: LayoutDashboard },
     { path: '/backoffice/action-required', label: t('exceptions.title'), icon: AlertTriangle, highlight: true },
     { path: '/backoffice/shipments', label: t('nav.shipments'), icon: Package },
     { path: '/backoffice/customer-requests', label: t('nav.customerRequests'), icon: FileText, roles: ['SUPERVISOR', 'MANAGER'] },
-    { path: '/backoffice/sla-management', label: t('nav.slaManagement'), icon: Target, roles: ['SUPERVISOR', 'MANAGER'] },
-    { path: '/backoffice/sla-breach-report', label: t('nav.slaBreachReport'), icon: FileWarning, roles: ['SUPERVISOR', 'MANAGER'] },
-    { path: '/backoffice/sla-heatmap', label: t('nav.slaHeatmap'), icon: Grid3X3, roles: ['SUPERVISOR', 'MANAGER'] },
+    // SLA Group
+    {
+      label: t('nav.slaGroup'),
+      icon: Clock,
+      roles: ['SUPERVISOR', 'MANAGER'],
+      items: [
+        { path: '/backoffice/sla-management', label: t('nav.slaManagement'), icon: Target, roles: ['SUPERVISOR', 'MANAGER'] },
+        { path: '/backoffice/sla-breach-report', label: t('nav.slaBreachReport'), icon: FileWarning, roles: ['SUPERVISOR', 'MANAGER'] },
+        { path: '/backoffice/sla-heatmap', label: t('nav.slaHeatmap'), icon: Grid3X3, roles: ['SUPERVISOR', 'MANAGER'] },
+      ]
+    },
     { path: '/backoffice/scorecards', label: t('nav.scorecards'), icon: FileBarChart, roles: ['SUPERVISOR', 'MANAGER'] },
     { path: '/backoffice/notification-settings', label: t('nav.notificationSettings'), icon: BellRing },
-    { path: '/backoffice/clients', label: t('nav.clients'), icon: Building2, roles: ['MANAGER'] },
-    { path: '/backoffice/users', label: t('nav.users'), icon: Users, roles: ['MANAGER'] },
-    { path: '/backoffice/exception-rules', label: t('exceptions.rulesTitle'), icon: Settings2, roles: ['MANAGER'] },
-    { path: '/backoffice/audit-logs', label: t('nav.auditLogs'), icon: FileText, roles: ['MANAGER'] },
-    { path: '/backoffice/settings', label: t('nav.settings'), icon: Settings, roles: ['MANAGER'] },
+    // Admin Group
+    {
+      label: t('nav.adminGroup'),
+      icon: Cog,
+      roles: ['MANAGER'],
+      items: [
+        { path: '/backoffice/clients', label: t('nav.clients'), icon: Building2, roles: ['MANAGER'] },
+        { path: '/backoffice/users', label: t('nav.users'), icon: Users, roles: ['MANAGER'] },
+        { path: '/backoffice/exception-rules', label: t('exceptions.rulesTitle'), icon: Settings2, roles: ['MANAGER'] },
+        { path: '/backoffice/audit-logs', label: t('nav.auditLogs'), icon: FileText, roles: ['MANAGER'] },
+        { path: '/backoffice/settings', label: t('nav.settings'), icon: Settings, roles: ['MANAGER'] },
+      ]
+    },
   ];
 
   const handleSignOut = async () => {
@@ -62,10 +105,104 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
     navigate('/auth');
   };
 
-  const filteredNavItems = navItems.filter(item => {
-    if (!item.roles) return true;
-    return item.roles.includes(role || '');
-  });
+  const toggleGroup = (groupLabel: string) => {
+    setOpenGroups(prev => 
+      prev.includes(groupLabel) 
+        ? prev.filter(g => g !== groupLabel)
+        : [...prev, groupLabel]
+    );
+  };
+
+  const isEntryVisible = (entry: NavEntry): boolean => {
+    if (isNavGroup(entry)) {
+      if (entry.roles && !entry.roles.includes(role || '')) return false;
+      return entry.items.some(item => !item.roles || item.roles.includes(role || ''));
+    }
+    return !entry.roles || entry.roles.includes(role || '');
+  };
+
+  const isGroupActive = (group: NavGroup): boolean => {
+    return group.items.some(item => 
+      location.pathname === item.path || 
+      (item.path !== '/backoffice' && location.pathname.startsWith(item.path))
+    );
+  };
+
+  const renderNavItem = (item: NavItem, index: number, isSubItem = false) => {
+    const isActive = location.pathname === item.path || 
+      (item.path !== '/backoffice' && location.pathname.startsWith(item.path));
+    
+    const tourId = item.path === '/backoffice' ? 'dashboard' 
+      : item.path === '/backoffice/action-required' ? 'exceptions'
+      : item.path === '/backoffice/shipments' ? 'shipments'
+      : undefined;
+    
+    return (
+      <Link
+        key={item.path}
+        to={item.path}
+        onClick={() => setSidebarOpen(false)}
+        data-tour={tourId}
+        style={{ animationDelay: `${index * 30}ms` }}
+        className={cn(
+          "flex items-center gap-3 py-2 rounded-lg text-sm font-medium text-white",
+          "transition-all duration-200 ease-out",
+          "hover:translate-x-1",
+          isSubItem ? "px-3 pl-10" : "px-3",
+          isActive 
+            ? "bg-dhl-yellow !text-black shadow-md" 
+            : "hover:bg-white/10",
+          sidebarOpen && "lg:animate-none animate-fade-in"
+        )}
+      >
+        <item.icon className={cn(
+          "w-4 h-4 shrink-0 transition-transform duration-200",
+          isActive && "scale-110"
+        )} />
+        <span className="truncate">{item.label}</span>
+      </Link>
+    );
+  };
+
+  const renderNavGroup = (group: NavGroup, index: number) => {
+    const groupKey = group.label.toLowerCase().replace(/\s+/g, '-');
+    const isOpen = openGroups.includes(groupKey) || isGroupActive(group);
+    const isActive = isGroupActive(group);
+    
+    return (
+      <Collapsible
+        key={group.label}
+        open={isOpen}
+        onOpenChange={() => toggleGroup(groupKey)}
+      >
+        <CollapsibleTrigger asChild>
+          <button
+            style={{ animationDelay: `${index * 30}ms` }}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-white",
+              "transition-all duration-200 ease-out",
+              "hover:bg-white/10",
+              isActive && "bg-white/5",
+              sidebarOpen && "lg:animate-none animate-fade-in"
+            )}
+          >
+            <group.icon className="w-5 h-5 shrink-0" />
+            <span className="flex-1 text-left truncate">{group.label}</span>
+            {isOpen ? (
+              <ChevronDown className="w-4 h-4 shrink-0 transition-transform" />
+            ) : (
+              <ChevronRight className="w-4 h-4 shrink-0 transition-transform" />
+            )}
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-1 mt-1">
+          {group.items
+            .filter(item => !item.roles || item.roles.includes(role || ''))
+            .map((item, subIndex) => renderNavItem(item, index + subIndex, true))}
+        </CollapsibleContent>
+      </Collapsible>
+    );
+  };
 
   return (
     <div className="flex h-screen bg-background">
@@ -104,39 +241,14 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
 
         {/* Navigation */}
         <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
-          {filteredNavItems.map((item, index) => {
-            const isActive = location.pathname === item.path || 
-              (item.path !== '/backoffice' && location.pathname.startsWith(item.path));
+          {navEntries.map((entry, index) => {
+            if (!isEntryVisible(entry)) return null;
             
-            const tourId = item.path === '/backoffice' ? 'dashboard' 
-              : item.path === '/backoffice/action-required' ? 'exceptions'
-              : item.path === '/backoffice/shipments' ? 'shipments'
-              : undefined;
+            if (isNavGroup(entry)) {
+              return renderNavGroup(entry, index);
+            }
             
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setSidebarOpen(false)}
-                data-tour={tourId}
-                style={{ animationDelay: `${index * 30}ms` }}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white",
-                  "transition-all duration-200 ease-out",
-                  "hover:translate-x-1",
-                  isActive 
-                    ? "bg-dhl-yellow !text-black shadow-md" 
-                    : "hover:bg-white/10",
-                  sidebarOpen && "lg:animate-none animate-fade-in"
-                )}
-              >
-                <item.icon className={cn(
-                  "w-5 h-5 shrink-0 transition-transform duration-200",
-                  isActive && "scale-110"
-                )} />
-                <span className="truncate">{item.label}</span>
-              </Link>
-            );
+            return renderNavItem(entry, index);
           })}
         </nav>
 

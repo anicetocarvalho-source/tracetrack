@@ -271,7 +271,9 @@
     "scorecard": "Ma Fiche",
     "customer": "Client",
     "customerRequests": "Demandes Clients",
-    "customerPortal": "Portail Client"
+    "customerPortal": "Portail Client",
+    "slaGroup": "SLA",
+    "adminGroup": "Administration"
   },
   "scorecards": {
     "title": "Fiches Client",
