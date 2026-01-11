@@ -1,4 +1,12 @@
 {
+  "tracking": {
+    "timeline": "Tracking Timeline",
+    "noEvents": "No tracking events yet",
+    "visibleToClient": "Visible to client",
+    "internalOnly": "Internal only",
+    "detailedView": "Detailed view",
+    "compactView": "Compact view"
+  },
   "common": {
     "search": "Search",
     "loading": "Loading...",

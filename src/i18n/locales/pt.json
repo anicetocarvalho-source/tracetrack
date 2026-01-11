@@ -563,7 +563,9 @@
     "addEventDesc": "Criar um novo evento na cronologia do envio. Os eventos são imutáveis.",
     "selectStatus": "Selecionar estado",
     "eventAdded": "Evento de rastreamento adicionado com sucesso",
-    "failedToAdd": "Falha ao adicionar evento de rastreamento"
+    "failedToAdd": "Falha ao adicionar evento de rastreamento",
+    "detailedView": "Vista detalhada",
+    "compactView": "Vista compacta"
   },
   "createShipment": {
     "title": "Criar Envio",

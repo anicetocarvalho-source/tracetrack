@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, User, Eye, EyeOff, ChevronDown } from 'lucide-react';
+import { MapPin, User, Eye, EyeOff, ChevronDown, List, LayoutList } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
+import { Toggle } from '@/components/ui/toggle';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { TrackingEvent } from '@/types/database';
 import { cn, safeFormatDate } from '@/lib/utils';
 
@@ -10,15 +13,18 @@ interface TrackingTimelineProps {
   events: TrackingEvent[];
   showVisibility?: boolean;
   initialLimit?: number;
+  defaultCompact?: boolean;
 }
 
 export function TrackingTimeline({ 
   events, 
   showVisibility = true,
-  initialLimit = 5 
+  initialLimit = 5,
+  defaultCompact = false
 }: TrackingTimelineProps) {
   const { t } = useTranslation();
   const [displayCount, setDisplayCount] = useState(initialLimit);
+  const [isCompact, setIsCompact] = useState(defaultCompact);
 
   if (!events || events.length === 0) {
     return (
@@ -42,77 +48,208 @@ export function TrackingTimeline({
 
   return (
     <div className="relative">
-      {/* Timeline line */}
-      <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border" />
-
-      <div className="space-y-6">
-        {displayedEvents.map((event, index) => (
-          <div key={event.id} className="relative pl-10">
-            {/* Timeline dot */}
-            <div
-              className={cn(
-                'absolute left-2.5 w-3 h-3 rounded-full border-2 border-background',
-                index === 0 ? 'bg-primary' : 'bg-muted-foreground/50'
-              )}
-            />
-
-            <div className="bg-card border rounded-lg p-4">
-              <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
-                <StatusBadge status={event.status} />
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {showVisibility && (
-                    <span
-                      className={cn(
-                        'flex items-center gap-1',
-                        event.visible_to_client ? 'text-green-600' : 'text-muted-foreground'
-                      )}
-                      title={event.visible_to_client ? t('tracking.visibleToClient') : t('tracking.internalOnly')}
-                    >
-                      {event.visible_to_client ? (
-                        <Eye className="w-3 h-3" />
-                      ) : (
-                        <EyeOff className="w-3 h-3" />
-                      )}
-                    </span>
-                  )}
-                  <span>{safeFormatDate(event.event_datetime, 'MMM d, yyyy HH:mm')}</span>
-                </div>
-              </div>
-
-              <p className="text-sm whitespace-pre-wrap">{event.note}</p>
-
-              <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
-                {event.location && (
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    {event.location}
-                  </span>
-                )}
-                {event.creator && (
-                  <span className="flex items-center gap-1">
-                    <User className="w-3 h-3" />
-                    {event.creator.name}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* View Mode Toggle */}
+      <div className="flex items-center justify-end gap-1 mb-4">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Toggle
+              size="sm"
+              pressed={!isCompact}
+              onPressedChange={() => setIsCompact(false)}
+              className="h-8 w-8 p-0 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"
+            >
+              <LayoutList className="w-4 h-4" />
+            </Toggle>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <p>{t('tracking.detailedView')}</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Toggle
+              size="sm"
+              pressed={isCompact}
+              onPressedChange={() => setIsCompact(true)}
+              className="h-8 w-8 p-0 data-[state=on]:bg-primary/10 data-[state=on]:text-primary"
+            >
+              <List className="w-4 h-4" />
+            </Toggle>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <p>{t('tracking.compactView')}</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
+
+      {/* Timeline line */}
+      <div className="absolute left-4 top-12 bottom-0 w-0.5 bg-border" />
+
+      <AnimatePresence mode="wait">
+        {isCompact ? (
+          <motion.div
+            key="compact"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-1"
+          >
+            {displayedEvents.map((event, index) => (
+              <motion.div
+                key={event.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.03, duration: 0.2 }}
+                className="relative pl-10 group"
+              >
+                {/* Timeline dot */}
+                <div
+                  className={cn(
+                    'absolute left-2.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-2 border-background transition-all',
+                    index === 0 ? 'bg-primary scale-110' : 'bg-muted-foreground/50 group-hover:bg-primary/50'
+                  )}
+                />
+
+                <div className={cn(
+                  'flex items-center gap-3 py-2 px-3 rounded-lg transition-colors hover:bg-muted/50',
+                  index === 0 && 'bg-primary/5'
+                )}>
+                  <StatusBadge status={event.status} className="text-xs py-0.5 px-2" />
+                  
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {safeFormatDate(event.event_datetime, 'MMM d, HH:mm')}
+                  </span>
+                  
+                  <span className="text-sm truncate flex-1 text-foreground/80">
+                    {event.note.length > 50 ? `${event.note.substring(0, 50)}...` : event.note}
+                  </span>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {event.location && (
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                      </span>
+                    )}
+                    {showVisibility && (
+                      <span
+                        className={cn(
+                          'flex items-center',
+                          event.visible_to_client ? 'text-green-600' : 'text-muted-foreground/50'
+                        )}
+                      >
+                        {event.visible_to_client ? (
+                          <Eye className="w-3 h-3" />
+                        ) : (
+                          <EyeOff className="w-3 h-3" />
+                        )}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="detailed"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-4"
+          >
+            {displayedEvents.map((event, index) => (
+              <motion.div
+                key={event.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05, duration: 0.3 }}
+                className="relative pl-10"
+              >
+                {/* Timeline dot */}
+                <div
+                  className={cn(
+                    'absolute left-2.5 top-5 w-3 h-3 rounded-full border-2 border-background transition-all',
+                    index === 0 ? 'bg-primary ring-4 ring-primary/20' : 'bg-muted-foreground/50'
+                  )}
+                />
+
+                <div className={cn(
+                  'bg-card border rounded-xl p-4 transition-all hover:shadow-md hover:border-primary/20',
+                  index === 0 && 'border-primary/30 bg-gradient-to-br from-card to-primary/5'
+                )}>
+                  <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                    <StatusBadge status={event.status} />
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      {showVisibility && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span
+                              className={cn(
+                                'flex items-center gap-1 cursor-help',
+                                event.visible_to_client ? 'text-green-600' : 'text-muted-foreground'
+                              )}
+                            >
+                              {event.visible_to_client ? (
+                                <Eye className="w-3.5 h-3.5" />
+                              ) : (
+                                <EyeOff className="w-3.5 h-3.5" />
+                              )}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            <p>{event.visible_to_client ? t('tracking.visibleToClient') : t('tracking.internalOnly')}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                      <span className="font-medium">{safeFormatDate(event.event_datetime, 'MMM d, yyyy HH:mm')}</span>
+                    </div>
+                  </div>
+
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{event.note}</p>
+
+                  {(event.location || event.creator) && (
+                    <div className="flex flex-wrap gap-4 mt-3 pt-3 border-t border-border/50 text-xs text-muted-foreground">
+                      {event.location && (
+                        <span className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-md">
+                          <MapPin className="w-3 h-3" />
+                          {event.location}
+                        </span>
+                      )}
+                      {event.creator && (
+                        <span className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-md">
+                          <User className="w-3 h-3" />
+                          {event.creator.name}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Load More Button */}
       {hasMore && (
-        <div className="mt-4 text-center">
+        <motion.div 
+          className="mt-4 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={handleLoadMore}
-            className="text-muted-foreground"
+            className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
           >
             <ChevronDown className="w-4 h-4 mr-2" />
             {t('common.loadMore')} ({sortedEvents.length - displayCount} {t('common.remaining') || 'remaining'})
           </Button>
-        </div>
+        </motion.div>
       )}
     </div>
   );
