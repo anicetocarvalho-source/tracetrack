@@ -148,6 +148,7 @@
     "filterByStatus": "Filtrer par statut",
     "filterByClient": "Filtrer par client",
     "filterByType": "Filtrer par type",
+    "filterByDate": "Filtrer par date...",
     "searchShipmentRef": "Rechercher réf. expédition...",
     "clearFilters": "Effacer Filtres",
     "noMatchingRequests": "Aucune demande ne correspond aux filtres actuels",

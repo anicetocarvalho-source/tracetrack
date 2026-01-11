@@ -142,6 +142,7 @@
     "filterByStatus": "Filter by status",
     "filterByClient": "Filter by client",
     "filterByType": "Filter by type",
+    "filterByDate": "Filter by date...",
     "searchShipmentRef": "Search shipment ref...",
     "clearFilters": "Clear Filters",
     "noMatchingRequests": "No requests match the current filters",
