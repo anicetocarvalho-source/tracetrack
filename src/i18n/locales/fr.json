@@ -490,7 +490,20 @@
     "shipmentVolume": "Volume d'Expéditions (normalisé)",
     "qualityScore": "Qualité (100 - taux d'incidents)",
     "exceptionBreakdown": "Répartition des Exceptions par Client",
-    "exceptionsDistribution": "Distribution des exceptions par niveau de sévérité"
+    "exceptionsDistribution": "Distribution des exceptions par niveau de sévérité",
+    "clientStatistics": "Statistiques des Clients",
+    "clientStatisticsDesc": "Aperçu du portefeuille clients et métriques",
+    "emailConfigDistribution": "Configuration des Emails",
+    "emailConfigDistributionDesc": "Distribution des clients par paramètres de notification",
+    "clientsOverTime": "Clients au Fil du Temps",
+    "clientsOverTimeDesc": "Nouveaux clients ajoutés au cours des 6 derniers mois",
+    "topClientsByVolume": "Top Clients par Volume",
+    "topClientsByVolumeDesc": "Clients avec le plus grand nombre d'expéditions",
+    "deliveryRateByClient": "Taux de Livraison par Client",
+    "deliveryRateByClientDesc": "Pourcentage d'expéditions livrées par client",
+    "newClients": "Nouveaux Clients",
+    "deliveryRate": "Taux de Livraison",
+    "active": "actifs"
   },
   "shipments": {
     "title": "Expéditions",
