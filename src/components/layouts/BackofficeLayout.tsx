@@ -72,7 +72,7 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden animate-fade-in"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -81,8 +81,10 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
       <aside 
         data-tour="sidebar"
         className={cn(
-          "fixed lg:static inset-y-0 left-0 z-50 w-64 bg-dhl-red text-white flex flex-col transition-transform lg:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed lg:static inset-y-0 left-0 z-50 w-64 bg-dhl-red text-white flex flex-col",
+          "transition-all duration-300 ease-in-out lg:translate-x-0",
+          "shadow-2xl lg:shadow-none",
+          sidebarOpen ? "translate-x-0 animate-slide-in-left lg:animate-none" : "-translate-x-full"
         )}
       >
         {/* Logo */}
@@ -117,15 +119,22 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
                 data-tour={tourId}
+                style={{ animationDelay: `${index * 30}ms` }}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-white",
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white",
+                  "transition-all duration-200 ease-out",
+                  "hover:translate-x-1",
                   isActive 
-                    ? "bg-dhl-yellow !text-black" 
-                    : "hover:bg-white/10"
+                    ? "bg-dhl-yellow !text-black shadow-md" 
+                    : "hover:bg-white/10",
+                  sidebarOpen && "lg:animate-none animate-fade-in"
                 )}
               >
-                <item.icon className="w-5 h-5" />
-                {item.label}
+                <item.icon className={cn(
+                  "w-5 h-5 shrink-0 transition-transform duration-200",
+                  isActive && "scale-110"
+                )} />
+                <span className="truncate">{item.label}</span>
               </Link>
             );
           })}
