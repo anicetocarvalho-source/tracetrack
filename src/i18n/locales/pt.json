@@ -502,7 +502,13 @@
     "riskAlertSentDesc": "Alerta enviado para {{count}} remessas em risco",
     "noAtRiskShipments": "Nenhuma remessa em risco atualmente",
     "errorSendingRiskAlert": "Erro ao enviar alerta de risco",
-    "scheduledReportInfo": "Relatório semanal de SLA executa todas as segundas às 8:00 UTC. Alertas diários de risco executam todos os dias às 7:00 UTC."
+    "monthlyScorecardBatch": "Lote Mensal de Scorecards",
+    "monthlyScorecardBatchDesc": "Gerar automaticamente scorecards para todos os clientes ativos (executa no 1º de cada mês)",
+    "generateNow": "Gerar Agora",
+    "scorecardBatchGenerated": "Lote de scorecards gerado",
+    "scorecardBatchGeneratedDesc": "Gerados com sucesso {{success}} de {{total}} scorecards de clientes",
+    "errorGeneratingScorecardBatch": "Erro ao gerar lote de scorecards",
+    "scheduledReportInfo": "Relatório semanal de SLA executa todas as segundas às 8:00 UTC. Alertas diários de risco executam todos os dias às 7:00 UTC. Scorecards mensais executam no dia 1º às 6:00 UTC."
   },
   "auditLogs": {
     "title": "Logs de Auditoria",

@@ -502,7 +502,13 @@
     "riskAlertSentDesc": "Alert sent for {{count}} at-risk shipments",
     "noAtRiskShipments": "No shipments are currently at risk",
     "errorSendingRiskAlert": "Error sending risk alert",
-    "scheduledReportInfo": "Weekly SLA report runs every Monday at 8:00 AM UTC. Daily risk alerts run every day at 7:00 AM UTC."
+    "monthlyScorecardBatch": "Monthly Scorecard Batch",
+    "monthlyScorecardBatchDesc": "Automatically generate scorecards for all active clients (runs 1st of each month)",
+    "generateNow": "Generate Now",
+    "scorecardBatchGenerated": "Scorecard batch generated",
+    "scorecardBatchGeneratedDesc": "Successfully generated {{success}} of {{total}} client scorecards",
+    "errorGeneratingScorecardBatch": "Error generating scorecard batch",
+    "scheduledReportInfo": "Weekly SLA report runs every Monday at 8:00 AM UTC. Daily risk alerts run every day at 7:00 AM UTC. Monthly scorecards run on the 1st at 6:00 AM UTC."
   },
   "auditLogs": {
     "title": "Audit Logs",

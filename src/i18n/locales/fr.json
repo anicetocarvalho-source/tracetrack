@@ -502,7 +502,13 @@
     "riskAlertSentDesc": "Alerte envoyée pour {{count}} expéditions à risque",
     "noAtRiskShipments": "Aucune expédition actuellement à risque",
     "errorSendingRiskAlert": "Erreur lors de l'envoi de l'alerte de risque",
-    "scheduledReportInfo": "Le rapport hebdomadaire SLA s'exécute tous les lundis à 8h00 UTC. Les alertes quotidiennes de risque s'exécutent tous les jours à 7h00 UTC."
+    "monthlyScorecardBatch": "Lot Mensuel de Scorecards",
+    "monthlyScorecardBatchDesc": "Générer automatiquement des scorecards pour tous les clients actifs (exécution le 1er de chaque mois)",
+    "generateNow": "Générer Maintenant",
+    "scorecardBatchGenerated": "Lot de scorecards généré",
+    "scorecardBatchGeneratedDesc": "Générés avec succès {{success}} sur {{total}} scorecards clients",
+    "errorGeneratingScorecardBatch": "Erreur lors de la génération du lot de scorecards",
+    "scheduledReportInfo": "Le rapport hebdomadaire SLA s'exécute tous les lundis à 8h00 UTC. Les alertes quotidiennes de risque s'exécutent tous les jours à 7h00 UTC. Les scorecards mensuels s'exécutent le 1er à 6h00 UTC."
   },
   "auditLogs": {
     "title": "Journaux d'Audit",

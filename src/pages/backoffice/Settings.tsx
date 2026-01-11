@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Plus, X, Ship, Package, MapPin, Users, Clock, AlertTriangle, Loader2, TrendingUp, Target, Mail, Send } from 'lucide-react';
+import { Plus, X, Ship, Package, MapPin, Users, Clock, AlertTriangle, Loader2, TrendingUp, Target, Mail, Send, BarChart3 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
@@ -230,6 +230,30 @@ const Settings = () => {
     },
     onError: (error: Error) => {
       toast({ title: t('settings.errorSendingRiskAlert'), description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const generateScorecardBatchMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('monthly-scorecard-batch', {
+        body: {},
+      });
+      
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: t('settings.scorecardBatchGenerated'),
+        description: t('settings.scorecardBatchGeneratedDesc', { 
+          success: data.successCount, 
+          total: data.processed 
+        }),
+      });
+    },
+    onError: (error: Error) => {
+      toast({ title: t('settings.errorGeneratingScorecardBatch'), description: error.message, variant: 'destructive' });
     },
   });
 
@@ -621,6 +645,26 @@ const Settings = () => {
                     <Send className="h-4 w-4" />
                   )}
                   {t('settings.sendRiskAlert')}
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div className="space-y-1">
+                  <p className="font-medium">{t('settings.monthlyScorecardBatch')}</p>
+                  <p className="text-sm text-muted-foreground">{t('settings.monthlyScorecardBatchDesc')}</p>
+                </div>
+                <Button
+                  onClick={() => generateScorecardBatchMutation.mutate()}
+                  disabled={generateScorecardBatchMutation.isPending}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  {generateScorecardBatchMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <BarChart3 className="h-4 w-4" />
+                  )}
+                  {t('settings.generateNow')}
                 </Button>
               </div>
 
