@@ -118,7 +118,12 @@
     "trend": "Tendência 6 Meses",
     "statusBreakdown": "Distribuição por Status",
     "topIssues": "Principais Problemas",
-    "noIssues": "Nenhum problema neste período!"
+    "noIssues": "Nenhum problema neste período!",
+    "yoyComparison": "Comparação Ano a Ano",
+    "volumeComparison": "Comparação de Volume",
+    "ratesComparison": "Comparação de Taxas de Desempenho",
+    "noYoyData": "Nenhum dado disponível para {{month}} {{year}}",
+    "generateYoyHint": "Gere um scorecard para o mesmo período do ano passado para ver a comparação ano a ano"
   },
   "portal": {
     "scorecard": "Scorecard de Desempenho",
