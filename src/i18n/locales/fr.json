@@ -622,7 +622,9 @@
     "errorCreatingUser": "Erreur lors de la création de l'utilisateur",
     "errorUpdatingUser": "Erreur lors de la mise à jour de l'utilisateur",
     "fillAllFields": "Veuillez remplir tous les champs obligatoires",
-    "saveChanges": "Enregistrer les Modifications"
+    "saveChanges": "Enregistrer les Modifications",
+    "noPermissionForRole": "Vous n'avez pas la permission d'attribuer ce rôle",
+    "noPermission": "Pas de permission"
   },
   "settings": {
     "title": "Paramètres",
