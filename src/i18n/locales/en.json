@@ -152,7 +152,24 @@
     "previewNotSupported": "Preview not available for this file type",
     "downloadAll": "Download All",
     "bulkDownloadSuccess": "Documents downloaded successfully",
-    "bulkDownloadError": "Failed to download documents"
+    "bulkDownloadError": "Failed to download documents",
+    "myDocuments": "My Documents",
+    "myDocumentsDesc": "View and download all documents from your shipments",
+    "totalDocuments": "Total",
+    "searchDocuments": "Search by filename or shipment...",
+    "filterByType": "Filter by type",
+    "documentsList": "Documents List",
+    "showingCount": "Showing {{count}} of {{total}} documents",
+    "filename": "Filename",
+    "shipment": "Shipment",
+    "clientRef": "Client Ref",
+    "uploadedAt": "Uploaded At",
+    "types": {
+      "POD": "Proof of Delivery",
+      "BL": "Bill of Lading",
+      "INVOICE": "Invoice",
+      "OTHER": "Other"
+    }
   },
   "requests": {
     "title": "Customer Requests",
@@ -201,6 +218,7 @@
     "auditLogs": "Audit Logs",
     "settings": "Settings",
     "myShipments": "My Shipments",
+    "myDocuments": "My Documents",
     "profile": "Profile",
     "slaManagement": "SLA Management",
     "slaBreachReport": "SLA Breach Report",
