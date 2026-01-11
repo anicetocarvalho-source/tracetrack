@@ -79,6 +79,20 @@
     "saving": "A guardar preferências...",
     "synced": "Preferências sincronizadas"
   },
+  "summary": {
+    "title": "Resumo do Percurso",
+    "aiPowered": "IA",
+    "refreshed": "Resumo Atualizado",
+    "refreshedDesc": "O resumo foi regenerado com os dados mais recentes",
+    "refreshError": "Falha ao atualizar resumo",
+    "generationError": "Não foi possível gerar o resumo neste momento",
+    "rateLimitError": "Demasiados pedidos. Por favor tente mais tarde.",
+    "creditsError": "Créditos de IA esgotados. Por favor adicione fundos.",
+    "retry": "Tentar novamente",
+    "basedOn": "Baseado em {{events}} eventos",
+    "exceptionsCount": "{{count}} exceção(ões)",
+    "breachesCount": "{{count}} violação(ões) de SLA"
+  },
   "documents": {
     "title": "Documentos",
     "upload": "Carregar",
