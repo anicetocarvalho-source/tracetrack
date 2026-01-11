@@ -1,10 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Package, TrendingUp, AlertTriangle, CheckCircle, CalendarIcon, ShieldAlert, Target, Clock, Timer } from 'lucide-react';
+import { Package, TrendingUp, AlertTriangle, CheckCircle, ShieldAlert, Target, Clock, Timer } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
 import { supabase } from '@/integrations/supabase/client';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -14,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { NotificationPermissionBanner } from '@/components/notifications/NotificationPermissionBanner';
 import { ScorecardWidget } from '@/components/dashboard/ScorecardWidget';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 import {
   BarChart,
   Bar,
@@ -63,35 +62,14 @@ interface SLATargetsConfig {
 
 export default function Dashboard() {
   const { t } = useTranslation();
-  
-  const PRESET_RANGES = [
-    { label: t('dashboard.last7Days'), days: 7 },
-    { label: t('dashboard.last30Days'), days: 30 },
-    { label: t('dashboard.last90Days'), days: 90 },
-    { label: t('dashboard.allTime'), days: null },
-  ];
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subDays(new Date(), 29),
     to: new Date(),
   });
-  const [activePreset, setActivePreset] = useState<number | null>(30);
-
-  const handlePresetClick = (days: number | null) => {
-    setActivePreset(days);
-    if (days === null) {
-      setDateRange(undefined);
-    } else {
-      setDateRange({
-        from: subDays(new Date(), days - 1),
-        to: new Date(),
-      });
-    }
-  };
 
   const handleDateRangeChange = (range: DateRange | undefined) => {
     setDateRange(range);
-    setActivePreset(null);
   };
 
   const { data: stats, isLoading } = useQuery({
@@ -558,52 +536,18 @@ export default function Dashboard() {
     <BackofficeLayout>
       <NotificationPermissionBanner />
       <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <h1 className="text-2xl font-bold">{t('dashboard.title')}</h1>
             <p className="text-muted-foreground">{t('dashboard.inSelectedPeriod')}</p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {PRESET_RANGES.map((preset) => (
-              <Button
-                key={preset.label}
-                variant={activePreset === preset.days ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handlePresetClick(preset.days)}
-              >
-                {preset.label}
-              </Button>
-            ))}
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={activePreset === null && dateRange ? 'default' : 'outline'}
-                  size="sm"
-                  className={cn('justify-start text-left font-normal', !dateRange && 'text-muted-foreground')}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {t('dashboard.customRange')}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <Calendar
-                  initialFocus
-                  mode="range"
-                  defaultMonth={dateRange?.from}
-                  selected={dateRange}
-                  onSelect={handleDateRangeChange}
-                  numberOfMonths={2}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-        </div>
-
-        {/* Active filter indicator */}
-        <div className="text-sm text-muted-foreground">
-          {t('dashboard.dateRange')}: <span className="font-medium text-foreground">{dateRangeLabel}</span>
+          <DateRangePicker
+            dateRange={dateRange}
+            onDateRangeChange={handleDateRangeChange}
+            showPresets={true}
+            align="end"
+          />
         </div>
 
         {/* Exceptions Widget */}
