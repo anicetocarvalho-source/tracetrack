@@ -1,11 +1,20 @@
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, FileBarChart, TrendingUp, Clock, Package, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, FileBarChart, TrendingUp, Clock, Package, CheckCircle2, AlertTriangle, Filter, X, Calendar } from "lucide-react";
 import { CustomerLayout } from "@/components/layouts/CustomerLayout";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AreaChart,
   Area,
@@ -130,6 +139,11 @@ const PieTooltip = ({ active, payload }: any) => {
 export default function MyScorecard() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  
+  // Filter state
+  const [selectedYear, setSelectedYear] = useState<string>("all");
+  const [selectedMonth, setSelectedMonth] = useState<string>("all");
+  const [selectedScorecard, setSelectedScorecard] = useState<string | null>(null);
 
   const { data: scorecards = [], isLoading } = useQuery({
     queryKey: ["my-scorecards"],
@@ -143,6 +157,52 @@ export default function MyScorecard() {
       return (data || []) as unknown as Scorecard[];
     },
   });
+
+  // Get unique years from scorecards
+  const availableYears = useMemo(() => {
+    const years = [...new Set(scorecards.map(s => s.period_year))];
+    return years.sort((a, b) => b - a);
+  }, [scorecards]);
+
+  // Get available months for selected year
+  const availableMonths = useMemo(() => {
+    if (selectedYear === "all") {
+      return MONTHS;
+    }
+    const monthsInYear = scorecards
+      .filter(s => s.period_year === parseInt(selectedYear))
+      .map(s => s.period_month);
+    return MONTHS.filter(m => monthsInYear.includes(m.value));
+  }, [scorecards, selectedYear]);
+
+  // Filter scorecards based on selection
+  const filteredScorecards = useMemo(() => {
+    return scorecards.filter(scorecard => {
+      if (selectedYear !== "all" && scorecard.period_year !== parseInt(selectedYear)) {
+        return false;
+      }
+      if (selectedMonth !== "all" && scorecard.period_month !== parseInt(selectedMonth)) {
+        return false;
+      }
+      return true;
+    });
+  }, [scorecards, selectedYear, selectedMonth]);
+
+  // Get the displayed scorecard (selected or first filtered)
+  const displayedScorecard = useMemo(() => {
+    if (selectedScorecard) {
+      return filteredScorecards.find(s => s.id === selectedScorecard) || filteredScorecards[0];
+    }
+    return filteredScorecards[0];
+  }, [filteredScorecards, selectedScorecard]);
+
+  const hasActiveFilters = selectedYear !== "all" || selectedMonth !== "all";
+
+  const clearFilters = () => {
+    setSelectedYear("all");
+    setSelectedMonth("all");
+    setSelectedScorecard(null);
+  };
 
   const formatHours = (hours: number): string => {
     if (hours >= 24) {
@@ -199,10 +259,73 @@ export default function MyScorecard() {
     );
   }
 
-  const latestScorecard = scorecards[0];
+  if (!displayedScorecard) {
+    return (
+      <CustomerLayout>
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold">{t("portal.scorecard", "Performance Scorecard")}</h1>
+            <p className="text-muted-foreground">
+              {t("portal.scorecardDesc", "View your monthly performance summaries")}
+            </p>
+          </div>
+
+          {/* Filters */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Filter className="h-4 w-4" />
+                  <span>{t("common.filters", "Filters")}:</span>
+                </div>
+                <Select value={selectedYear} onValueChange={(v) => { setSelectedYear(v); setSelectedMonth("all"); }}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue placeholder={t("scorecards.year", "Year")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.all", "All")} {t("scorecards.year", "Years")}</SelectItem>
+                    {availableYears.map(year => (
+                      <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder={t("scorecards.month", "Month")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.all", "All")} {t("scorecards.month", "Months")}</SelectItem>
+                    {availableMonths.map(month => (
+                      <SelectItem key={month.value} value={month.value.toString()}>{month.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {hasActiveFilters && (
+                  <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8">
+                    <X className="h-4 w-4 mr-1" />
+                    {t("requests.clearFilters", "Clear Filters")}
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="py-12 text-center text-muted-foreground">
+              <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>{t("portal.noScorecardsForPeriod", "No scorecards found for selected period")}</p>
+              <Button variant="outline" size="sm" onClick={clearFilters} className="mt-4">
+                {t("requests.clearFilters", "Clear Filters")}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </CustomerLayout>
+    );
+  }
 
   // Prepare trend data for chart
-  const trendChartData = (latestScorecard.trend_data || []).map((point) => ({
+  const trendChartData = (displayedScorecard.trend_data || []).map((point) => ({
     month: point.month.split(" ")[0],
     Shipments: point.shipments,
     "On-Time %": point.onTime,
@@ -210,7 +333,7 @@ export default function MyScorecard() {
   }));
 
   // Prepare status breakdown for pie chart
-  const statusPieData = Object.entries(latestScorecard.status_breakdown || {})
+  const statusPieData = Object.entries(displayedScorecard.status_breakdown || {})
     .filter(([_, count]) => count > 0)
     .map(([status, count]) => ({
       name: STATUS_LABELS[status] || status,
@@ -221,9 +344,9 @@ export default function MyScorecard() {
 
   // Prepare exceptions data for bar chart
   const exceptionsData = [
-    { name: "P1 - Critical", value: latestScorecard.exceptions_p1, fill: "#ef4444" },
-    { name: "P2 - Major", value: latestScorecard.exceptions_p2, fill: "#f59e0b" },
-    { name: "P3 - Minor", value: latestScorecard.exceptions_p3, fill: "#3b82f6" },
+    { name: "P1 - Critical", value: displayedScorecard.exceptions_p1, fill: "#ef4444" },
+    { name: "P2 - Major", value: displayedScorecard.exceptions_p2, fill: "#f59e0b" },
+    { name: "P3 - Minor", value: displayedScorecard.exceptions_p3, fill: "#3b82f6" },
   ].filter(d => d.value > 0);
 
   return (
@@ -236,13 +359,57 @@ export default function MyScorecard() {
           </p>
         </div>
 
+        {/* Filters */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Filter className="h-4 w-4" />
+                <span>{t("common.filters", "Filters")}:</span>
+              </div>
+              <Select value={selectedYear} onValueChange={(v) => { setSelectedYear(v); setSelectedMonth("all"); setSelectedScorecard(null); }}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder={t("scorecards.year", "Year")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("common.all", "All")} {t("scorecards.year", "Years")}</SelectItem>
+                  {availableYears.map(year => (
+                    <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={selectedMonth} onValueChange={(v) => { setSelectedMonth(v); setSelectedScorecard(null); }}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder={t("scorecards.month", "Month")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("common.all", "All")} {t("scorecards.month", "Months")}</SelectItem>
+                  {availableMonths.map(month => (
+                    <SelectItem key={month.value} value={month.value.toString()}>{month.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8">
+                  <X className="h-4 w-4 mr-1" />
+                  {t("requests.clearFilters", "Clear Filters")}
+                </Button>
+              )}
+              <div className="ml-auto text-sm text-muted-foreground">
+                {filteredScorecards.length} {t("scorecards.found", "scorecard(s) found")}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Scorecard Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {scorecards.slice(0, 6).map((scorecard) => (
+          {filteredScorecards.slice(0, 6).map((scorecard) => (
             <Card 
               key={scorecard.id}
+              onClick={() => setSelectedScorecard(scorecard.id)}
               className={`cursor-pointer transition-all hover:shadow-md ${
-                latestScorecard.id === scorecard.id ? "ring-2 ring-primary" : ""
+                displayedScorecard.id === scorecard.id ? "ring-2 ring-primary" : ""
               }`}
             >
               <CardHeader className="pb-2">
@@ -278,15 +445,15 @@ export default function MyScorecard() {
           ))}
         </div>
 
-        {/* Latest Scorecard Detail */}
+        {/* Selected Scorecard Detail */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileBarChart className="h-5 w-5" />
-              {MONTHS.find(m => m.value === latestScorecard.period_month)?.label} {latestScorecard.period_year}
+              {MONTHS.find(m => m.value === displayedScorecard.period_month)?.label} {displayedScorecard.period_year}
             </CardTitle>
             <CardDescription>
-              Generated on {new Date(latestScorecard.generated_at).toLocaleDateString()}
+              Generated on {new Date(displayedScorecard.generated_at).toLocaleDateString()}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -294,37 +461,37 @@ export default function MyScorecard() {
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
               <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 text-center">
                 <Package className="h-5 w-5 mx-auto text-blue-600 dark:text-blue-400 mb-1" />
-                <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{latestScorecard.total_shipments}</div>
+                <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{displayedScorecard.total_shipments}</div>
                 <div className="text-xs text-blue-600 dark:text-blue-400">Total Shipments</div>
               </div>
               <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-4 text-center">
                 <CheckCircle2 className="h-5 w-5 mx-auto text-green-600 dark:text-green-400 mb-1" />
-                <div className="text-2xl font-bold text-green-700 dark:text-green-300">{latestScorecard.delivered_shipments}</div>
+                <div className="text-2xl font-bold text-green-700 dark:text-green-300">{displayedScorecard.delivered_shipments}</div>
                 <div className="text-xs text-green-600 dark:text-green-400">Delivered</div>
               </div>
-              <div className={`rounded-lg p-4 text-center border ${getComplianceBg(latestScorecard.on_time_delivery_rate)}`}>
-                <TrendingUp className={`h-5 w-5 mx-auto mb-1 ${getComplianceColor(latestScorecard.on_time_delivery_rate)}`} />
-                <div className={`text-2xl font-bold ${getComplianceColor(latestScorecard.on_time_delivery_rate)}`}>
-                  {latestScorecard.on_time_delivery_rate}%
+              <div className={`rounded-lg p-4 text-center border ${getComplianceBg(displayedScorecard.on_time_delivery_rate)}`}>
+                <TrendingUp className={`h-5 w-5 mx-auto mb-1 ${getComplianceColor(displayedScorecard.on_time_delivery_rate)}`} />
+                <div className={`text-2xl font-bold ${getComplianceColor(displayedScorecard.on_time_delivery_rate)}`}>
+                  {displayedScorecard.on_time_delivery_rate}%
                 </div>
                 <div className="text-xs text-muted-foreground">On-Time Rate</div>
               </div>
-              <div className={`rounded-lg p-4 text-center border ${getComplianceBg(latestScorecard.sla_compliance_rate)}`}>
-                <CheckCircle2 className={`h-5 w-5 mx-auto mb-1 ${getComplianceColor(latestScorecard.sla_compliance_rate)}`} />
-                <div className={`text-2xl font-bold ${getComplianceColor(latestScorecard.sla_compliance_rate)}`}>
-                  {latestScorecard.sla_compliance_rate}%
+              <div className={`rounded-lg p-4 text-center border ${getComplianceBg(displayedScorecard.sla_compliance_rate)}`}>
+                <CheckCircle2 className={`h-5 w-5 mx-auto mb-1 ${getComplianceColor(displayedScorecard.sla_compliance_rate)}`} />
+                <div className={`text-2xl font-bold ${getComplianceColor(displayedScorecard.sla_compliance_rate)}`}>
+                  {displayedScorecard.sla_compliance_rate}%
                 </div>
                 <div className="text-xs text-muted-foreground">SLA Compliance</div>
               </div>
               <div className="bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-lg p-4 text-center">
                 <Clock className="h-5 w-5 mx-auto text-purple-600 dark:text-purple-400 mb-1" />
-                <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">{formatHours(latestScorecard.avg_transit_hours)}</div>
+                <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">{formatHours(displayedScorecard.avg_transit_hours)}</div>
                 <div className="text-xs text-purple-600 dark:text-purple-400">Avg Transit</div>
               </div>
-              <div className={`rounded-lg p-4 text-center border ${latestScorecard.total_incidents > 0 ? "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800" : "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"}`}>
-                <AlertTriangle className={`h-5 w-5 mx-auto mb-1 ${latestScorecard.total_incidents > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`} />
-                <div className={`text-2xl font-bold ${latestScorecard.total_incidents > 0 ? "text-red-700 dark:text-red-300" : "text-green-700 dark:text-green-300"}`}>
-                  {latestScorecard.total_incidents}
+              <div className={`rounded-lg p-4 text-center border ${displayedScorecard.total_incidents > 0 ? "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800" : "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"}`}>
+                <AlertTriangle className={`h-5 w-5 mx-auto mb-1 ${displayedScorecard.total_incidents > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`} />
+                <div className={`text-2xl font-bold ${displayedScorecard.total_incidents > 0 ? "text-red-700 dark:text-red-300" : "text-green-700 dark:text-green-300"}`}>
+                  {displayedScorecard.total_incidents}
                 </div>
                 <div className="text-xs text-muted-foreground">Incidents</div>
               </div>
