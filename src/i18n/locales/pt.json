@@ -841,5 +841,85 @@
     "customRange": "Intervalo personalizado",
     "from": "De",
     "to": "Até"
+  },
+  "help": {
+    "title": "Centro de Ajuda",
+    "subtitle": "Guia completo dos módulos da plataforma",
+    "intro": "Explore os módulos disponíveis para entender todas as funcionalidades da plataforma de rastreamento de envios DHL.",
+    "mainFeatures": "Funcionalidades principais",
+    "needMoreHelp": "Precisa de mais ajuda?",
+    "contactInfo": "Entre em contacto com a nossa equipa de suporte para assistência adicional ou esclarecimento de dúvidas.",
+    "modules": {
+      "dashboard": {
+        "title": "Painel",
+        "description": "Visão geral centralizada de todas as operações de envio com métricas em tempo real e indicadores de desempenho.",
+        "features": ["Estatísticas de envios ativos e entregues", "Gráficos de tendências ao longo do tempo", "Resumo de exceções e alertas SLA", "Scorecards de desempenho recentes"]
+      },
+      "actionRequired": {
+        "title": "Exceções",
+        "description": "Centro de gestão de exceções que requerem atenção imediata, organizadas por severidade e tempo de resposta.",
+        "features": ["Lista de exceções abertas por prioridade (P1, P2, P3)", "Reconhecimento e resolução de exceções", "Histórico de ações tomadas", "Filtros por cliente e severidade"]
+      },
+      "shipments": {
+        "title": "Envios",
+        "description": "Gestão completa de todos os envios com rastreamento detalhado, documentos e histórico de eventos.",
+        "features": ["Lista e pesquisa de envios", "Criação e edição de envios", "Importação em massa via CSV", "Adição de eventos de rastreamento", "Gestão de documentos e contentores"]
+      },
+      "customerRequests": {
+        "title": "Pedidos de Clientes",
+        "description": "Caixa de entrada para gerir pedidos de serviço submetidos por clientes, incluindo solicitações de atualização e upload de documentos.",
+        "features": ["Visualização de pedidos pendentes", "Alteração de estado (Aberto, Em Progresso, Resolvido)", "Notas de resolução", "Filtros por cliente e tipo de pedido"]
+      },
+      "slaManagement": {
+        "title": "Gestão SLA",
+        "description": "Configuração de acordos de nível de serviço (SLA) definindo tempos máximos permitidos por status de envio.",
+        "features": ["Definição de SLA global e por cliente", "Tempos máximos por status de envio", "Ativação/desativação de regras", "Histórico de alterações"]
+      },
+      "slaBreachReport": {
+        "title": "Relatório de Violações SLA",
+        "description": "Relatório detalhado de todas as violações de SLA ocorridas, permitindo análise de causas e padrões.",
+        "features": ["Lista de violações por período", "Detalhes de tempo excedido", "Filtros por cliente e status", "Exportação de dados"]
+      },
+      "slaHeatmap": {
+        "title": "Mapa de Calor SLA",
+        "description": "Visualização gráfica do estado de SLA de todos os envios ativos, identificando rapidamente envios críticos.",
+        "features": ["Matriz de status vs progresso SLA", "Cores indicando urgência", "Drill-down para ver envios específicos", "Contadores por categoria"]
+      },
+      "scorecards": {
+        "title": "Scorecards de Clientes",
+        "description": "Geração e visualização de resumos mensais de desempenho para cada cliente com métricas detalhadas.",
+        "features": ["Geração de scorecards por mês/ano", "Métricas de conformidade SLA", "Taxa de entrega no prazo", "Análise de exceções e incidentes", "Exportação em PDF e envio por email"]
+      },
+      "notifications": {
+        "title": "Configurações de Notificação",
+        "description": "Personalização de alertas e notificações para monitoramento proativo de SLA.",
+        "features": ["Ativar notificações do navegador", "Alertas de áudio", "Definir limites de alerta (crítico/aviso)", "Configurar horário silencioso"]
+      },
+      "clients": {
+        "title": "Clientes",
+        "description": "Gestão do cadastro de clientes da plataforma, incluindo configurações específicas de cada conta.",
+        "features": ["Lista de clientes ativos", "Emails de notificação por cliente", "Associação de envios", "Configurações personalizadas"]
+      },
+      "users": {
+        "title": "Utilizadores",
+        "description": "Administração de utilizadores da plataforma com controlo de acessos baseado em funções.",
+        "features": ["Criação e edição de utilizadores", "Atribuição de funções (Técnico, Supervisor, Gestor)", "Ativação/desativação de contas", "Associação a clientes"]
+      },
+      "exceptionRules": {
+        "title": "Regras de Exceção",
+        "description": "Configuração de regras automáticas para detecção de exceções baseadas em tempo em cada status.",
+        "features": ["Criação de regras por status", "Definição de severidade (P1, P2, P3)", "Tempo máximo permitido", "Regras globais ou por cliente"]
+      },
+      "auditLogs": {
+        "title": "Logs de Auditoria",
+        "description": "Registo histórico de todas as ações realizadas na plataforma para rastreabilidade e conformidade.",
+        "features": ["Histórico de ações por utilizador", "Filtros por tipo de ação", "Detalhes de alterações", "Pesquisa por período"]
+      },
+      "settings": {
+        "title": "Configurações",
+        "description": "Configurações gerais da plataforma e preferências do sistema.",
+        "features": ["Configurações de sistema", "Parâmetros globais", "Integrações", "Preferências de exibição"]
+      }
+    }
   }
 }
