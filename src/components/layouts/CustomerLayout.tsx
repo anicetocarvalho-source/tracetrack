@@ -7,7 +7,8 @@ import {
   Menu, 
   X, 
   FileBarChart, 
-  FileText 
+  FileText,
+  MessageSquare
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
   const navItems = [
     { path: '/portal', label: t('nav.myShipments'), icon: Package },
     { path: '/portal/documents', label: t('nav.myDocuments'), icon: FileText },
+    { path: '/portal/requests', label: t('nav.myRequests'), icon: MessageSquare },
     { path: '/portal/scorecard', label: t('nav.scorecard'), icon: FileBarChart },
     { path: '/portal/profile', label: t('nav.profile'), icon: User },
   ];

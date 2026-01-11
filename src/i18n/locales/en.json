@@ -234,7 +234,13 @@
     "noMatchingRequests": "No requests match the current filters",
     "startProgress": "Start",
     "myRequests": "My Requests",
-    "requestSubmitted": "Request submitted successfully"
+    "myRequestsDesc": "View and track all requests you have submitted",
+    "requestSubmitted": "Request submitted successfully",
+    "requestsList": "Requests List",
+    "showingRequests": "Showing {{count}} of {{total}} requests",
+    "searchPlaceholder": "Search by shipment or message...",
+    "resolved": "Resolved",
+    "resolvedBy": "Resolved by {{name}}"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -245,6 +251,7 @@
     "settings": "Settings",
     "myShipments": "My Shipments",
     "myDocuments": "My Documents",
+    "myRequests": "My Requests",
     "profile": "Profile",
     "slaManagement": "SLA Management",
     "slaBreachReport": "SLA Breach Report",

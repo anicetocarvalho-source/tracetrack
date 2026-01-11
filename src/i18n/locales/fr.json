@@ -234,7 +234,13 @@
     "noMatchingRequests": "Aucune demande ne correspond aux filtres actuels",
     "startProgress": "Commencer",
     "myRequests": "Mes Demandes",
-    "requestSubmitted": "Demande soumise avec succès"
+    "myRequestsDesc": "Voir et suivre toutes les demandes que vous avez soumises",
+    "requestSubmitted": "Demande soumise avec succès",
+    "requestsList": "Liste des Demandes",
+    "showingRequests": "Affichage de {{count}} sur {{total}} demandes",
+    "searchPlaceholder": "Rechercher par expédition ou message...",
+    "resolved": "Résolu",
+    "resolvedBy": "Résolu par {{name}}"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -245,6 +251,7 @@
     "settings": "Paramètres",
     "myShipments": "Mes Expéditions",
     "myDocuments": "Mes Documents",
+    "myRequests": "Mes Demandes",
     "profile": "Profil",
     "slaManagement": "Gestion SLA",
     "slaBreachReport": "Rapport de Violations SLA",
