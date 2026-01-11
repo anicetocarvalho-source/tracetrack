@@ -134,7 +134,7 @@ export function HelpMenu({ userRole }: HelpMenuProps) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+        <Button variant="outline" size="icon">
           <HelpCircle className="h-5 w-5" />
           <span className="sr-only">{t('common.help')}</span>
         </Button>
