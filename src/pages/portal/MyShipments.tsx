@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Package, Search, ChevronLeft, ChevronRight, Ship, Calendar, Hash, ArrowRight } from 'lucide-react';
+import { Package, Search, ChevronLeft, ChevronRight, Ship, Calendar, Hash, ArrowRight, ArrowUpDown } from 'lucide-react';
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,8 +11,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { safeFormatDate } from '@/lib/utils';
 import { ShipmentStatus } from '@/lib/constants';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const PAGE_SIZE = 12;
+
+type SortOption = 'date_desc' | 'date_asc' | 'status' | 'reference';
 
 // Status color mapping for prominent display
 const getStatusAccentColor = (status: ShipmentStatus): string => {
@@ -38,9 +47,10 @@ export default function MyShipments() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
+  const [sortBy, setSortBy] = useState<SortOption>('date_desc');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['customer-shipments', search, page],
+    queryKey: ['customer-shipments', search, page, sortBy],
     queryFn: async () => {
       // Only select fields that CUSTOMER is allowed to see (exclude internal fields)
       let query = supabase
@@ -58,9 +68,25 @@ export default function MyShipments() {
           created_at,
           client:clients(name),
           containers:shipment_containers(id)
-        `, { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+        `, { count: 'exact' });
+
+      // Apply sorting
+      switch (sortBy) {
+        case 'date_desc':
+          query = query.order('created_at', { ascending: false });
+          break;
+        case 'date_asc':
+          query = query.order('created_at', { ascending: true });
+          break;
+        case 'status':
+          query = query.order('current_status', { ascending: true });
+          break;
+        case 'reference':
+          query = query.order('shipment_ref', { ascending: true });
+          break;
+      }
+
+      query = query.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
       if (search) {
         query = query.or(`shipment_ref.ilike.%${search}%,client_ref.ilike.%${search}%`);
@@ -78,6 +104,11 @@ export default function MyShipments() {
   const hasNextPage = page < totalPages - 1;
   const hasPrevPage = page > 0;
 
+  const handleSortChange = (value: SortOption) => {
+    setSortBy(value);
+    setPage(0);
+  };
+
   return (
     <CustomerLayout>
       <div className="space-y-8">
@@ -88,18 +119,35 @@ export default function MyShipments() {
             <p className="text-muted-foreground mt-1">{t('portal.trackShipments')}</p>
           </div>
           
-          {/* Search */}
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder={t('common.search')}
-              className="pl-10"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(0);
-              }}
-            />
+          {/* Search & Sort Controls */}
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            {/* Sort Select */}
+            <Select value={sortBy} onValueChange={handleSortChange}>
+              <SelectTrigger className="w-full sm:w-48">
+                <ArrowUpDown className="w-4 h-4 mr-2 text-muted-foreground" />
+                <SelectValue placeholder={t('shipments.sortBy')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date_desc">{t('shipments.sortDateDesc')}</SelectItem>
+                <SelectItem value="date_asc">{t('shipments.sortDateAsc')}</SelectItem>
+                <SelectItem value="status">{t('shipments.sortStatus')}</SelectItem>
+                <SelectItem value="reference">{t('shipments.sortReference')}</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            {/* Search */}
+            <div className="relative w-full sm:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder={t('common.search')}
+                className="pl-10"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(0);
+                }}
+              />
+            </div>
           </div>
         </div>
 
