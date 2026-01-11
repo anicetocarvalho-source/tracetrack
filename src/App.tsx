@@ -33,6 +33,7 @@ import MyShipments from "./pages/portal/MyShipments";
 import ShipmentTracking from "./pages/portal/ShipmentTracking";
 import Profile from "./pages/portal/Profile";
 import MyScorecard from "./pages/portal/MyScorecard";
+import MyDocuments from "./pages/portal/MyDocuments";
 
 const queryClient = new QueryClient();
 
@@ -152,6 +153,11 @@ const App = () => (
             <Route path="/portal/scorecard" element={
               <ProtectedRoute requireCustomer>
                 <MyScorecard />
+              </ProtectedRoute>
+            } />
+            <Route path="/portal/documents" element={
+              <ProtectedRoute requireCustomer>
+                <MyDocuments />
               </ProtectedRoute>
             } />
 
