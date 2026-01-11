@@ -36,6 +36,7 @@ import { EditShipmentDrawer } from '@/components/shipments/EditShipmentDrawer';
 import { DocumentList } from '@/components/documents/DocumentList';
 import { DocumentUploadDialog } from '@/components/documents/DocumentUploadDialog';
 import { ShipmentRequestsPanel } from '@/components/requests/ShipmentRequestsPanel';
+import { TimelineSummary } from '@/components/shipments/TimelineSummary';
 import { supabase } from '@/integrations/supabase/client';
 import { Shipment, TrackingEvent, ShipmentContainer, ShipmentException, ExceptionRule } from '@/types/database';
 import { ShipmentStatus, SEVERITY_LABELS, EXCEPTION_STATUS_LABELS } from '@/lib/constants';
@@ -359,6 +360,9 @@ export default function ShipmentDetail() {
             </Button>
           </div>
         </div>
+
+        {/* AI Timeline Summary */}
+        <TimelineSummary shipmentId={id!} mode="internal" />
 
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Info */}

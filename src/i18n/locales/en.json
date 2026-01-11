@@ -79,6 +79,20 @@
     "saving": "Saving preferences...",
     "synced": "Preferences synced"
   },
+  "summary": {
+    "title": "Timeline Summary",
+    "aiPowered": "AI",
+    "refreshed": "Summary Refreshed",
+    "refreshedDesc": "The summary has been regenerated with the latest data",
+    "refreshError": "Failed to refresh summary",
+    "generationError": "Unable to generate summary at this time",
+    "rateLimitError": "Too many requests. Please try again later.",
+    "creditsError": "AI credits exhausted. Please add funds to continue.",
+    "retry": "Retry",
+    "basedOn": "Based on {{events}} events",
+    "exceptionsCount": "{{count}} exception(s)",
+    "breachesCount": "{{count}} SLA breach(es)"
+  },
   "documents": {
     "title": "Documents",
     "upload": "Upload",

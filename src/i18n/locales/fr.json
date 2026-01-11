@@ -79,6 +79,20 @@
     "saving": "Enregistrement des préférences...",
     "synced": "Préférences synchronisées"
   },
+  "summary": {
+    "title": "Résumé du Parcours",
+    "aiPowered": "IA",
+    "refreshed": "Résumé Actualisé",
+    "refreshedDesc": "Le résumé a été régénéré avec les dernières données",
+    "refreshError": "Échec de l'actualisation du résumé",
+    "generationError": "Impossible de générer le résumé pour le moment",
+    "rateLimitError": "Trop de requêtes. Veuillez réessayer plus tard.",
+    "creditsError": "Crédits IA épuisés. Veuillez ajouter des fonds.",
+    "retry": "Réessayer",
+    "basedOn": "Basé sur {{events}} événements",
+    "exceptionsCount": "{{count}} exception(s)",
+    "breachesCount": "{{count}} violation(s) de SLA"
+  },
   "documents": {
     "title": "Documents",
     "upload": "Télécharger",

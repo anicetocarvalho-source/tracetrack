@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CustomerLayout } from '@/components/layouts/CustomerLayout';
 import { StatusBadge } from '@/components/StatusBadge';
 import { TrackingTimeline } from '@/components/shipments/TrackingTimeline';
+import { TimelineSummary } from '@/components/shipments/TimelineSummary';
 import { DocumentList } from '@/components/documents/DocumentList';
 import { SubmitRequestDialog } from '@/components/requests/SubmitRequestDialog';
 import { supabase } from '@/integrations/supabase/client';
@@ -136,6 +137,9 @@ export default function ShipmentTracking() {
             <p className="text-muted-foreground">{t('shipments.clientRef')}: {shipment.client_ref}</p>
           </div>
         </div>
+
+        {/* AI Timeline Summary */}
+        <TimelineSummary shipmentId={id!} mode="customer" compact />
 
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Info */}
