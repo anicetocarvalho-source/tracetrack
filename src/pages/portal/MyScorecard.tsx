@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, FileBarChart, TrendingUp, Clock, Package, CheckCircle2, AlertTriangle } from "lucide-react";
-
+import { CustomerLayout } from "@/components/layouts/CustomerLayout";
 const MONTHS = [
   { value: 1, label: "January" },
   { value: 2, label: "February" },
@@ -108,44 +108,49 @@ export default function MyScorecard() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
+      <CustomerLayout>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </CustomerLayout>
     );
   }
 
   if (scorecards.length === 0) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t("portal.scorecard", "Performance Scorecard")}</h1>
-          <p className="text-muted-foreground">
-            {t("portal.scorecardDesc", "View your monthly performance summaries")}
-          </p>
-        </div>
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <FileBarChart className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>{t("portal.noScorecards", "No scorecards available yet")}</p>
-            <p className="text-sm mt-2">
-              {t("portal.scorecardsSoon", "Performance scorecards will appear here once generated")}
+      <CustomerLayout>
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold">{t("portal.scorecard", "Performance Scorecard")}</h1>
+            <p className="text-muted-foreground">
+              {t("portal.scorecardDesc", "View your monthly performance summaries")}
             </p>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+          <Card>
+            <CardContent className="py-12 text-center text-muted-foreground">
+              <FileBarChart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>{t("portal.noScorecards", "No scorecards available yet")}</p>
+              <p className="text-sm mt-2">
+                {t("portal.scorecardsSoon", "Performance scorecards will appear here once generated")}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </CustomerLayout>
     );
   }
 
   const latestScorecard = scorecards[0];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t("portal.scorecard", "Performance Scorecard")}</h1>
-        <p className="text-muted-foreground">
-          {t("portal.scorecardDesc", "View your monthly performance summaries")}
-        </p>
-      </div>
+    <CustomerLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">{t("portal.scorecard", "Performance Scorecard")}</h1>
+          <p className="text-muted-foreground">
+            {t("portal.scorecardDesc", "View your monthly performance summaries")}
+          </p>
+        </div>
 
       {/* Scorecard Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -285,6 +290,7 @@ export default function MyScorecard() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </CustomerLayout>
   );
 }
