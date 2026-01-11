@@ -74,6 +74,11 @@
     "audioAlertsDescription": "Reproduzir sons de aviso quando os envios atingirem limites críticos de SLA",
     "testSound": "Testar Som"
   },
+  "preferences": {
+    "loading": "A carregar preferências...",
+    "saving": "A guardar preferências...",
+    "synced": "Preferências sincronizadas"
+  },
   "nav": {
     "dashboard": "Painel",
     "shipments": "Envios",

@@ -24,6 +24,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { PreferencesSyncIndicator } from '@/components/PreferencesSyncIndicator';
 import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 interface BackofficeLayoutProps {
@@ -158,6 +159,7 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
           </Button>
           <div className="flex-1" />
           <div className="flex items-center gap-2">
+            <PreferencesSyncIndicator />
             <ThemeToggle />
             <LanguageSwitcher />
           </div>
