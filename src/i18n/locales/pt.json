@@ -183,7 +183,19 @@
       "BL": "Conhecimento de Embarque",
       "INVOICE": "Fatura",
       "OTHER": "Outro"
-    }
+    },
+    "documentNotFound": "Documento não encontrado",
+    "documentNotFoundDesc": "O documento que procura não existe ou não tem acesso.",
+    "backToDocuments": "Voltar aos Documentos",
+    "uploadedAgo": "Carregado {{time}}",
+    "documentInfo": "Informação do Documento",
+    "documentTypeDescription": "Descrição do Tipo",
+    "associatedShipment": "Envio Associado",
+    "viewShipment": "Ver Envio",
+    "otherDocuments": "Outros Documentos",
+    "otherDocumentsDesc": "Documentos do mesmo envio",
+    "downloadToView": "Descarregar para Ver",
+    "downloadSuccess": "Documento descarregado"
   },
   "requests": {
     "title": "Pedidos de Clientes",
