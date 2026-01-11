@@ -323,7 +323,8 @@
     "signingIn": "A entrar...",
     "needAccess": "Precisa de acesso? Contacte o seu representante DHL.",
     "invalidCredentials": "Credenciais inválidas",
-    "emailPlaceholder": "voce@empresa.com"
+    "emailPlaceholder": "voce@empresa.com",
+    "quickAccess": "Acesso rápido para demonstração"
   },
   "dashboard": {
     "title": "Painel",
