@@ -21,35 +21,35 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-// Quick access demo accounts
+// Quick access demo accounts (matching seed-users)
 const quickAccessAccounts = [
   { 
     label: 'Manager',
-    email: 'manager@dhl.com', 
-    password: 'manager123',
+    email: 'manager@dhl.test', 
+    password: 'Test123!',
     icon: Shield,
-    description: 'Acesso completo'
+    description: 'Carlos Manager'
   },
   { 
     label: 'Supervisor',
-    email: 'supervisor@dhl.com', 
-    password: 'supervisor123',
+    email: 'supervisor@dhl.test', 
+    password: 'Test123!',
     icon: Users,
-    description: 'Gestão de equipa'
+    description: 'Ana Supervisor'
   },
   { 
     label: 'Técnico',
-    email: 'technician@dhl.com', 
-    password: 'technician123',
+    email: 'technician@dhl.test', 
+    password: 'Test123!',
     icon: Zap,
-    description: 'Operações diárias'
+    description: 'João Technician'
   },
   { 
     label: 'Cliente',
-    email: 'customer@example.com', 
-    password: 'customer123',
+    email: 'customer1@acme.test', 
+    password: 'Test123!',
     icon: User,
-    description: 'Portal do cliente'
+    description: 'Pedro Cliente'
   },
 ];
 
