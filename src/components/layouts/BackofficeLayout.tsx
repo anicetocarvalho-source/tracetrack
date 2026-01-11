@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { PreferencesSyncIndicator } from '@/components/PreferencesSyncIndicator';
+import { HelpMenu } from '@/components/HelpMenu';
 import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 interface BackofficeLayoutProps {
@@ -134,6 +135,7 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
               <p className="text-sm font-medium truncate text-white">{profile?.name}</p>
               <p className="text-xs text-white/60 truncate">{role}</p>
             </div>
+            <HelpMenu userRole={role} />
           </div>
           <Button
             variant="ghost"

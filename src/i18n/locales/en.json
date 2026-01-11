@@ -836,5 +836,85 @@
     "customRange": "Custom range",
     "from": "From",
     "to": "To"
+  },
+  "help": {
+    "title": "Help Center",
+    "subtitle": "Complete guide to platform modules",
+    "intro": "Explore the available modules to understand all the features of the DHL shipment tracking platform.",
+    "mainFeatures": "Main features",
+    "needMoreHelp": "Need more help?",
+    "contactInfo": "Contact our support team for additional assistance or to clarify any questions.",
+    "modules": {
+      "dashboard": {
+        "title": "Dashboard",
+        "description": "Centralized overview of all shipping operations with real-time metrics and performance indicators.",
+        "features": ["Active and delivered shipment statistics", "Trend charts over time", "Exception and SLA alert summary", "Recent performance scorecards"]
+      },
+      "actionRequired": {
+        "title": "Exceptions",
+        "description": "Exception management center for issues requiring immediate attention, organized by severity and response time.",
+        "features": ["Open exceptions list by priority (P1, P2, P3)", "Acknowledge and resolve exceptions", "Action history", "Filters by client and severity"]
+      },
+      "shipments": {
+        "title": "Shipments",
+        "description": "Complete management of all shipments with detailed tracking, documents, and event history.",
+        "features": ["List and search shipments", "Create and edit shipments", "Bulk import via CSV", "Add tracking events", "Manage documents and containers"]
+      },
+      "customerRequests": {
+        "title": "Customer Requests",
+        "description": "Inbox to manage service requests submitted by customers, including update requests and document uploads.",
+        "features": ["View pending requests", "Change status (Open, In Progress, Resolved)", "Resolution notes", "Filters by client and request type"]
+      },
+      "slaManagement": {
+        "title": "SLA Management",
+        "description": "Configuration of service level agreements (SLA) defining maximum allowed times per shipment status.",
+        "features": ["Global and per-client SLA definition", "Maximum time per shipment status", "Enable/disable rules", "Change history"]
+      },
+      "slaBreachReport": {
+        "title": "SLA Breach Report",
+        "description": "Detailed report of all SLA violations that occurred, enabling cause and pattern analysis.",
+        "features": ["List of violations by period", "Exceeded time details", "Filters by client and status", "Data export"]
+      },
+      "slaHeatmap": {
+        "title": "SLA Heatmap",
+        "description": "Graphical visualization of SLA status for all active shipments, quickly identifying critical shipments.",
+        "features": ["Status vs SLA progress matrix", "Colors indicating urgency", "Drill-down to view specific shipments", "Counters by category"]
+      },
+      "scorecards": {
+        "title": "Client Scorecards",
+        "description": "Generation and visualization of monthly performance summaries for each client with detailed metrics.",
+        "features": ["Generate scorecards by month/year", "SLA compliance metrics", "On-time delivery rate", "Exception and incident analysis", "PDF export and email delivery"]
+      },
+      "notifications": {
+        "title": "Notification Settings",
+        "description": "Customize alerts and notifications for proactive SLA monitoring.",
+        "features": ["Enable browser notifications", "Audio alerts", "Set alert thresholds (critical/warning)", "Configure quiet hours"]
+      },
+      "clients": {
+        "title": "Clients",
+        "description": "Management of platform client registry, including specific settings for each account.",
+        "features": ["Active client list", "Notification emails per client", "Shipment association", "Custom settings"]
+      },
+      "users": {
+        "title": "Users",
+        "description": "Platform user administration with role-based access control.",
+        "features": ["Create and edit users", "Assign roles (Technician, Supervisor, Manager)", "Enable/disable accounts", "Client association"]
+      },
+      "exceptionRules": {
+        "title": "Exception Rules",
+        "description": "Configuration of automatic rules for exception detection based on time in each status.",
+        "features": ["Create rules by status", "Define severity (P1, P2, P3)", "Maximum allowed time", "Global or per-client rules"]
+      },
+      "auditLogs": {
+        "title": "Audit Logs",
+        "description": "Historical record of all actions performed on the platform for traceability and compliance.",
+        "features": ["Action history by user", "Filters by action type", "Change details", "Search by period"]
+      },
+      "settings": {
+        "title": "Settings",
+        "description": "General platform settings and system preferences.",
+        "features": ["System configuration", "Global parameters", "Integrations", "Display preferences"]
+      }
+    }
   }
 }

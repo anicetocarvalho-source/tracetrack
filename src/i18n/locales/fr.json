@@ -841,5 +841,85 @@
     "customRange": "Plage personnalisée",
     "from": "De",
     "to": "À"
+  },
+  "help": {
+    "title": "Centre d'Aide",
+    "subtitle": "Guide complet des modules de la plateforme",
+    "intro": "Explorez les modules disponibles pour comprendre toutes les fonctionnalités de la plateforme de suivi d'expéditions DHL.",
+    "mainFeatures": "Fonctionnalités principales",
+    "needMoreHelp": "Besoin de plus d'aide?",
+    "contactInfo": "Contactez notre équipe de support pour une assistance supplémentaire ou pour clarifier vos questions.",
+    "modules": {
+      "dashboard": {
+        "title": "Tableau de Bord",
+        "description": "Vue d'ensemble centralisée de toutes les opérations d'expédition avec des métriques en temps réel et des indicateurs de performance.",
+        "features": ["Statistiques des expéditions actives et livrées", "Graphiques de tendances dans le temps", "Résumé des exceptions et alertes SLA", "Scorecards de performance récents"]
+      },
+      "actionRequired": {
+        "title": "Exceptions",
+        "description": "Centre de gestion des exceptions nécessitant une attention immédiate, organisées par sévérité et temps de réponse.",
+        "features": ["Liste des exceptions ouvertes par priorité (P1, P2, P3)", "Accusé de réception et résolution des exceptions", "Historique des actions", "Filtres par client et sévérité"]
+      },
+      "shipments": {
+        "title": "Expéditions",
+        "description": "Gestion complète de toutes les expéditions avec suivi détaillé, documents et historique des événements.",
+        "features": ["Liste et recherche d'expéditions", "Création et modification d'expéditions", "Importation en masse via CSV", "Ajout d'événements de suivi", "Gestion des documents et conteneurs"]
+      },
+      "customerRequests": {
+        "title": "Demandes Clients",
+        "description": "Boîte de réception pour gérer les demandes de service soumises par les clients, y compris les demandes de mise à jour et le téléchargement de documents.",
+        "features": ["Voir les demandes en attente", "Changer le statut (Ouvert, En cours, Résolu)", "Notes de résolution", "Filtres par client et type de demande"]
+      },
+      "slaManagement": {
+        "title": "Gestion SLA",
+        "description": "Configuration des accords de niveau de service (SLA) définissant les temps maximums autorisés par statut d'expédition.",
+        "features": ["Définition SLA globale et par client", "Temps maximum par statut d'expédition", "Activer/désactiver les règles", "Historique des modifications"]
+      },
+      "slaBreachReport": {
+        "title": "Rapport de Violations SLA",
+        "description": "Rapport détaillé de toutes les violations SLA survenues, permettant l'analyse des causes et des tendances.",
+        "features": ["Liste des violations par période", "Détails du temps dépassé", "Filtres par client et statut", "Export des données"]
+      },
+      "slaHeatmap": {
+        "title": "Carte de Chaleur SLA",
+        "description": "Visualisation graphique du statut SLA de toutes les expéditions actives, identifiant rapidement les expéditions critiques.",
+        "features": ["Matrice statut vs progression SLA", "Couleurs indiquant l'urgence", "Drill-down pour voir les expéditions spécifiques", "Compteurs par catégorie"]
+      },
+      "scorecards": {
+        "title": "Scorecards Clients",
+        "description": "Génération et visualisation de résumés de performance mensuels pour chaque client avec des métriques détaillées.",
+        "features": ["Générer des scorecards par mois/année", "Métriques de conformité SLA", "Taux de livraison à temps", "Analyse des exceptions et incidents", "Export PDF et envoi par email"]
+      },
+      "notifications": {
+        "title": "Paramètres de Notification",
+        "description": "Personnalisation des alertes et notifications pour un suivi proactif des SLA.",
+        "features": ["Activer les notifications du navigateur", "Alertes audio", "Définir les seuils d'alerte (critique/avertissement)", "Configurer les heures silencieuses"]
+      },
+      "clients": {
+        "title": "Clients",
+        "description": "Gestion du registre des clients de la plateforme, y compris les paramètres spécifiques de chaque compte.",
+        "features": ["Liste des clients actifs", "Emails de notification par client", "Association des expéditions", "Paramètres personnalisés"]
+      },
+      "users": {
+        "title": "Utilisateurs",
+        "description": "Administration des utilisateurs de la plateforme avec contrôle d'accès basé sur les rôles.",
+        "features": ["Créer et modifier des utilisateurs", "Attribuer des rôles (Technicien, Superviseur, Manager)", "Activer/désactiver les comptes", "Association client"]
+      },
+      "exceptionRules": {
+        "title": "Règles d'Exception",
+        "description": "Configuration de règles automatiques pour la détection d'exceptions basées sur le temps dans chaque statut.",
+        "features": ["Créer des règles par statut", "Définir la sévérité (P1, P2, P3)", "Temps maximum autorisé", "Règles globales ou par client"]
+      },
+      "auditLogs": {
+        "title": "Journaux d'Audit",
+        "description": "Historique de toutes les actions effectuées sur la plateforme pour la traçabilité et la conformité.",
+        "features": ["Historique des actions par utilisateur", "Filtres par type d'action", "Détails des modifications", "Recherche par période"]
+      },
+      "settings": {
+        "title": "Paramètres",
+        "description": "Paramètres généraux de la plateforme et préférences système.",
+        "features": ["Configuration système", "Paramètres globaux", "Intégrations", "Préférences d'affichage"]
+      }
+    }
   }
 }
