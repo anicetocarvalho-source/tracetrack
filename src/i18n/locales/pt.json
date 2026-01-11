@@ -91,7 +91,20 @@
     "retry": "Tentar novamente",
     "basedOn": "Baseado em {{events}} eventos",
     "exceptionsCount": "{{count}} exceção(ões)",
-    "breachesCount": "{{count}} violação(ões) de SLA"
+    "breachesCount": "{{count}} violação(ões) de SLA",
+    "sendEmail": "Enviar Resumo por Email",
+    "sendEmailDesc": "Enviar este resumo gerado por IA para clientes ou partes interessadas",
+    "addRecipient": "Adicionar Email do Destinatário",
+    "recipients": "Destinatários",
+    "preview": "Pré-visualização do Resumo",
+    "send": "Enviar Email",
+    "emailSent": "Email Enviado",
+    "emailSentDesc": "Resumo enviado para {{count}} destinatário(s)",
+    "emailError": "Falha ao enviar email",
+    "invalidEmail": "Endereço de email inválido",
+    "emailExists": "Email já adicionado",
+    "noRecipients": "Por favor adicione pelo menos um destinatário",
+    "noSummary": "Nenhum resumo disponível para enviar"
   },
   "documents": {
     "title": "Documentos",

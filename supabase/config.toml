@@ -65,3 +65,6 @@ verify_jwt = false
 
 [functions.generate-timeline-summary]
 verify_jwt = false
+
+[functions.send-summary-email]
+verify_jwt = false

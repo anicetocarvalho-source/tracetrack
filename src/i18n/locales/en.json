@@ -91,7 +91,20 @@
     "retry": "Retry",
     "basedOn": "Based on {{events}} events",
     "exceptionsCount": "{{count}} exception(s)",
-    "breachesCount": "{{count}} SLA breach(es)"
+    "breachesCount": "{{count}} SLA breach(es)",
+    "sendEmail": "Send Summary via Email",
+    "sendEmailDesc": "Send this AI-generated summary to clients or stakeholders",
+    "addRecipient": "Add Recipient Email",
+    "recipients": "Recipients",
+    "preview": "Summary Preview",
+    "send": "Send Email",
+    "emailSent": "Email Sent",
+    "emailSentDesc": "Summary sent to {{count}} recipient(s)",
+    "emailError": "Failed to send email",
+    "invalidEmail": "Invalid email address",
+    "emailExists": "Email already added",
+    "noRecipients": "Please add at least one recipient",
+    "noSummary": "No summary available to send"
   },
   "documents": {
     "title": "Documents",

@@ -362,7 +362,11 @@ export default function ShipmentDetail() {
         </div>
 
         {/* AI Timeline Summary */}
-        <TimelineSummary shipmentId={id!} mode="internal" />
+        <TimelineSummary 
+          shipmentId={id!} 
+          mode="internal" 
+          clientEmails={shipment?.client?.notification_emails || []}
+        />
 
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Info */}
