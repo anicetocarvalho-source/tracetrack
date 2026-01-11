@@ -563,7 +563,9 @@
     "addEventDesc": "Créer un nouvel événement dans la chronologie de l'expédition. Les événements sont immuables.",
     "selectStatus": "Sélectionner le statut",
     "eventAdded": "Événement de suivi ajouté avec succès",
-    "failedToAdd": "Échec de l'ajout de l'événement de suivi"
+    "failedToAdd": "Échec de l'ajout de l'événement de suivi",
+    "detailedView": "Vue détaillée",
+    "compactView": "Vue compacte"
   },
   "createShipment": {
     "title": "Créer une Expédition",
