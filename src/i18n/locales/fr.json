@@ -956,5 +956,59 @@
         "features": ["Créer de nouvelles demandes", "Suivre le statut des demandes", "Voir l'historique des demandes", "Recevoir des notifications de résolution"]
       }
     }
+  },
+  "tour": {
+    "startTour": "Visite Guidée",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "finish": "Terminer",
+    "backoffice": {
+      "welcome": {
+        "title": "Bienvenue au Backoffice DHL!",
+        "content": "Faisons une visite rapide des principales fonctionnalités de la plateforme. Suivez les étapes pour tout découvrir."
+      },
+      "dashboard": {
+        "title": "Tableau de Bord",
+        "content": "Ici vous avez une vue d'ensemble de toutes les opérations: expéditions actives, exceptions, métriques de performance et scorecards."
+      },
+      "exceptions": {
+        "title": "Exceptions",
+        "content": "C'est le centre des exceptions. Ici vous voyez tous les problèmes nécessitant une attention immédiate, organisés par priorité."
+      },
+      "shipments": {
+        "title": "Gestion des Expéditions",
+        "content": "Gérez toutes les expéditions: créez-en de nouvelles, ajoutez des événements de suivi, téléchargez des documents et suivez la progression."
+      },
+      "help": {
+        "title": "Centre d'Aide",
+        "content": "Cliquez ici chaque fois que vous avez besoin d'aide. Vous trouverez des descriptions détaillées de chaque module et de ses fonctionnalités."
+      },
+      "settings": {
+        "title": "Personnalisez Votre Expérience",
+        "content": "Utilisez ces contrôles pour basculer entre le thème clair/sombre et changer la langue de la plateforme."
+      }
+    },
+    "customer": {
+      "welcome": {
+        "title": "Bienvenue au Portail Client DHL!",
+        "content": "C'est votre portail pour suivre les expéditions et voir les performances. Explorons les fonctionnalités."
+      },
+      "shipments": {
+        "title": "Mes Expéditions",
+        "content": "Visualisez toutes vos expéditions en temps réel. Cliquez sur n'importe quelle expédition pour voir les détails, documents et historique."
+      },
+      "scorecard": {
+        "title": "Mon Scorecard",
+        "content": "Suivez votre performance mensuelle avec les métriques de conformité SLA, les taux de livraison et l'analyse des tendances."
+      },
+      "profile": {
+        "title": "Votre Profil",
+        "content": "Consultez les informations de votre compte et vos coordonnées enregistrées sur la plateforme."
+      },
+      "help": {
+        "title": "Besoin d'Aide?",
+        "content": "Cliquez ici pour voir le guide complet du portail avec la description de toutes les fonctionnalités disponibles."
+      }
+    }
   }
 }

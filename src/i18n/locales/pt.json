@@ -956,5 +956,59 @@
         "features": ["Criar novos pedidos", "Acompanhar estado dos pedidos", "Ver histórico de pedidos", "Receber notificações de resolução"]
       }
     }
+  },
+  "tour": {
+    "startTour": "Tour Guiado",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "finish": "Concluir",
+    "backoffice": {
+      "welcome": {
+        "title": "Bem-vindo ao Backoffice DHL!",
+        "content": "Vamos fazer um tour rápido pelas principais funcionalidades da plataforma. Siga os passos para conhecer tudo."
+      },
+      "dashboard": {
+        "title": "Painel de Controlo",
+        "content": "Aqui tem uma visão geral de todas as operações: envios ativos, exceções, métricas de desempenho e scorecards."
+      },
+      "exceptions": {
+        "title": "Exceções",
+        "content": "Este é o centro de exceções. Aqui vê todos os problemas que precisam de atenção imediata, organizados por prioridade."
+      },
+      "shipments": {
+        "title": "Gestão de Envios",
+        "content": "Gerencie todos os envios: crie novos, adicione eventos de rastreamento, carregue documentos e acompanhe o progresso."
+      },
+      "help": {
+        "title": "Centro de Ajuda",
+        "content": "Clique aqui sempre que precisar de ajuda. Encontrará descrições detalhadas de cada módulo e suas funcionalidades."
+      },
+      "settings": {
+        "title": "Personalize a Sua Experiência",
+        "content": "Use estes controles para alternar entre tema claro/escuro e mudar o idioma da plataforma."
+      }
+    },
+    "customer": {
+      "welcome": {
+        "title": "Bem-vindo ao Portal do Cliente DHL!",
+        "content": "Este é o seu portal para acompanhar envios e visualizar o desempenho. Vamos conhecer as funcionalidades."
+      },
+      "shipments": {
+        "title": "Meus Envios",
+        "content": "Veja todos os seus envios em tempo real. Clique em qualquer envio para ver detalhes, documentos e histórico de eventos."
+      },
+      "scorecard": {
+        "title": "Meu Scorecard",
+        "content": "Acompanhe o seu desempenho mensal com métricas de conformidade SLA, taxa de entrega e análise de tendências."
+      },
+      "profile": {
+        "title": "Seu Perfil",
+        "content": "Veja as informações da sua conta e dados de contacto registados na plataforma."
+      },
+      "help": {
+        "title": "Precisa de Ajuda?",
+        "content": "Clique aqui para ver o guia completo do portal com descrição de todas as funcionalidades disponíveis."
+      }
+    }
   }
 }

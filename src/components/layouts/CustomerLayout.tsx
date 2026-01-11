@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { CustomerHelpMenu } from '@/components/CustomerHelpMenu';
+import { CustomerTour } from '@/components/tour/CustomerTour';
 import dhlLogoRed from '@/assets/dhl-logo-red.svg';
 
 interface CustomerLayoutProps {
@@ -36,7 +37,7 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-dhl-yellow border-b border-yellow-500">
+      <header data-tour="customer-header" className="sticky top-0 z-50 bg-dhl-yellow border-b border-yellow-500">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src={dhlLogoRed} alt="DHL" className="h-6 w-auto" />
@@ -46,10 +47,15 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
+              const tourId = item.path === '/portal' ? 'nav-shipments' 
+                : item.path === '/portal/scorecard' ? 'nav-scorecard'
+                : item.path === '/portal/profile' ? 'nav-profile'
+                : undefined;
               return (
                 <Link
                   key={item.path}
                   to={item.path}
+                  data-tour={tourId}
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                     isActive 
@@ -67,7 +73,10 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <LanguageSwitcher />
-            <CustomerHelpMenu />
+            <div data-tour="customer-help">
+              <CustomerHelpMenu />
+            </div>
+            <CustomerTour />
             <div className="hidden sm:flex items-center gap-2 mr-2">
               <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
                 <span className="text-sm font-medium">
