@@ -234,7 +234,8 @@
     "slaHeatmap": "SLA Heatmap",
     "scorecards": "Client Scorecards",
     "customerRequests": "Customer Requests",
-    "scorecard": "My Scorecard"
+    "scorecard": "My Scorecard",
+    "customer": "Customer"
   },
   "scorecards": {
     "title": "Client Scorecards",

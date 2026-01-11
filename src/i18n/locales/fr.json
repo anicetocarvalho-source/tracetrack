@@ -233,7 +233,9 @@
     "notificationSettings": "Notifications",
     "slaHeatmap": "Carte de Chaleur SLA",
     "scorecards": "Fiches Client",
-    "scorecard": "Ma Fiche"
+    "scorecard": "Ma Fiche",
+    "customer": "Client",
+    "customerRequests": "Demandes Clients"
   },
   "scorecards": {
     "title": "Fiches Client",

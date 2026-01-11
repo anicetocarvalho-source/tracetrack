@@ -233,7 +233,9 @@
     "notificationSettings": "Notificações",
     "slaHeatmap": "Mapa de Calor SLA",
     "scorecards": "Scorecards de Clientes",
-    "scorecard": "Meu Scorecard"
+    "scorecard": "Meu Scorecard",
+    "customer": "Cliente",
+    "customerRequests": "Pedidos de Clientes"
   },
   "scorecards": {
     "title": "Scorecards de Clientes",
