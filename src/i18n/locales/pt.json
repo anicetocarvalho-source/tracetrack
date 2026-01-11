@@ -541,7 +541,10 @@
     "themeLight": "Claro",
     "themeDark": "Escuro",
     "themeSystem": "Sistema",
-    "themeDesc": "Selecione o seu tema preferido ou use as configurações do sistema"
+    "themeDesc": "Selecione o seu tema preferido ou use as configurações do sistema",
+    "toggleTheme": "Alternar tema",
+    "lightMode": "Mudar para modo claro",
+    "darkMode": "Mudar para modo escuro"
   },
   "auditLogs": {
     "title": "Logs de Auditoria",

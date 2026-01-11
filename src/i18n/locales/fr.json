@@ -541,7 +541,10 @@
     "themeLight": "Clair",
     "themeDark": "Sombre",
     "themeSystem": "Système",
-    "themeDesc": "Sélectionnez votre thème préféré ou utilisez les paramètres système"
+    "themeDesc": "Sélectionnez votre thème préféré ou utilisez les paramètres système",
+    "toggleTheme": "Basculer le thème",
+    "lightMode": "Passer en mode clair",
+    "darkMode": "Passer en mode sombre"
   },
   "auditLogs": {
     "title": "Journaux d'Audit",
