@@ -916,5 +916,40 @@
         "features": ["System configuration", "Global parameters", "Integrations", "Display preferences"]
       }
     }
+  },
+  "customerHelp": {
+    "title": "Help Center",
+    "subtitle": "Customer portal guide",
+    "intro": "Welcome to the DHL Customer Portal. Here you can track your shipments, view your performance, and communicate with us.",
+    "mainFeatures": "Main features",
+    "needMoreHelp": "Need more help?",
+    "contactInfo": "Contact your DHL representative for additional assistance or to clarify questions about your shipments.",
+    "modules": {
+      "myShipments": {
+        "title": "My Shipments",
+        "description": "View and track all your shipments in real-time with detailed tracking information.",
+        "features": ["Complete list of your shipments", "Search by reference or BL", "Current status and event history", "Filters by period and status", "View full details of each shipment"]
+      },
+      "scorecard": {
+        "title": "My Scorecard",
+        "description": "View your monthly performance summaries with SLA compliance metrics and delivery rates.",
+        "features": ["Scorecards by month and year", "On-time delivery rate", "SLA compliance", "Trend charts", "Status distribution"]
+      },
+      "profile": {
+        "title": "Profile",
+        "description": "View your account information and contact details registered on the platform.",
+        "features": ["Personal data", "Account information", "Registration date", "Last access"]
+      },
+      "documents": {
+        "title": "Documents",
+        "description": "Access documents associated with your shipments, such as proof of delivery, bills of lading, and invoices.",
+        "features": ["View documents by shipment", "Download documents", "Preview PDFs and images", "Types: POD, BL, Invoice, and others"]
+      },
+      "requests": {
+        "title": "Requests",
+        "description": "Submit service requests related to your shipments, such as update requests or document uploads.",
+        "features": ["Create new requests", "Track request status", "View request history", "Receive resolution notifications"]
+      }
+    }
   }
 }
