@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, User, Eye, EyeOff, ChevronDown, List, LayoutList } from 'lucide-react';
+import { MapPin, User, Eye, EyeOff, ChevronDown, ChevronRight, List, LayoutList } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,19 @@ export function TrackingTimeline({
   const { t } = useTranslation();
   const [displayCount, setDisplayCount] = useState(initialLimit);
   const [isCompact, setIsCompact] = useState(defaultCompact);
+  const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
+
+  const toggleEventExpanded = (eventId: string) => {
+    setExpandedEvents(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(eventId)) {
+        newSet.delete(eventId);
+      } else {
+        newSet.add(eventId);
+      }
+      return newSet;
+    });
+  };
 
   if (!events || events.length === 0) {
     return (
@@ -95,60 +108,123 @@ export function TrackingTimeline({
             transition={{ duration: 0.2 }}
             className="space-y-1"
           >
-            {displayedEvents.map((event, index) => (
-              <motion.div
-                key={event.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.03, duration: 0.2 }}
-                className="relative pl-10 group"
-              >
-                {/* Timeline dot */}
-                <div
-                  className={cn(
-                    'absolute left-2.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-2 border-background transition-all',
-                    index === 0 ? 'bg-primary scale-110' : 'bg-muted-foreground/50 group-hover:bg-primary/50'
-                  )}
-                />
-
-                <div className={cn(
-                  'flex items-center gap-3 py-2 px-3 rounded-lg transition-colors hover:bg-muted/50',
-                  index === 0 && 'bg-primary/5'
-                )}>
-                  <StatusBadge status={event.status} className="text-xs py-0.5 px-2" />
-                  
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {safeFormatDate(event.event_datetime, 'MMM d, HH:mm')}
-                  </span>
-                  
-                  <span className="text-sm truncate flex-1 text-foreground/80">
-                    {event.note.length > 50 ? `${event.note.substring(0, 50)}...` : event.note}
-                  </span>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    {event.location && (
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                      </span>
+            {displayedEvents.map((event, index) => {
+              const isExpanded = expandedEvents.has(event.id);
+              const needsExpansion = event.note.length > 50 || event.location || event.creator;
+              
+              return (
+                <motion.div
+                  key={event.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.03, duration: 0.2 }}
+                  className="relative pl-10 group"
+                >
+                  {/* Timeline dot */}
+                  <div
+                    className={cn(
+                      'absolute left-2.5 w-2.5 h-2.5 rounded-full border-2 border-background transition-all',
+                      isExpanded ? 'top-4' : 'top-1/2 -translate-y-1/2',
+                      index === 0 ? 'bg-primary scale-110' : 'bg-muted-foreground/50 group-hover:bg-primary/50'
                     )}
-                    {showVisibility && (
-                      <span
-                        className={cn(
-                          'flex items-center',
-                          event.visible_to_client ? 'text-green-600' : 'text-muted-foreground/50'
-                        )}
-                      >
-                        {event.visible_to_client ? (
-                          <Eye className="w-3 h-3" />
-                        ) : (
-                          <EyeOff className="w-3 h-3" />
-                        )}
-                      </span>
+                  />
+
+                  <div 
+                    className={cn(
+                      'rounded-lg transition-all',
+                      index === 0 && 'bg-primary/5',
+                      needsExpansion && 'cursor-pointer',
+                      isExpanded && 'bg-muted/50'
                     )}
+                    onClick={() => needsExpansion && toggleEventExpanded(event.id)}
+                  >
+                    {/* Compact row */}
+                    <div className={cn(
+                      'flex items-center gap-3 py-2 px-3 rounded-lg transition-colors',
+                      needsExpansion && 'hover:bg-muted/50'
+                    )}>
+                      {needsExpansion && (
+                        <motion.div
+                          animate={{ rotate: isExpanded ? 90 : 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="shrink-0"
+                        >
+                          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                        </motion.div>
+                      )}
+                      
+                      <StatusBadge status={event.status} className="text-xs py-0.5 px-2" />
+                      
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {safeFormatDate(event.event_datetime, 'MMM d, HH:mm')}
+                      </span>
+                      
+                      <span className="text-sm truncate flex-1 text-foreground/80">
+                        {!isExpanded && event.note.length > 50 ? `${event.note.substring(0, 50)}...` : (isExpanded ? '' : event.note)}
+                      </span>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        {event.location && !isExpanded && (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                          </span>
+                        )}
+                        {showVisibility && (
+                          <span
+                            className={cn(
+                              'flex items-center',
+                              event.visible_to_client ? 'text-green-600' : 'text-muted-foreground/50'
+                            )}
+                          >
+                            {event.visible_to_client ? (
+                              <Eye className="w-3 h-3" />
+                            ) : (
+                              <EyeOff className="w-3 h-3" />
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Expanded details */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-3 pb-3 pt-1 ml-7 border-l-2 border-primary/20">
+                            <p className="text-sm whitespace-pre-wrap leading-relaxed text-foreground/90 mb-2">
+                              {event.note}
+                            </p>
+                            
+                            {(event.location || event.creator) && (
+                              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                                {event.location && (
+                                  <span className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-md">
+                                    <MapPin className="w-3 h-3" />
+                                    {event.location}
+                                  </span>
+                                )}
+                                {event.creator && (
+                                  <span className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-md">
+                                    <User className="w-3 h-3" />
+                                    {event.creator.name}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </motion.div>
         ) : (
           <motion.div
