@@ -120,6 +120,7 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
         { path: '/backoffice/branch-management', label: t('nav.branchManagement'), icon: Building2, roles: ['ADMIN', 'MANAGER'] },
         { path: '/backoffice/audit-logs', label: t('nav.auditLogs'), icon: FileText, roles: ['ADMIN', 'MANAGER'] },
         { path: '/backoffice/settings', label: t('nav.settings'), icon: Settings, roles: ['ADMIN', 'MANAGER'] },
+        { path: '/backoffice/system-config', label: t('nav.systemConfig'), icon: Settings2, roles: ['ADMIN'] },
       ]
     },
   ];
