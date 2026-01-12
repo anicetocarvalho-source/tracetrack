@@ -5,13 +5,25 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Branch IDs
+const BRANCH_HQ = '00000000-0000-0000-0000-000000000001';
+const BRANCH_LAGOS = '0446f2b4-ab6f-4269-b5c5-4a2e63e98e25';
+const BRANCH_ABUJA = '80dff0da-2fe6-4aac-b863-d3e3a66eb63c';
+
 const testUsers = [
-  { email: 'admin@dhl.test', password: 'Test123!', name: 'Super Admin', role: 'ADMIN', client_id: null },
-  { email: 'manager@dhl.test', password: 'Test123!', name: 'Carlos Manager', role: 'MANAGER', client_id: null },
-  { email: 'supervisor@dhl.test', password: 'Test123!', name: 'Ana Supervisor', role: 'SUPERVISOR', client_id: null },
-  { email: 'technician@dhl.test', password: 'Test123!', name: 'João Technician', role: 'TECHNICIAN', client_id: null },
-  { email: 'customer1@acme.test', password: 'Test123!', name: 'Pedro Cliente', role: 'CUSTOMER', client_id: 'a1b2c3d4-e5f6-4a5b-8c7d-9e0f1a2b3c4d' },
-  { email: 'customer2@global.test', password: 'Test123!', name: 'Maria Cliente', role: 'CUSTOMER', client_id: 'b2c3d4e5-f6a7-5b6c-9d8e-0f1a2b3c4d5e' },
+  // Admin - access to all branches
+  { email: 'admin@dhl.test', password: 'Test123!', name: 'Super Admin', role: 'ADMIN', client_id: null, branch_id: BRANCH_HQ, allowed_branch_ids: [BRANCH_HQ, BRANCH_LAGOS, BRANCH_ABUJA] },
+  // Manager - multi-branch access (HQ + Lagos)
+  { email: 'manager@dhl.test', password: 'Test123!', name: 'Carlos Manager', role: 'MANAGER', client_id: null, branch_id: BRANCH_HQ, allowed_branch_ids: [BRANCH_HQ, BRANCH_LAGOS] },
+  // Supervisor - multi-branch access (Lagos + Abuja)
+  { email: 'supervisor@dhl.test', password: 'Test123!', name: 'Ana Supervisor', role: 'SUPERVISOR', client_id: null, branch_id: BRANCH_LAGOS, allowed_branch_ids: [BRANCH_LAGOS, BRANCH_ABUJA] },
+  // Technicians - single branch each
+  { email: 'technician@dhl.test', password: 'Test123!', name: 'João Technician', role: 'TECHNICIAN', client_id: null, branch_id: BRANCH_HQ, allowed_branch_ids: null },
+  { email: 'tech.lagos@dhl.test', password: 'Test123!', name: 'Chidi Lagos Tech', role: 'TECHNICIAN', client_id: null, branch_id: BRANCH_LAGOS, allowed_branch_ids: null },
+  { email: 'tech.abuja@dhl.test', password: 'Test123!', name: 'Amina Abuja Tech', role: 'TECHNICIAN', client_id: null, branch_id: BRANCH_ABUJA, allowed_branch_ids: null },
+  // Customers - linked to clients
+  { email: 'customer1@acme.test', password: 'Test123!', name: 'Pedro Cliente', role: 'CUSTOMER', client_id: 'a1b2c3d4-e5f6-4a5b-8c7d-9e0f1a2b3c4d', branch_id: null, allowed_branch_ids: null },
+  { email: 'customer2@global.test', password: 'Test123!', name: 'Maria Cliente', role: 'CUSTOMER', client_id: 'b2c3d4e5-f6a7-5b6c-9d8e-0f1a2b3c4d5e', branch_id: null, allowed_branch_ids: null },
 ]
 
 Deno.serve(async (req) => {
@@ -41,9 +53,14 @@ Deno.serve(async (req) => {
         continue
       }
 
-      // Update profile with client_id if provided
-      if (user.client_id) {
-        await adminClient.from('profiles').update({ client_id: user.client_id }).eq('id', newUser.user.id)
+      // Update profile with client_id and branch assignments if provided
+      const profileUpdate: Record<string, unknown> = {};
+      if (user.client_id) profileUpdate.client_id = user.client_id;
+      if (user.branch_id) profileUpdate.branch_id = user.branch_id;
+      if (user.allowed_branch_ids) profileUpdate.allowed_branch_ids = user.allowed_branch_ids;
+      
+      if (Object.keys(profileUpdate).length > 0) {
+        await adminClient.from('profiles').update(profileUpdate).eq('id', newUser.user.id);
       }
 
       // Create user role
