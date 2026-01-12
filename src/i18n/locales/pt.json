@@ -119,7 +119,27 @@
     "selectRow": "Selecionar linha",
     "updating": "A atualizar...",
     "you": "você",
-    "viewDetails": "Ver detalhes"
+    "viewDetails": "Ver detalhes",
+    "minCharacters": "mín {{count}} caracteres",
+    "notAssigned": "Não atribuído",
+    "processing": "A processar..."
+  },
+  "branchTransfer": {
+    "title": "Transferir Envio para Outra Filial",
+    "description": "Transferir envio {{shipmentRef}} para uma filial diferente. Esta ação será registada no histórico de auditoria.",
+    "currentBranch": "Filial Atual",
+    "targetBranch": "Filial de Destino",
+    "selectBranch": "Selecione uma filial...",
+    "reason": "Motivo da Transferência",
+    "reasonPlaceholder": "Explique porque este envio precisa ser transferido para outra filial...",
+    "auditNote": "Esta transferência será registada no log de auditoria com todos os detalhes.",
+    "crossCountryWarning": "Está a transferir este envio para uma filial num país diferente. Isto pode afetar os cálculos de SLA e regulamentos locais.",
+    "transfer": "Transferir",
+    "success": "Transferência de filial bem-sucedida",
+    "successDescription": "Envio {{shipmentRef}} foi transferido para {{branch}}",
+    "error": "Transferência falhou",
+    "errorDescription": "Falha ao transferir o envio. Por favor, tente novamente.",
+    "trackingNote": "Envio transferido de {{from}} para {{to}}. Motivo: {{reason}}"
   },
   "notifications": {
     "enableTitle": "Ativar Alertas SLA",

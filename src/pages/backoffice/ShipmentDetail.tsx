@@ -22,6 +22,7 @@ import {
   Anchor,
   MapPin,
   TrendingUp,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,6 +43,7 @@ import { ShipmentRequestsPanel } from '@/components/requests/ShipmentRequestsPan
 import { TimelineSummary } from '@/components/shipments/TimelineSummary';
 import { ShipmentProgressIndicator } from '@/components/shipments/ShipmentProgressIndicator';
 import { AINextActionSuggestion } from '@/components/shipments/AINextActionSuggestion';
+import { BranchTransferDialog } from '@/components/shipments/BranchTransferDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { Shipment, TrackingEvent, ShipmentContainer, ShipmentException, ExceptionRule } from '@/types/database';
 import { ShipmentStatus, SEVERITY_LABELS, EXCEPTION_STATUS_LABELS } from '@/lib/constants';
@@ -86,6 +88,7 @@ export default function ShipmentDetail() {
   const queryClient = useQueryClient();
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [showEditShipment, setShowEditShipment] = useState(false);
+  const [showBranchTransfer, setShowBranchTransfer] = useState(false);
   const [aiSuggestionDraft, setAiSuggestionDraft] = useState<{ status: ShipmentStatus | null; note: string } | null>(null);
   const [resolveDialog, setResolveDialog] = useState<{ open: boolean; exception: ShipmentException | null }>({
     open: false,
@@ -418,14 +421,24 @@ export default function ShipmentDetail() {
             </div>
             <div className="flex gap-2 sm:shrink-0">
               {canEdit && (
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowEditShipment(true)}
-                  className="hover:border-primary hover:text-primary transition-colors"
-                >
-                  <Pencil className="w-4 h-4 mr-2" />
-                  {t('common.edit')}
-                </Button>
+                <>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowBranchTransfer(true)}
+                    className="hover:border-primary hover:text-primary transition-colors"
+                  >
+                    <ArrowRightLeft className="w-4 h-4 mr-2" />
+                    {t('branchTransfer.transfer')}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowEditShipment(true)}
+                    className="hover:border-primary hover:text-primary transition-colors"
+                  >
+                    <Pencil className="w-4 h-4 mr-2" />
+                    {t('common.edit')}
+                  </Button>
+                </>
               )}
               <Button 
                 onClick={() => setShowAddEvent(true)}
@@ -1069,6 +1082,15 @@ export default function ShipmentDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Branch Transfer Dialog */}
+      <BranchTransferDialog
+        open={showBranchTransfer}
+        onOpenChange={setShowBranchTransfer}
+        shipmentId={id!}
+        shipmentRef={shipment.shipment_ref}
+        currentBranchId={shipment.branch_id}
+      />
     </BackofficeLayout>
   );
 }

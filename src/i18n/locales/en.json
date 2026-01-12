@@ -127,7 +127,27 @@
     "selectRow": "Select row",
     "updating": "Updating...",
     "you": "you",
-    "viewDetails": "View details"
+    "viewDetails": "View details",
+    "minCharacters": "min {{count}} characters",
+    "notAssigned": "Not assigned",
+    "processing": "Processing..."
+  },
+  "branchTransfer": {
+    "title": "Transfer Shipment to Another Branch",
+    "description": "Transfer shipment {{shipmentRef}} to a different branch. This action will be logged in the audit trail.",
+    "currentBranch": "Current Branch",
+    "targetBranch": "Target Branch",
+    "selectBranch": "Select a branch...",
+    "reason": "Reason for Transfer",
+    "reasonPlaceholder": "Explain why this shipment needs to be transferred to another branch...",
+    "auditNote": "This transfer will be recorded in the audit log with full details.",
+    "crossCountryWarning": "You are transferring this shipment to a branch in a different country. This may affect SLA calculations and local regulations.",
+    "transfer": "Transfer Branch",
+    "success": "Branch transfer successful",
+    "successDescription": "Shipment {{shipmentRef}} has been transferred to {{branch}}",
+    "error": "Transfer failed",
+    "errorDescription": "Failed to transfer the shipment. Please try again.",
+    "trackingNote": "Shipment transferred from {{from}} to {{to}}. Reason: {{reason}}"
   },
   "notifications": {
     "enableTitle": "Enable SLA Alerts",
