@@ -18,6 +18,8 @@ export type Database = {
         Row: {
           action: string
           actor_user_id: string | null
+          branch_id: string | null
+          country_id: string | null
           entity_id: string | null
           entity_type: string
           id: string
@@ -28,6 +30,8 @@ export type Database = {
         Insert: {
           action: string
           actor_user_id?: string | null
+          branch_id?: string | null
+          country_id?: string | null
           entity_id?: string | null
           entity_type: string
           id?: string
@@ -38,6 +42,8 @@ export type Database = {
         Update: {
           action?: string
           actor_user_id?: string | null
+          branch_id?: string | null
+          country_id?: string | null
           entity_id?: string | null
           entity_type?: string
           id?: string
@@ -45,7 +51,104 @@ export type Database = {
           metadata_json?: Json | null
           timestamp?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_log_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      branch_settings: {
+        Row: {
+          branch_id: string
+          created_at: string
+          description: string | null
+          id: string
+          setting_key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          branch_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          branch_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branch_settings_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      branches: {
+        Row: {
+          code: string
+          country_id: string
+          created_at: string
+          default_language: string | null
+          id: string
+          is_active: boolean
+          name: string
+          timezone: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          country_id: string
+          created_at?: string
+          default_language?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          timezone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          country_id?: string
+          created_at?: string
+          default_language?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          timezone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branches_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       client_scorecards: {
         Row: {
@@ -129,24 +232,81 @@ export type Database = {
       }
       clients: {
         Row: {
+          branch_id: string | null
           created_at: string
           id: string
           name: string
           notification_emails: string[] | null
+          parent_client_id: string | null
+          subsidiary_visibility: string
           updated_at: string
         }
         Insert: {
+          branch_id?: string | null
           created_at?: string
           id?: string
           name: string
           notification_emails?: string[] | null
+          parent_client_id?: string | null
+          subsidiary_visibility?: string
           updated_at?: string
         }
         Update: {
+          branch_id?: string | null
           created_at?: string
           id?: string
           name?: string
           notification_emails?: string[] | null
+          parent_client_id?: string | null
+          subsidiary_visibility?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_parent_client_id_fkey"
+            columns: ["parent_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      countries: {
+        Row: {
+          code: string
+          created_at: string
+          default_language: string
+          id: string
+          is_active: boolean
+          name: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          default_language?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          default_language?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          timezone?: string
           updated_at?: string
         }
         Relationships: []
@@ -250,6 +410,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          allowed_branch_ids: string[] | null
+          branch_id: string | null
           client_id: string | null
           created_at: string
           email: string
@@ -261,6 +423,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          allowed_branch_ids?: string[] | null
+          branch_id?: string | null
           client_id?: string | null
           created_at?: string
           email: string
@@ -272,6 +436,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          allowed_branch_ids?: string[] | null
+          branch_id?: string | null
           client_id?: string | null
           created_at?: string
           email?: string
@@ -283,6 +449,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_client_id_fkey"
             columns: ["client_id"]
@@ -612,6 +785,7 @@ export type Database = {
         Row: {
           assigned_operator: string | null
           bl_reference: string
+          branch_id: string | null
           client_id: string
           client_ref: string
           created_at: string
@@ -631,6 +805,7 @@ export type Database = {
         Insert: {
           assigned_operator?: string | null
           bl_reference: string
+          branch_id?: string | null
           client_id: string
           client_ref: string
           created_at?: string
@@ -650,6 +825,7 @@ export type Database = {
         Update: {
           assigned_operator?: string | null
           bl_reference?: string
+          branch_id?: string | null
           client_id?: string
           client_ref?: string
           created_at?: string
@@ -668,6 +844,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "shipments_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "shipments_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
@@ -678,6 +861,7 @@ export type Database = {
       }
       sla_config: {
         Row: {
+          branch_id: string | null
           client_id: string | null
           created_at: string
           created_by: string | null
@@ -688,6 +872,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          branch_id?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -698,6 +883,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          branch_id?: string | null
           client_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -708,6 +894,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sla_config_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sla_config_client_id_fkey"
             columns: ["client_id"]
@@ -832,6 +1025,10 @@ export type Database = {
         }[]
       }
       cleanup_rate_limits: { Args: never; Returns: number }
+      get_client_visible_ids: {
+        Args: { _client_id: string }
+        Returns: string[]
+      }
       get_sla_config: {
         Args: {
           p_client_id: string
@@ -842,6 +1039,11 @@ export type Database = {
           max_hours: number
         }[]
       }
+      get_user_allowed_branches: {
+        Args: { _user_id: string }
+        Returns: string[]
+      }
+      get_user_branch_id: { Args: { _user_id: string }; Returns: string }
       get_user_client_id: { Args: { _user_id: string }; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
@@ -855,6 +1057,7 @@ export type Database = {
         Returns: boolean
       }
       is_internal_user: { Args: { _user_id: string }; Returns: boolean }
+      is_multi_branch_manager: { Args: { _user_id: string }; Returns: boolean }
       reset_rate_limit: {
         Args: { p_action: string; p_identifier: string }
         Returns: undefined
@@ -869,6 +1072,10 @@ export type Database = {
         Returns: number
       }
       unschedule_cron_job: { Args: { job_name: string }; Returns: undefined }
+      user_has_branch_access: {
+        Args: { _branch_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "TECHNICIAN" | "SUPERVISOR" | "MANAGER" | "CUSTOMER"
