@@ -370,7 +370,8 @@
     "adminGroup": "Administration",
     "branchManagement": "Branches",
     "branchDashboard": "Branch Dashboard",
-    "branchComparison": "Branch Comparison"
+    "branchComparison": "Branch Comparison",
+    "branchTransferHistory": "Transfer History"
   },
   "branchDashboard": {
     "noBranchSelected": "No branch selected",
@@ -1426,5 +1427,28 @@
     "editBranch": "Edit Branch",
     "branchCreated": "Branch created successfully",
     "branchUpdated": "Branch updated successfully"
+  },
+  "transferHistory": {
+    "title": "Branch Transfer History",
+    "subtitle": "View all shipment transfers between branches with full audit trail",
+    "totalTransfers": "Total Transfers",
+    "crossCountry": "Cross-Country",
+    "bulkTransfers": "Bulk Transfers",
+    "searchPlaceholder": "Search by shipment, branch, reason or user...",
+    "sourceBranch": "Source Branch",
+    "targetBranch": "Target Branch",
+    "allSourceBranches": "All Source Branches",
+    "allTargetBranches": "All Target Branches",
+    "date": "Date",
+    "shipment": "Shipment",
+    "fromBranch": "From Branch",
+    "toBranch": "To Branch",
+    "reason": "Reason",
+    "transferredBy": "Transferred By",
+    "type": "Type",
+    "noTransfers": "No branch transfers found",
+    "bulk": "Bulk",
+    "single": "Single",
+    "crossCountryBadge": "Cross-Country"
   }
 }
