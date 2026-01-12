@@ -25,6 +25,7 @@ import Settings from "./pages/backoffice/Settings";
 import BranchManagement from "./pages/backoffice/BranchManagement";
 import BranchDashboard from "./pages/backoffice/BranchDashboard";
 import BranchComparison from "./pages/backoffice/BranchComparison";
+import BranchTransferHistory from "./pages/backoffice/BranchTransferHistory";
 import ActionRequired from "./pages/backoffice/ActionRequired";
 import ExceptionRules from "./pages/backoffice/ExceptionRules";
 import SLAManagement from "./pages/backoffice/SLAManagement";
@@ -113,6 +114,11 @@ const App = () => (
             <Route path="/backoffice/branch-comparison" element={
               <ProtectedRoute requireInternal>
                 <BranchComparison />
+              </ProtectedRoute>
+            } />
+            <Route path="/backoffice/branch-transfer-history" element={
+              <ProtectedRoute requireInternal>
+                <BranchTransferHistory />
               </ProtectedRoute>
             } />
             <Route path="/backoffice/action-required" element={

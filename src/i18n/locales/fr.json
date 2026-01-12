@@ -361,7 +361,8 @@
     "adminGroup": "Administration",
     "branchManagement": "Succursales",
     "branchDashboard": "Tableau de Bord Succursale",
-    "branchComparison": "Comparaison des Succursales"
+    "branchComparison": "Comparaison des Succursales",
+    "branchTransferHistory": "Historique des Transferts"
   },
   "branchDashboard": {
     "noBranchSelected": "Aucune succursale sélectionnée",
@@ -1419,5 +1420,28 @@
     "editBranch": "Modifier Filiale",
     "branchCreated": "Filiale créée avec succès",
     "branchUpdated": "Filiale mise à jour avec succès"
+  },
+  "transferHistory": {
+    "title": "Historique des Transferts de Succursale",
+    "subtitle": "Voir tous les transferts d'expéditions entre succursales avec piste d'audit complète",
+    "totalTransfers": "Total des Transferts",
+    "crossCountry": "Inter-Pays",
+    "bulkTransfers": "Transferts en Masse",
+    "searchPlaceholder": "Rechercher par expédition, succursale, raison ou utilisateur...",
+    "sourceBranch": "Succursale Source",
+    "targetBranch": "Succursale Cible",
+    "allSourceBranches": "Toutes les Succursales Sources",
+    "allTargetBranches": "Toutes les Succursales Cibles",
+    "date": "Date",
+    "shipment": "Expédition",
+    "fromBranch": "De la Succursale",
+    "toBranch": "Vers la Succursale",
+    "reason": "Raison",
+    "transferredBy": "Transféré Par",
+    "type": "Type",
+    "noTransfers": "Aucun transfert de succursale trouvé",
+    "bulk": "En Masse",
+    "single": "Individuel",
+    "crossCountryBadge": "Inter-Pays"
   }
 }

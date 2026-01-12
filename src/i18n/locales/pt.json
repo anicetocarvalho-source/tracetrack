@@ -362,7 +362,8 @@
     "adminGroup": "Administração",
     "branchManagement": "Filiais",
     "branchDashboard": "Painel da Filial",
-    "branchComparison": "Comparação de Filiais"
+    "branchComparison": "Comparação de Filiais",
+    "branchTransferHistory": "Histórico de Transferências"
   },
   "branchDashboard": {
     "noBranchSelected": "Nenhuma filial selecionada",
@@ -1420,5 +1421,28 @@
     "editBranch": "Editar Filial",
     "branchCreated": "Filial criada com sucesso",
     "branchUpdated": "Filial atualizada com sucesso"
+  },
+  "transferHistory": {
+    "title": "Histórico de Transferências de Filial",
+    "subtitle": "Ver todas as transferências de envios entre filiais com registo completo de auditoria",
+    "totalTransfers": "Total de Transferências",
+    "crossCountry": "Entre Países",
+    "bulkTransfers": "Transferências em Massa",
+    "searchPlaceholder": "Pesquisar por envio, filial, motivo ou utilizador...",
+    "sourceBranch": "Filial de Origem",
+    "targetBranch": "Filial de Destino",
+    "allSourceBranches": "Todas as Filiais de Origem",
+    "allTargetBranches": "Todas as Filiais de Destino",
+    "date": "Data",
+    "shipment": "Envio",
+    "fromBranch": "Da Filial",
+    "toBranch": "Para Filial",
+    "reason": "Motivo",
+    "transferredBy": "Transferido Por",
+    "type": "Tipo",
+    "noTransfers": "Nenhuma transferência de filial encontrada",
+    "bulk": "Em Massa",
+    "single": "Individual",
+    "crossCountryBadge": "Entre Países"
   }
 }

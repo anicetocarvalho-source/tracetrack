@@ -25,7 +25,8 @@ import {
   Plus,
   Eye,
   BarChart3,
-  TrendingUp
+  TrendingUp,
+  ArrowRightLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -90,6 +91,7 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
     { path: '/backoffice', label: t('nav.dashboard'), icon: LayoutDashboard },
     { path: '/backoffice/branch-dashboard', label: t('nav.branchDashboard'), icon: BarChart3 },
     { path: '/backoffice/branch-comparison', label: t('nav.branchComparison'), icon: TrendingUp },
+    { path: '/backoffice/branch-transfer-history', label: t('nav.branchTransferHistory'), icon: ArrowRightLeft, roles: ['SUPERVISOR', 'MANAGER'] },
     { path: '/backoffice/action-required', label: t('exceptions.title'), icon: AlertTriangle, highlight: true },
     { path: '/backoffice/shipments', label: t('nav.shipments'), icon: Package },
     { path: '/backoffice/customer-requests', label: t('nav.customerRequests'), icon: FileText, roles: ['SUPERVISOR', 'MANAGER'] },
