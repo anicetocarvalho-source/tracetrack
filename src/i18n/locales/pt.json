@@ -139,7 +139,18 @@
     "successDescription": "Envio {{shipmentRef}} foi transferido para {{branch}}",
     "error": "Transferência falhou",
     "errorDescription": "Falha ao transferir o envio. Por favor, tente novamente.",
-    "trackingNote": "Envio transferido de {{from}} para {{to}}. Motivo: {{reason}}"
+    "trackingNote": "Envio transferido de {{from}} para {{to}}. Motivo: {{reason}}",
+    "bulkTitle": "Transferir Múltiplos Envios",
+    "bulkDescription": "Transferir {{count}} envios para uma filial diferente. Todas as transferências serão registadas no histórico de auditoria.",
+    "shipmentsToTransfer": "Envios a Transferir",
+    "bulkCrossCountryWarning": "Alguns envios serão transferidos para uma filial num país diferente. Isto pode afetar os cálculos de SLA e regulamentos locais.",
+    "bulkReasonPlaceholder": "Explique porque estes envios precisam ser transferidos para outra filial...",
+    "bulkAuditNote": "Cada transferência será registada individualmente no log de auditoria com todos os detalhes.",
+    "bulkSuccess": "{{count}} envios transferidos com sucesso para {{branch}}",
+    "bulkPartial": "{{success}} envios transferidos, {{failed}} falharam",
+    "bulkError": "Falha ao transferir envios. Por favor, tente novamente.",
+    "transferring": "A transferir {{count}}...",
+    "transferCount": "Transferir {{count}} Envios"
   },
   "notifications": {
     "enableTitle": "Ativar Alertas SLA",
@@ -734,6 +745,7 @@
     "addToSystem": "Adicionar um novo envio ao sistema",
     "selectedCount": "{{count}} selecionado(s)",
     "bulkUpdateStatus": "Atualizar Estado",
+    "bulkTransferBranch": "Transferir Filial",
     "bulkUpdateStatusTitle": "Atualização em Massa",
     "bulkUpdateStatusDescription": "Atualizar o estado de {{count}} envios selecionados",
     "selectNewStatus": "Selecionar novo estado",

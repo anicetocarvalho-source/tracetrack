@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Upload, ChevronLeft, ChevronRight, AlertTriangle, CheckSquare, X, Package, Clock, TruckIcon, CheckCircle2, AlertCircle, Filter, LayoutGrid, List } from 'lucide-react';
+import { Plus, Search, Upload, ChevronLeft, ChevronRight, AlertTriangle, CheckSquare, X, Package, Clock, TruckIcon, CheckCircle2, AlertCircle, Filter, LayoutGrid, List, ArrowRightLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { SHIPMENT_STATUSES, ShipmentStatus, SEVERITY_LABELS, SEVERITY_CLASSES } from '@/lib/constants';
 import { CSVImportDialog } from '@/components/shipments/CSVImportDialog';
+import { BulkBranchTransferDialog } from '@/components/shipments/BulkBranchTransferDialog';
 import { safeFormatDate } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { DateRangePickerCompact } from '@/components/ui/date-range-picker';
@@ -56,6 +57,7 @@ export default function Shipments() {
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkStatusDialogOpen, setBulkStatusDialogOpen] = useState(false);
+  const [bulkTransferDialogOpen, setBulkTransferDialogOpen] = useState(false);
   const [bulkNewStatus, setBulkNewStatus] = useState<ShipmentStatus | ''>('');
 
   const { data, isLoading } = useQuery({
@@ -455,6 +457,15 @@ export default function Shipments() {
                         {t('shipments.bulkUpdateStatus')}
                       </Button>
                       <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setBulkTransferDialogOpen(true)}
+                        className="gap-1.5"
+                      >
+                        <ArrowRightLeft className="w-4 h-4" />
+                        {t('shipments.bulkTransferBranch')}
+                      </Button>
+                      <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setSelectedIds(new Set())}
@@ -766,6 +777,14 @@ export default function Shipments() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Bulk Branch Transfer Dialog */}
+        <BulkBranchTransferDialog
+          open={bulkTransferDialogOpen}
+          onOpenChange={setBulkTransferDialogOpen}
+          shipmentIds={Array.from(selectedIds)}
+          onSuccess={() => setSelectedIds(new Set())}
+        />
       </motion.div>
     </BackofficeLayout>
   );

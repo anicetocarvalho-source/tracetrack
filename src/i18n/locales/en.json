@@ -147,7 +147,18 @@
     "successDescription": "Shipment {{shipmentRef}} has been transferred to {{branch}}",
     "error": "Transfer failed",
     "errorDescription": "Failed to transfer the shipment. Please try again.",
-    "trackingNote": "Shipment transferred from {{from}} to {{to}}. Reason: {{reason}}"
+    "trackingNote": "Shipment transferred from {{from}} to {{to}}. Reason: {{reason}}",
+    "bulkTitle": "Transfer Multiple Shipments",
+    "bulkDescription": "Transfer {{count}} shipments to a different branch. All transfers will be logged in the audit trail.",
+    "shipmentsToTransfer": "Shipments to Transfer",
+    "bulkCrossCountryWarning": "Some shipments will be transferred to a branch in a different country. This may affect SLA calculations and local regulations.",
+    "bulkReasonPlaceholder": "Explain why these shipments need to be transferred to another branch...",
+    "bulkAuditNote": "Each transfer will be recorded individually in the audit log with full details.",
+    "bulkSuccess": "Successfully transferred {{count}} shipments to {{branch}}",
+    "bulkPartial": "{{success}} shipments transferred, {{failed}} failed",
+    "bulkError": "Failed to transfer shipments. Please try again.",
+    "transferring": "Transferring {{count}}...",
+    "transferCount": "Transfer {{count}} Shipments"
   },
   "notifications": {
     "enableTitle": "Enable SLA Alerts",
@@ -747,6 +758,7 @@
     "addToSystem": "Add a new shipment to the system",
     "selectedCount": "{{count}} selected",
     "bulkUpdateStatus": "Update Status",
+    "bulkTransferBranch": "Transfer Branch",
     "bulkUpdateStatusTitle": "Bulk Status Update",
     "bulkUpdateStatusDescription": "Update the status of {{count}} selected shipments",
     "selectNewStatus": "Select new status",

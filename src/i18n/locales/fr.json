@@ -138,7 +138,18 @@
     "successDescription": "L'expédition {{shipmentRef}} a été transférée vers {{branch}}",
     "error": "Échec du transfert",
     "errorDescription": "Échec du transfert de l'expédition. Veuillez réessayer.",
-    "trackingNote": "Expédition transférée de {{from}} vers {{to}}. Raison: {{reason}}"
+    "trackingNote": "Expédition transférée de {{from}} vers {{to}}. Raison: {{reason}}",
+    "bulkTitle": "Transférer Plusieurs Expéditions",
+    "bulkDescription": "Transférer {{count}} expéditions vers une succursale différente. Tous les transferts seront enregistrés dans l'historique d'audit.",
+    "shipmentsToTransfer": "Expéditions à Transférer",
+    "bulkCrossCountryWarning": "Certaines expéditions seront transférées vers une succursale dans un pays différent. Cela peut affecter les calculs SLA et les réglementations locales.",
+    "bulkReasonPlaceholder": "Expliquez pourquoi ces expéditions doivent être transférées vers une autre succursale...",
+    "bulkAuditNote": "Chaque transfert sera enregistré individuellement dans le journal d'audit avec tous les détails.",
+    "bulkSuccess": "{{count}} expéditions transférées avec succès vers {{branch}}",
+    "bulkPartial": "{{success}} expéditions transférées, {{failed}} ont échoué",
+    "bulkError": "Échec du transfert des expéditions. Veuillez réessayer.",
+    "transferring": "Transfert de {{count}}...",
+    "transferCount": "Transférer {{count}} Expéditions"
   },
   "notifications": {
     "enableTitle": "Activer les Alertes SLA",
@@ -733,6 +744,7 @@
     "addToSystem": "Ajouter une nouvelle expédition au système",
     "selectedCount": "{{count}} sélectionné(s)",
     "bulkUpdateStatus": "Mettre à jour le statut",
+    "bulkTransferBranch": "Transférer Succursale",
     "bulkUpdateStatusTitle": "Mise à jour en masse",
     "bulkUpdateStatusDescription": "Mettre à jour le statut de {{count}} expéditions sélectionnées",
     "selectNewStatus": "Sélectionner le nouveau statut",
