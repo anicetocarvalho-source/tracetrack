@@ -118,7 +118,27 @@
     "selectRow": "Sélectionner la ligne",
     "updating": "Mise à jour...",
     "you": "vous",
-    "viewDetails": "Voir détails"
+    "viewDetails": "Voir détails",
+    "minCharacters": "min {{count}} caractères",
+    "notAssigned": "Non attribué",
+    "processing": "Traitement..."
+  },
+  "branchTransfer": {
+    "title": "Transférer l'Expédition vers une Autre Succursale",
+    "description": "Transférer l'expédition {{shipmentRef}} vers une succursale différente. Cette action sera enregistrée dans l'historique d'audit.",
+    "currentBranch": "Succursale Actuelle",
+    "targetBranch": "Succursale de Destination",
+    "selectBranch": "Sélectionner une succursale...",
+    "reason": "Raison du Transfert",
+    "reasonPlaceholder": "Expliquez pourquoi cette expédition doit être transférée vers une autre succursale...",
+    "auditNote": "Ce transfert sera enregistré dans le journal d'audit avec tous les détails.",
+    "crossCountryWarning": "Vous transférez cette expédition vers une succursale dans un pays différent. Cela peut affecter les calculs SLA et les réglementations locales.",
+    "transfer": "Transférer",
+    "success": "Transfert de succursale réussi",
+    "successDescription": "L'expédition {{shipmentRef}} a été transférée vers {{branch}}",
+    "error": "Échec du transfert",
+    "errorDescription": "Échec du transfert de l'expédition. Veuillez réessayer.",
+    "trackingNote": "Expédition transférée de {{from}} vers {{to}}. Raison: {{reason}}"
   },
   "notifications": {
     "enableTitle": "Activer les Alertes SLA",
