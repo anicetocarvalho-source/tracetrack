@@ -112,6 +112,7 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
         { path: '/backoffice/clients', label: t('nav.clients'), icon: Building2, roles: ['MANAGER'] },
         { path: '/backoffice/users', label: t('nav.users'), icon: Users, roles: ['MANAGER'] },
         { path: '/backoffice/exception-rules', label: t('exceptions.rulesTitle'), icon: Settings2, roles: ['MANAGER'] },
+        { path: '/backoffice/branch-management', label: t('nav.branchManagement'), icon: Building2, roles: ['MANAGER'] },
         { path: '/backoffice/audit-logs', label: t('nav.auditLogs'), icon: FileText, roles: ['MANAGER'] },
         { path: '/backoffice/settings', label: t('nav.settings'), icon: Settings, roles: ['MANAGER'] },
       ]
