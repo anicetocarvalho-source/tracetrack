@@ -41,11 +41,14 @@ const Users = () => {
   const { role: currentUserRole, user } = useAuth();
   const queryClient = useQueryClient();
   const isManager = currentUserRole === 'MANAGER';
+  const isAdmin = currentUserRole === 'ADMIN';
   const isSupervisor = currentUserRole === 'SUPERVISOR';
-  const canManageUsers = isManager || isSupervisor;
+  const canManageUsers = isAdmin || isManager || isSupervisor;
 
   // Roles that the current user can assign
-  const allowedRoles: AppRole[] = isManager 
+  const allowedRoles: AppRole[] = isAdmin
+    ? ['ADMIN', 'MANAGER', 'SUPERVISOR', 'TECHNICIAN', 'CUSTOMER']
+    : isManager 
     ? ['MANAGER', 'SUPERVISOR', 'TECHNICIAN', 'CUSTOMER']
     : ['TECHNICIAN', 'CUSTOMER']; // Supervisors can only assign these roles
 
@@ -158,7 +161,7 @@ const Users = () => {
       // Update role if changed
       if (data.role && data.role !== previousData.role) {
         await supabase.from('user_roles').delete().eq('user_id', userId);
-        const { error: roleError } = await supabase.from('user_roles').insert({ user_id: userId, role: data.role });
+        const { error: roleError } = await supabase.from('user_roles').insert({ user_id: userId, role: data.role } as any);
         if (roleError) throw roleError;
 
         // Log PERMISSION_CHANGE
@@ -216,7 +219,11 @@ const Users = () => {
 
   // Check if current user can edit a specific user based on their role
   const canEditUser = (userRole: AppRole | null): boolean => {
-    if (isManager) return true;
+    if (isAdmin) return true; // Admin can edit anyone
+    if (isManager) {
+      // Managers can edit anyone except ADMIN
+      return userRole !== 'ADMIN';
+    }
     if (isSupervisor) {
       // Supervisors can only edit TECHNICIAN and CUSTOMER
       return userRole === 'TECHNICIAN' || userRole === 'CUSTOMER' || userRole === null;
@@ -276,7 +283,7 @@ const Users = () => {
 
   const getBranchName = (branchId: string | null) => branchId ? branches.find((b) => b.id === branchId)?.name || '-' : '-';
   
-  const isInternalRole = (role: AppRole | string) => ['MANAGER', 'SUPERVISOR', 'TECHNICIAN'].includes(role);
+  const isInternalRole = (role: AppRole | string) => ['ADMIN', 'MANAGER', 'SUPERVISOR', 'TECHNICIAN'].includes(role);
 
   const handleAllowedBranchToggle = (branchId: string, checked: boolean) => {
     setEditFormData(prev => ({

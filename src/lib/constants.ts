@@ -42,9 +42,10 @@ export const STATUS_CLASSES: Record<ShipmentStatus, string> = {
   CANCELLED: 'status-cancelled',
 };
 
-export type AppRole = 'TECHNICIAN' | 'SUPERVISOR' | 'MANAGER' | 'CUSTOMER';
+export type AppRole = 'ADMIN' | 'TECHNICIAN' | 'SUPERVISOR' | 'MANAGER' | 'CUSTOMER';
 
 export const ROLE_LABELS: Record<AppRole, string> = {
+  ADMIN: 'Admin',
   TECHNICIAN: 'Technician',
   SUPERVISOR: 'Supervisor',
   MANAGER: 'Manager',

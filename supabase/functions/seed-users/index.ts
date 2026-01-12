@@ -6,6 +6,7 @@ const corsHeaders = {
 }
 
 const testUsers = [
+  { email: 'admin@dhl.test', password: 'Test123!', name: 'Super Admin', role: 'ADMIN', client_id: null },
   { email: 'manager@dhl.test', password: 'Test123!', name: 'Carlos Manager', role: 'MANAGER', client_id: null },
   { email: 'supervisor@dhl.test', password: 'Test123!', name: 'Ana Supervisor', role: 'SUPERVISOR', client_id: null },
   { email: 'technician@dhl.test', password: 'Test123!', name: 'João Technician', role: 'TECHNICIAN', client_id: null },
