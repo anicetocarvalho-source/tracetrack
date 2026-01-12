@@ -83,3 +83,6 @@ verify_jwt = false
 
 [functions.suggest-next-action]
 verify_jwt = false
+
+[functions.weekly-branch-performance]
+verify_jwt = false
