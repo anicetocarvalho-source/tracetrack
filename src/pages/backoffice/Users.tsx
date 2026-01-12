@@ -7,16 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Pencil, Search, Users as UsersIcon, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
+import { Plus, Pencil, Search, Users as UsersIcon, ChevronLeft, ChevronRight, AlertTriangle, Building2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { AppRole } from '@/lib/constants';
-import type { Profile, Client, UserRole } from '@/types/database';
+import type { Profile, Client, UserRole, Branch } from '@/types/database';
 
 interface UserWithRole extends Profile {
   role: AppRole | null;
@@ -33,8 +34,8 @@ const Users = () => {
   const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
-  const [formData, setFormData] = useState({ email: '', password: '', name: '', role: '' as AppRole | '', client_id: '' });
-  const [editFormData, setEditFormData] = useState({ role: '' as AppRole | '', client_id: '', is_active: true });
+  const [formData, setFormData] = useState({ email: '', password: '', name: '', role: '' as AppRole | '', client_id: '', branch_id: '' });
+  const [editFormData, setEditFormData] = useState({ role: '' as AppRole | '', client_id: '', is_active: true, branch_id: '', allowed_branch_ids: [] as string[] });
 
   const { toast } = useToast();
   const { role: currentUserRole, user } = useAuth();
@@ -77,10 +78,30 @@ const Users = () => {
     },
   });
 
+  const { data: branches = [] } = useQuery({
+    queryKey: ['branches'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('branches')
+        .select('*, country:countries(name)')
+        .eq('is_active', true)
+        .order('name');
+      if (error) throw error;
+      return data as (Branch & { country: { name: string } | null })[];
+    },
+  });
+
   const createUserMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       const { data: result, error } = await supabase.functions.invoke('create-user', {
-        body: { email: data.email, password: data.password, name: data.name, role: data.role, client_id: data.client_id || null },
+        body: { 
+          email: data.email, 
+          password: data.password, 
+          name: data.name, 
+          role: data.role, 
+          client_id: data.client_id || null,
+          branch_id: data.branch_id || null,
+        },
       });
       if (error) throw error;
       if (result.error) throw new Error(result.error);
@@ -89,7 +110,7 @@ const Users = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setIsCreateOpen(false);
-      setFormData({ email: '', password: '', name: '', role: '', client_id: '' });
+      setFormData({ email: '', password: '', name: '', role: '', client_id: '', branch_id: '' });
       toast({ title: t('users.userCreatedSuccess') });
     },
     onError: (error: Error) => {
@@ -98,7 +119,11 @@ const Users = () => {
   });
 
   const updateUserMutation = useMutation({
-    mutationFn: async ({ userId, data, previousData }: { userId: string; data: typeof editFormData; previousData: { role: AppRole | null; client_id: string | null; is_active: boolean } }) => {
+    mutationFn: async ({ userId, data, previousData }: { 
+      userId: string; 
+      data: typeof editFormData; 
+      previousData: { role: AppRole | null; client_id: string | null; is_active: boolean; branch_id: string | null; allowed_branch_ids: string[] } 
+    }) => {
       const changes: Record<string, { before: any; after: any }> = {};
 
       // Track changes for audit log
@@ -111,11 +136,22 @@ const Users = () => {
       if (data.role !== previousData.role) {
         changes.role = { before: previousData.role, after: data.role };
       }
+      if (data.branch_id !== previousData.branch_id) {
+        changes.branch_id = { before: previousData.branch_id, after: data.branch_id || null };
+      }
+      if (JSON.stringify(data.allowed_branch_ids) !== JSON.stringify(previousData.allowed_branch_ids)) {
+        changes.allowed_branch_ids = { before: previousData.allowed_branch_ids, after: data.allowed_branch_ids };
+      }
 
-      // Update profile
+      // Update profile including branch assignments
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ client_id: data.client_id || null, is_active: data.is_active })
+        .update({ 
+          client_id: data.client_id || null, 
+          is_active: data.is_active,
+          branch_id: data.branch_id || null,
+          allowed_branch_ids: data.allowed_branch_ids.length > 0 ? data.allowed_branch_ids : [],
+        })
         .eq('id', userId);
       if (profileError) throw profileError;
 
@@ -190,7 +226,13 @@ const Users = () => {
 
   const handleEdit = (u: UserWithRole) => {
     setSelectedUser(u);
-    setEditFormData({ role: u.role || '', client_id: u.client_id || '', is_active: u.is_active });
+    setEditFormData({ 
+      role: u.role || '', 
+      client_id: u.client_id || '', 
+      is_active: u.is_active,
+      branch_id: u.branch_id || '',
+      allowed_branch_ids: u.allowed_branch_ids || [],
+    });
     setIsEditOpen(true);
   };
 
@@ -225,9 +267,24 @@ const Users = () => {
         role: selectedUser.role,
         client_id: selectedUser.client_id,
         is_active: selectedUser.is_active,
+        branch_id: selectedUser.branch_id,
+        allowed_branch_ids: selectedUser.allowed_branch_ids || [],
       },
     });
     setIsConfirmRoleChangeOpen(false);
+  };
+
+  const getBranchName = (branchId: string | null) => branchId ? branches.find((b) => b.id === branchId)?.name || '-' : '-';
+  
+  const isInternalRole = (role: AppRole | string) => ['MANAGER', 'SUPERVISOR', 'TECHNICIAN'].includes(role);
+
+  const handleAllowedBranchToggle = (branchId: string, checked: boolean) => {
+    setEditFormData(prev => ({
+      ...prev,
+      allowed_branch_ids: checked 
+        ? [...prev.allowed_branch_ids, branchId]
+        : prev.allowed_branch_ids.filter(id => id !== branchId)
+    }));
   };
 
   const filteredUsers = users.filter((u) => 
@@ -286,6 +343,21 @@ const Users = () => {
                       </Select>
                     </div>
                   )}
+                  {isInternalRole(formData.role) && (
+                    <div className="space-y-2">
+                      <Label>{t('branches.primaryBranch')} *</Label>
+                      <Select value={formData.branch_id} onValueChange={(v) => setFormData({ ...formData, branch_id: v })}>
+                        <SelectTrigger><SelectValue placeholder={t('branches.selectBranch')} /></SelectTrigger>
+                        <SelectContent>
+                          {branches.map((b) => (
+                            <SelectItem key={b.id} value={b.id}>
+                              {b.name} {b.country?.name ? `(${b.country.name})` : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   <div className="flex justify-end gap-2 pt-4">
                     <Button variant="outline" onClick={() => setIsCreateOpen(false)}>{t('common.cancel')}</Button>
                     <Button onClick={handleCreate} disabled={createUserMutation.isPending}>
@@ -316,6 +388,7 @@ const Users = () => {
                 <TableHead>{t('common.email')}</TableHead>
                 <TableHead>{t('users.role')}</TableHead>
                 <TableHead>{t('shipments.client')}</TableHead>
+                <TableHead>{t('branches.branch')}</TableHead>
                 <TableHead>{t('common.status')}</TableHead>
                 <TableHead>{t('shipments.createdAt')}</TableHead>
                 {canManageUsers && <TableHead>{t('common.actions')}</TableHead>}
@@ -324,14 +397,14 @@ const Users = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={8} className="text-center py-8">
                     <UsersIcon className="h-5 w-5 animate-pulse inline mr-2" />
                     {t('users.loadingUsers')}
                   </TableCell>
                 </TableRow>
               ) : filteredUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     {t('users.noUsers')}
                   </TableCell>
                 </TableRow>
@@ -344,6 +417,23 @@ const Users = () => {
                       {u.role ? <Badge>{t(`roles.${u.role}`)}</Badge> : <span className="text-muted-foreground">{t('common.noRole')}</span>}
                     </TableCell>
                     <TableCell>{getClientName(u.client_id)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        {u.branch_id ? (
+                          <Badge variant="outline" className="flex items-center gap-1">
+                            <Building2 className="h-3 w-3" />
+                            {getBranchName(u.branch_id)}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                        {u.allowed_branch_ids && u.allowed_branch_ids.length > 0 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{u.allowed_branch_ids.length}
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge variant={u.is_active ? 'default' : 'secondary'}>
                         {u.is_active ? t('common.active') : t('common.inactive')}
@@ -420,6 +510,47 @@ const Users = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                )}
+                {isInternalRole(editFormData.role) && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>{t('branches.primaryBranch')}</Label>
+                      <Select value={editFormData.branch_id} onValueChange={(v) => setEditFormData({ ...editFormData, branch_id: v })}>
+                        <SelectTrigger><SelectValue placeholder={t('branches.selectBranch')} /></SelectTrigger>
+                        <SelectContent>
+                          {branches.map((b) => (
+                            <SelectItem key={b.id} value={b.id}>
+                              {b.name} {b.country?.name ? `(${b.country.name})` : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">{t('users.primaryBranchHint')}</p>
+                    </div>
+                    {isManager && (
+                      <div className="space-y-2">
+                        <Label>{t('users.additionalBranches')}</Label>
+                        <div className="border rounded-md p-3 max-h-40 overflow-y-auto space-y-2">
+                          {branches.filter(b => b.id !== editFormData.branch_id).map((b) => (
+                            <div key={b.id} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`branch-${b.id}`}
+                                checked={editFormData.allowed_branch_ids.includes(b.id)}
+                                onCheckedChange={(checked) => handleAllowedBranchToggle(b.id, !!checked)}
+                              />
+                              <label htmlFor={`branch-${b.id}`} className="text-sm cursor-pointer">
+                                {b.name} {b.country?.name ? `(${b.country.name})` : ''}
+                              </label>
+                            </div>
+                          ))}
+                          {branches.filter(b => b.id !== editFormData.branch_id).length === 0 && (
+                            <p className="text-sm text-muted-foreground">{t('users.noBranchesAvailable')}</p>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{t('users.additionalBranchesHint')}</p>
+                      </div>
+                    )}
+                  </>
                 )}
                 <div className="flex items-center justify-between">
                   <Label>{t('users.isActive')}</Label>

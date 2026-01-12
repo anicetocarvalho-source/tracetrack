@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    const { email, password, name, role, client_id } = await req.json()
+    const { email, password, name, role, client_id, branch_id } = await req.json()
 
     if (!email || !password || !name || !role) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -70,9 +70,13 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Update profile with client_id if provided
-    if (client_id) {
-      await adminClient.from('profiles').update({ client_id }).eq('id', newUser.user.id)
+    // Update profile with client_id and branch_id if provided
+    const profileUpdate: Record<string, any> = {}
+    if (client_id) profileUpdate.client_id = client_id
+    if (branch_id) profileUpdate.branch_id = branch_id
+    
+    if (Object.keys(profileUpdate).length > 0) {
+      await adminClient.from('profiles').update(profileUpdate).eq('id', newUser.user.id)
     }
 
     // Create user role
