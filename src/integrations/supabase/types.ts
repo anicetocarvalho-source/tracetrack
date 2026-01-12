@@ -1079,7 +1079,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "TECHNICIAN" | "SUPERVISOR" | "MANAGER" | "CUSTOMER"
+      app_role: "ADMIN" | "TECHNICIAN" | "SUPERVISOR" | "MANAGER" | "CUSTOMER"
       document_type: "POD" | "BL" | "INVOICE" | "OTHER"
       exception_severity: "P1" | "P2" | "P3"
       exception_status: "OPEN" | "ACKNOWLEDGED" | "RESOLVED"
@@ -1224,7 +1224,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["TECHNICIAN", "SUPERVISOR", "MANAGER", "CUSTOMER"],
+      app_role: ["ADMIN", "TECHNICIAN", "SUPERVISOR", "MANAGER", "CUSTOMER"],
       document_type: ["POD", "BL", "INVOICE", "OTHER"],
       exception_severity: ["P1", "P2", "P3"],
       exception_status: ["OPEN", "ACKNOWLEDGED", "RESOLVED"],
