@@ -35,6 +35,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { PreferencesSyncIndicator } from '@/components/PreferencesSyncIndicator';
 import { HelpMenu } from '@/components/HelpMenu';
 import { BackofficeTour } from '@/components/tour/BackofficeTour';
+import { BranchSelector } from '@/components/BranchSelector';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   DropdownMenu,
@@ -305,6 +306,12 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
           >
             <Menu className="w-5 h-5" />
           </Button>
+          
+          {/* Branch Selector - visible in header for multi-branch users */}
+          <div data-tour="branch-selector">
+            <BranchSelector />
+          </div>
+          
           <div className="flex-1" />
           <div className="flex items-center gap-2">
             <PreferencesSyncIndicator />

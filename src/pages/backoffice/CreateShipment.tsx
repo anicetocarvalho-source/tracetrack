@@ -30,6 +30,7 @@ import {
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useBranch } from '@/hooks/useBranch';
 import { Client } from '@/types/database';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -70,6 +71,7 @@ export default function CreateShipment() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { currentBranch } = useBranch();
   const [currentStep, setCurrentStep] = useState(1);
 
   const steps = [
@@ -141,7 +143,7 @@ export default function CreateShipment() {
 
   const createShipmentMutation = useMutation({
     mutationFn: async (data: ShipmentFormData) => {
-      // Create shipment
+      // Create shipment with branch_id
       const { data: shipment, error: shipmentError } = await supabase
         .from('shipments')
         .insert({
@@ -149,6 +151,7 @@ export default function CreateShipment() {
           client_ref: data.client_ref,
           file_number: data.file_number || null,
           client_id: data.client_id,
+          branch_id: currentBranch?.id || null,
           assigned_operator: data.assigned_operator || null,
           shipping_line: data.shipping_line,
           bl_reference: data.bl_reference,
@@ -190,16 +193,19 @@ export default function CreateShipment() {
 
       if (eventError) throw eventError;
 
-      // Create audit log
+      // Create audit log with branch context
       await supabase.from('audit_log').insert({
         entity_type: 'shipment',
         entity_id: shipment.id,
         action: 'CREATE',
         actor_user_id: user!.id,
+        branch_id: currentBranch?.id || null,
+        country_id: currentBranch?.country_id || null,
         metadata_json: {
           shipment_ref: data.shipment_ref,
           client_id: data.client_id,
           containers_count: data.containers.length,
+          branch_code: currentBranch?.code,
         },
       });
 

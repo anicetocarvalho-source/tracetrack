@@ -1247,5 +1247,35 @@
     "viewRequests": "Pedidos de Cliente",
     "slaBreaches": "Violações SLA",
     "viewScorecards": "Ver Scorecards"
+  },
+  "branch": {
+    "title": "Filiais",
+    "currentBranch": "Filial Atual",
+    "selectBranch": "Selecionar Filial",
+    "switchBranch": "Trocar Filial",
+    "select": "Selecionar Filial",
+    "current": "Atual",
+    "noCountry": "Sem País",
+    "noBranches": "Nenhuma filial disponível",
+    "countries": "Países",
+    "code": "Código",
+    "name": "Nome",
+    "timezone": "Fuso Horário",
+    "defaultLanguage": "Idioma Padrão",
+    "isActive": "Ativa",
+    "parent": "Matriz",
+    "subsidiary": "Subsidiária",
+    "visibility": {
+      "title": "Visibilidade de Subsidiárias",
+      "own_only": "Apenas entidade própria",
+      "own_and_subsidiaries": "Própria + Subsidiárias",
+      "read_only_group": "Somente leitura no grupo"
+    },
+    "settings": "Configurações da Filial",
+    "manageBranches": "Gerir Filiais",
+    "createBranch": "Criar Filial",
+    "editBranch": "Editar Filial",
+    "branchCreated": "Filial criada com sucesso",
+    "branchUpdated": "Filial atualizada com sucesso"
   }
 }
