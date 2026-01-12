@@ -23,6 +23,7 @@ import Users from "./pages/backoffice/Users";
 import AuditLogs from "./pages/backoffice/AuditLogs";
 import Settings from "./pages/backoffice/Settings";
 import BranchManagement from "./pages/backoffice/BranchManagement";
+import BranchDashboard from "./pages/backoffice/BranchDashboard";
 import ActionRequired from "./pages/backoffice/ActionRequired";
 import ExceptionRules from "./pages/backoffice/ExceptionRules";
 import SLAManagement from "./pages/backoffice/SLAManagement";
@@ -101,6 +102,11 @@ const App = () => (
             <Route path="/backoffice/branch-management" element={
               <ProtectedRoute requireInternal>
                 <BranchManagement />
+              </ProtectedRoute>
+            } />
+            <Route path="/backoffice/branch-dashboard" element={
+              <ProtectedRoute requireInternal>
+                <BranchDashboard />
               </ProtectedRoute>
             } />
             <Route path="/backoffice/action-required" element={

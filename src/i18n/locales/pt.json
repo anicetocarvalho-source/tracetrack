@@ -329,7 +329,23 @@
     "customerPortal": "Portal do Cliente",
     "slaGroup": "SLA",
     "adminGroup": "Administração",
-    "branchManagement": "Filiais"
+    "branchManagement": "Filiais",
+    "branchDashboard": "Painel da Filial"
+  },
+  "branchDashboard": {
+    "noBranchSelected": "Nenhuma filial selecionada",
+    "selectBranchHint": "Use o seletor de filial no cabeçalho para escolher uma filial",
+    "branchOverview": "Visão Geral da Filial",
+    "metricsForBranch": "Métricas principais para {{branch}}",
+    "slaCompliance": "Conformidade SLA",
+    "exceptionsInBranch": "Exceções abertas nesta filial",
+    "forThisBranch": "Para esta filial no período selecionado",
+    "currentStatusDistribution": "Distribuição de status atual na filial",
+    "exceptionTrendsDesc": "Tendências diárias de exceções para esta filial",
+    "slaComplianceDesc": "Taxas de conformidade SLA por nível de severidade",
+    "withinTarget": "dentro do alvo",
+    "topClientsInBranch": "Principais clientes por volume de envios nesta filial",
+    "latestShipmentsInBranch": "Últimos envios criados nesta filial"
   },
   "branchManagement": {
     "title": "Gestão de Filiais",

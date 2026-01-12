@@ -87,6 +87,7 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
 
   const navEntries: NavEntry[] = [
     { path: '/backoffice', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { path: '/backoffice/branch-dashboard', label: t('nav.branchDashboard'), icon: BarChart3 },
     { path: '/backoffice/action-required', label: t('exceptions.title'), icon: AlertTriangle, highlight: true },
     { path: '/backoffice/shipments', label: t('nav.shipments'), icon: Package },
     { path: '/backoffice/customer-requests', label: t('nav.customerRequests'), icon: FileText, roles: ['SUPERVISOR', 'MANAGER'] },

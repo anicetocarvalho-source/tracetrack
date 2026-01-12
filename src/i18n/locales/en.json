@@ -337,7 +337,23 @@
     "customerPortal": "Customer Portal",
     "slaGroup": "SLA",
     "adminGroup": "Administration",
-    "branchManagement": "Branches"
+    "branchManagement": "Branches",
+    "branchDashboard": "Branch Dashboard"
+  },
+  "branchDashboard": {
+    "noBranchSelected": "No branch selected",
+    "selectBranchHint": "Use the branch selector in the header to choose a branch",
+    "branchOverview": "Branch Overview",
+    "metricsForBranch": "Key metrics for {{branch}}",
+    "slaCompliance": "SLA Compliance",
+    "exceptionsInBranch": "Open exceptions in this branch",
+    "forThisBranch": "For this branch in selected period",
+    "currentStatusDistribution": "Current status distribution in branch",
+    "exceptionTrendsDesc": "Daily exception count trends for this branch",
+    "slaComplianceDesc": "SLA compliance rates by severity level",
+    "withinTarget": "within target",
+    "topClientsInBranch": "Top clients by shipment volume in this branch",
+    "latestShipmentsInBranch": "Latest shipments created in this branch"
   },
   "branchManagement": {
     "title": "Branch Management",
