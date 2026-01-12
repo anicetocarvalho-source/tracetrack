@@ -1046,6 +1046,7 @@
     "aiHistory": "AI History"
   },
   "roles": {
+    "ADMIN": "Admin",
     "MANAGER": "Manager",
     "SUPERVISOR": "Supervisor",
     "TECHNICIAN": "Technician",

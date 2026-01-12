@@ -1040,6 +1040,7 @@
     "aiHistory": "Histórico AI"
   },
   "roles": {
+    "ADMIN": "Administrador",
     "MANAGER": "Gestor",
     "SUPERVISOR": "Supervisor",
     "TECHNICIAN": "Técnico",

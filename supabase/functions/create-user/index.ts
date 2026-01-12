@@ -35,10 +35,19 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Check if caller is a MANAGER
+    // Check if caller is a MANAGER or ADMIN
     const { data: roleData } = await userClient.from('user_roles').select('role').eq('user_id', caller.id).single()
-    if (roleData?.role !== 'MANAGER') {
-      return new Response(JSON.stringify({ error: 'Only managers can create users' }), {
+    if (roleData?.role !== 'MANAGER' && roleData?.role !== 'ADMIN') {
+      return new Response(JSON.stringify({ error: 'Only managers and admins can create users' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Additional check: Only ADMIN can create ADMIN users
+    const { role: newUserRole } = await req.clone().json()
+    if (newUserRole === 'ADMIN' && roleData?.role !== 'ADMIN') {
+      return new Response(JSON.stringify({ error: 'Only admins can create admin users' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })

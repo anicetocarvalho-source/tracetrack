@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Package, Truck, MapPin, Zap, Shield, Users, User } from 'lucide-react';
+import { Loader2, Package, Truck, MapPin, Zap, Shield, Users, User, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +23,13 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 // Quick access demo accounts (matching seed-users)
 const quickAccessAccounts = [
+  { 
+    label: 'Admin',
+    email: 'admin@dhl.test', 
+    password: 'Test123!',
+    icon: Crown,
+    description: 'Super Admin'
+  },
   { 
     label: 'Manager',
     email: 'manager@dhl.test', 
