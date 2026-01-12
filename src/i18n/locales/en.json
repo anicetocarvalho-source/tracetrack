@@ -1253,5 +1253,35 @@
     "viewRequests": "Customer Requests",
     "slaBreaches": "SLA Breaches",
     "viewScorecards": "View Scorecards"
+  },
+  "branch": {
+    "title": "Branches",
+    "currentBranch": "Current Branch",
+    "selectBranch": "Select Branch",
+    "switchBranch": "Switch Branch",
+    "select": "Select Branch",
+    "current": "Current",
+    "noCountry": "No Country",
+    "noBranches": "No branches available",
+    "countries": "Countries",
+    "code": "Code",
+    "name": "Name",
+    "timezone": "Timezone",
+    "defaultLanguage": "Default Language",
+    "isActive": "Active",
+    "parent": "Parent",
+    "subsidiary": "Subsidiary",
+    "visibility": {
+      "title": "Subsidiary Visibility",
+      "own_only": "Own entity only",
+      "own_and_subsidiaries": "Own + Subsidiaries",
+      "read_only_group": "Read-only across group"
+    },
+    "settings": "Branch Settings",
+    "manageBranches": "Manage Branches",
+    "createBranch": "Create Branch",
+    "editBranch": "Edit Branch",
+    "branchCreated": "Branch created successfully",
+    "branchUpdated": "Branch updated successfully"
   }
 }

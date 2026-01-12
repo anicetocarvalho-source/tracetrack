@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/hooks/useAuth";
+import { BranchProvider } from "@/hooks/useBranch";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SLANotificationManager } from "@/components/notifications/SLANotificationManager";
 import { PreferencesLoader } from "@/components/PreferencesLoader";
@@ -43,12 +44,13 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <AuthProvider>
-        <PreferencesLoader>
-          <TourProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <SLANotificationManager />
+        <BranchProvider>
+          <PreferencesLoader>
+            <TourProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <SLANotificationManager />
               <BrowserRouter>
             <Routes>
             <Route path="/" element={<Index />} />
@@ -175,10 +177,11 @@ const App = () => (
 
             <Route path="*" element={<NotFound />} />
           </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </TourProvider>
-      </PreferencesLoader>
+              </BrowserRouter>
+            </TooltipProvider>
+          </TourProvider>
+        </PreferencesLoader>
+      </BranchProvider>
     </AuthProvider>
   </ThemeProvider>
   </QueryClientProvider>

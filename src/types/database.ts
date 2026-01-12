@@ -2,13 +2,55 @@ import { ShipmentStatus, AppRole } from '@/lib/constants';
 
 export type ExceptionSeverity = 'P1' | 'P2' | 'P3';
 export type ExceptionStatus = 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED';
+export type SubsidiaryVisibility = 'own_only' | 'own_and_subsidiaries' | 'read_only_group';
+
+export interface Country {
+  id: string;
+  code: string;
+  name: string;
+  timezone: string;
+  default_language: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Branch {
+  id: string;
+  country_id: string;
+  code: string;
+  name: string;
+  timezone: string | null;
+  default_language: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  // Joined fields
+  country?: Country;
+}
+
+export interface BranchSettings {
+  id: string;
+  branch_id: string;
+  setting_key: string;
+  value: Record<string, unknown>;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface Client {
   id: string;
   name: string;
   notification_emails: string[];
+  parent_client_id: string | null;
+  branch_id: string | null;
+  subsidiary_visibility: SubsidiaryVisibility;
   created_at: string;
   updated_at: string;
+  // Joined fields
+  parent_client?: Client;
+  branch?: Branch;
 }
 
 export interface Profile {
@@ -16,10 +58,14 @@ export interface Profile {
   email: string;
   name: string;
   client_id: string | null;
+  branch_id: string | null;
+  allowed_branch_ids: string[] | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
   last_login_at: string | null;
+  // Joined fields
+  branch?: Branch;
 }
 
 export interface UserRole {
@@ -35,6 +81,7 @@ export interface Shipment {
   client_ref: string;
   file_number: string | null;
   client_id: string;
+  branch_id: string | null;
   assigned_operator: string | null;
   shipping_line: string;
   bl_reference: string;
@@ -49,6 +96,7 @@ export interface Shipment {
   updated_at: string;
   // Joined fields
   client?: Client;
+  branch?: Branch;
   containers?: ShipmentContainer[];
   tracking_events?: TrackingEvent[];
 }
@@ -82,11 +130,15 @@ export interface AuditLog {
   entity_id: string | null;
   action: string;
   actor_user_id: string | null;
+  branch_id: string | null;
+  country_id: string | null;
   timestamp: string;
   ip_address: string | null;
   metadata_json: Record<string, unknown>;
   // Joined fields
   actor?: Profile;
+  branch?: Branch;
+  country?: Country;
 }
 
 export interface UserWithRole extends Profile {

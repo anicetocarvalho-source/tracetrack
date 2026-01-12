@@ -1246,5 +1246,35 @@
     "viewRequests": "Demandes Client",
     "slaBreaches": "Violations SLA",
     "viewScorecards": "Voir Scorecards"
+  },
+  "branch": {
+    "title": "Filiales",
+    "currentBranch": "Filiale Actuelle",
+    "selectBranch": "Sélectionner Filiale",
+    "switchBranch": "Changer de Filiale",
+    "select": "Sélectionner Filiale",
+    "current": "Actuelle",
+    "noCountry": "Aucun Pays",
+    "noBranches": "Aucune filiale disponible",
+    "countries": "Pays",
+    "code": "Code",
+    "name": "Nom",
+    "timezone": "Fuseau Horaire",
+    "defaultLanguage": "Langue par Défaut",
+    "isActive": "Active",
+    "parent": "Société Mère",
+    "subsidiary": "Filiale",
+    "visibility": {
+      "title": "Visibilité des Filiales",
+      "own_only": "Entité propre uniquement",
+      "own_and_subsidiaries": "Propre + Filiales",
+      "read_only_group": "Lecture seule du groupe"
+    },
+    "settings": "Paramètres de Filiale",
+    "manageBranches": "Gérer les Filiales",
+    "createBranch": "Créer Filiale",
+    "editBranch": "Modifier Filiale",
+    "branchCreated": "Filiale créée avec succès",
+    "branchUpdated": "Filiale mise à jour avec succès"
   }
 }
