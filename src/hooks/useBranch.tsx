@@ -75,7 +75,7 @@ export function BranchProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
 
       const branches = data as (Branch & { country: Country })[];
-      const isMultiBranch = branches.length > 1 && (role === 'MANAGER' || role === 'SUPERVISOR');
+      const isMultiBranch = branches.length > 1 && (role === 'ADMIN' || role === 'MANAGER' || role === 'SUPERVISOR');
 
       return { branches, isMultiBranch };
     },
