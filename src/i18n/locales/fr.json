@@ -328,7 +328,23 @@
     "customerPortal": "Portail Client",
     "slaGroup": "SLA",
     "adminGroup": "Administration",
-    "branchManagement": "Succursales"
+    "branchManagement": "Succursales",
+    "branchDashboard": "Tableau de Bord Succursale"
+  },
+  "branchDashboard": {
+    "noBranchSelected": "Aucune succursale sélectionnée",
+    "selectBranchHint": "Utilisez le sélecteur de succursale dans l'en-tête pour choisir une succursale",
+    "branchOverview": "Vue d'Ensemble de la Succursale",
+    "metricsForBranch": "Métriques clés pour {{branch}}",
+    "slaCompliance": "Conformité SLA",
+    "exceptionsInBranch": "Exceptions ouvertes dans cette succursale",
+    "forThisBranch": "Pour cette succursale dans la période sélectionnée",
+    "currentStatusDistribution": "Distribution des statuts actuels dans la succursale",
+    "exceptionTrendsDesc": "Tendances quotidiennes des exceptions pour cette succursale",
+    "slaComplianceDesc": "Taux de conformité SLA par niveau de sévérité",
+    "withinTarget": "dans la cible",
+    "topClientsInBranch": "Principaux clients par volume d'expéditions dans cette succursale",
+    "latestShipmentsInBranch": "Dernières expéditions créées dans cette succursale"
   },
   "branchManagement": {
     "title": "Gestion des Succursales",
