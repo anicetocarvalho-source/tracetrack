@@ -826,7 +826,11 @@
     "noPermission": "Pas de permission",
     "confirmRoleChange": "Confirmer le Changement de Rôle",
     "confirmRoleChangeDesc": "Vous êtes sur le point de changer le rôle de {{userName}} de {{oldRole}} à {{newRole}}. Cette action affectera immédiatement les permissions de l'utilisateur.",
-    "confirmChange": "Confirmer le Changement"
+    "confirmChange": "Confirmer le Changement",
+    "primaryBranchHint": "La filiale principale de l'utilisateur pour l'accès aux données",
+    "additionalBranches": "Accès aux Filiales Supplémentaires",
+    "additionalBranchesHint": "Accorder l'accès à des filiales supplémentaires (utilisateurs multi-filiales uniquement)",
+    "noBranchesAvailable": "Aucune filiale supplémentaire disponible"
   },
   "settings": {
     "title": "Paramètres",

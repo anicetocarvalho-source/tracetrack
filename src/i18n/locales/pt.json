@@ -827,7 +827,11 @@
     "noPermission": "Sem permissão",
     "confirmRoleChange": "Confirmar Alteração de Função",
     "confirmRoleChangeDesc": "Está prestes a alterar a função de {{userName}} de {{oldRole}} para {{newRole}}. Esta ação afetará as permissões do utilizador imediatamente.",
-    "confirmChange": "Confirmar Alteração"
+    "confirmChange": "Confirmar Alteração",
+    "primaryBranchHint": "A filial principal do utilizador para acesso a dados",
+    "additionalBranches": "Acesso a Filiais Adicionais",
+    "additionalBranchesHint": "Conceder acesso a filiais adicionais (apenas utilizadores multi-filial)",
+    "noBranchesAvailable": "Nenhuma filial adicional disponível"
   },
   "settings": {
     "title": "Configurações",

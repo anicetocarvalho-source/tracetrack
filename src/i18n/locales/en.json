@@ -833,7 +833,11 @@
     "noPermission": "No permission",
     "confirmRoleChange": "Confirm Role Change",
     "confirmRoleChangeDesc": "You are about to change the role of {{userName}} from {{oldRole}} to {{newRole}}. This action will affect the user's permissions immediately.",
-    "confirmChange": "Confirm Change"
+    "confirmChange": "Confirm Change",
+    "primaryBranchHint": "The user's main branch for data access",
+    "additionalBranches": "Additional Branch Access",
+    "additionalBranchesHint": "Grant access to additional branches (multi-branch users only)",
+    "noBranchesAvailable": "No additional branches available"
   },
   "settings": {
     "title": "Settings",
