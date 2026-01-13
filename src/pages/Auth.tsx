@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Package, Truck, MapPin, Zap, Shield, Users, User, Crown } from 'lucide-react';
+import { Loader2, Package, Truck, MapPin, Zap, Shield, Users, User, Crown, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,38 +28,66 @@ const quickAccessAccounts = [
     email: 'admin@dhl.test', 
     password: 'Test123!',
     icon: Crown,
-    description: 'Super Admin'
+    description: 'Super Admin',
+    category: 'internal'
+  },
+  { 
+    label: 'Country Admin',
+    email: 'countryadmin.ao@dhl.test', 
+    password: 'Test123!',
+    icon: Globe,
+    description: 'Angola',
+    category: 'country'
+  },
+  { 
+    label: 'Country Admin',
+    email: 'countryadmin.ng@dhl.test', 
+    password: 'Test123!',
+    icon: Globe,
+    description: 'Nigeria',
+    category: 'country'
+  },
+  { 
+    label: 'Country Admin',
+    email: 'countryadmin.mz@dhl.test', 
+    password: 'Test123!',
+    icon: Globe,
+    description: 'Moçambique',
+    category: 'country'
   },
   { 
     label: 'Manager',
     email: 'manager@dhl.test', 
     password: 'Test123!',
     icon: Shield,
-    description: 'Carlos Manager'
+    description: 'Carlos Manager',
+    category: 'internal'
   },
   { 
     label: 'Supervisor',
     email: 'supervisor@dhl.test', 
     password: 'Test123!',
     icon: Users,
-    description: 'Ana Supervisor'
+    description: 'Ana Supervisor',
+    category: 'internal'
   },
   { 
     label: 'Técnico',
     email: 'technician@dhl.test', 
     password: 'Test123!',
     icon: Zap,
-    description: 'João Technician'
+    description: 'João Technician',
+    category: 'internal'
   },
   { 
     label: 'Cliente',
     email: 'customer1@acme.test', 
     password: 'Test123!',
     icon: User,
-    description: 'Pedro Cliente'
+    description: 'Pedro Cliente',
+    category: 'customer'
   },
 ];
-
 export default function Auth() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -234,26 +262,88 @@ export default function Auth() {
                 <p className="text-xs text-muted-foreground text-center mb-3">
                   {t('auth.quickAccess')}
                 </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {quickAccessAccounts.map((account) => {
-                    const Icon = account.icon;
-                    return (
-                      <Button
-                        key={account.email}
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-auto py-2 px-3 flex flex-col items-start gap-0.5"
-                        onClick={() => fillQuickAccess(account.email, account.password)}
-                      >
-                        <div className="flex items-center gap-2 w-full">
-                          <Icon className="h-3.5 w-3.5 text-dhl-red" />
-                          <span className="font-medium text-xs">{account.label}</span>
-                        </div>
-                        <span className="text-[10px] text-muted-foreground">{account.description}</span>
-                      </Button>
-                    );
-                  })}
+                
+                {/* Internal Users */}
+                <div className="mb-3">
+                  <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">
+                    {t('auth.internalUsers', 'Internal')}
+                  </p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {quickAccessAccounts.filter(a => a.category === 'internal').map((account) => {
+                      const Icon = account.icon;
+                      return (
+                        <Button
+                          key={account.email}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-auto py-1.5 px-2 flex flex-col items-start gap-0"
+                          onClick={() => fillQuickAccess(account.email, account.password)}
+                        >
+                          <div className="flex items-center gap-1.5 w-full">
+                            <Icon className="h-3 w-3 text-dhl-red" />
+                            <span className="font-medium text-[11px]">{account.label}</span>
+                          </div>
+                          <span className="text-[9px] text-muted-foreground">{account.description}</span>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Country Admins */}
+                <div className="mb-3">
+                  <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">
+                    {t('auth.countryAdmins', 'Country Admins')}
+                  </p>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {quickAccessAccounts.filter(a => a.category === 'country').map((account) => {
+                      const Icon = account.icon;
+                      return (
+                        <Button
+                          key={account.email}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-auto py-1.5 px-2 flex flex-col items-start gap-0"
+                          onClick={() => fillQuickAccess(account.email, account.password)}
+                        >
+                          <div className="flex items-center gap-1.5 w-full">
+                            <Icon className="h-3 w-3 text-blue-600" />
+                            <span className="font-medium text-[10px] truncate">{account.description}</span>
+                          </div>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Customer */}
+                <div>
+                  <p className="text-[10px] text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">
+                    {t('auth.customers', 'Customers')}
+                  </p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {quickAccessAccounts.filter(a => a.category === 'customer').map((account) => {
+                      const Icon = account.icon;
+                      return (
+                        <Button
+                          key={account.email}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-auto py-1.5 px-2 flex flex-col items-start gap-0"
+                          onClick={() => fillQuickAccess(account.email, account.password)}
+                        >
+                          <div className="flex items-center gap-1.5 w-full">
+                            <Icon className="h-3 w-3 text-green-600" />
+                            <span className="font-medium text-[11px]">{account.label}</span>
+                          </div>
+                          <span className="text-[9px] text-muted-foreground">{account.description}</span>
+                        </Button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 

@@ -10,20 +10,34 @@ const BRANCH_HQ = '00000000-0000-0000-0000-000000000001';
 const BRANCH_LAGOS = '0446f2b4-ab6f-4269-b5c5-4a2e63e98e25';
 const BRANCH_ABUJA = '80dff0da-2fe6-4aac-b863-d3e3a66eb63c';
 
+// Country IDs
+const COUNTRY_GLOBAL = '00000000-0000-0000-0000-000000000001';
+const COUNTRY_ANGOLA = 'b209e273-f52b-4e3b-8399-78f49a3a750b';
+const COUNTRY_NIGERIA = '550e8400-e29b-41d4-a716-446655440001';
+const COUNTRY_MOZAMBIQUE = '550e8400-e29b-41d4-a716-446655440002';
+const COUNTRY_SOUTH_AFRICA = '550e8400-e29b-41d4-a716-446655440003';
+
 const testUsers = [
   // Admin - access to all branches
-  { email: 'admin@dhl.test', password: 'Test123!', name: 'Super Admin', role: 'ADMIN', client_id: null, branch_id: BRANCH_HQ, allowed_branch_ids: [BRANCH_HQ, BRANCH_LAGOS, BRANCH_ABUJA] },
+  { email: 'admin@dhl.test', password: 'Test123!', name: 'Super Admin', role: 'ADMIN', client_id: null, branch_id: BRANCH_HQ, country_id: COUNTRY_GLOBAL, allowed_branch_ids: [BRANCH_HQ, BRANCH_LAGOS, BRANCH_ABUJA] },
+  
+  // Country Admins - one per country
+  { email: 'countryadmin.ao@dhl.test', password: 'Test123!', name: 'Paulo Angola', role: 'COUNTRY_ADMIN', client_id: null, branch_id: null, country_id: COUNTRY_ANGOLA, allowed_branch_ids: null },
+  { email: 'countryadmin.ng@dhl.test', password: 'Test123!', name: 'Emeka Nigeria', role: 'COUNTRY_ADMIN', client_id: null, branch_id: null, country_id: COUNTRY_NIGERIA, allowed_branch_ids: null },
+  { email: 'countryadmin.mz@dhl.test', password: 'Test123!', name: 'Fátima Moçambique', role: 'COUNTRY_ADMIN', client_id: null, branch_id: null, country_id: COUNTRY_MOZAMBIQUE, allowed_branch_ids: null },
+  { email: 'countryadmin.za@dhl.test', password: 'Test123!', name: 'Thabo South Africa', role: 'COUNTRY_ADMIN', client_id: null, branch_id: null, country_id: COUNTRY_SOUTH_AFRICA, allowed_branch_ids: null },
+  
   // Manager - multi-branch access (HQ + Lagos)
-  { email: 'manager@dhl.test', password: 'Test123!', name: 'Carlos Manager', role: 'MANAGER', client_id: null, branch_id: BRANCH_HQ, allowed_branch_ids: [BRANCH_HQ, BRANCH_LAGOS] },
+  { email: 'manager@dhl.test', password: 'Test123!', name: 'Carlos Manager', role: 'MANAGER', client_id: null, branch_id: BRANCH_HQ, country_id: null, allowed_branch_ids: [BRANCH_HQ, BRANCH_LAGOS] },
   // Supervisor - multi-branch access (Lagos + Abuja)
-  { email: 'supervisor@dhl.test', password: 'Test123!', name: 'Ana Supervisor', role: 'SUPERVISOR', client_id: null, branch_id: BRANCH_LAGOS, allowed_branch_ids: [BRANCH_LAGOS, BRANCH_ABUJA] },
+  { email: 'supervisor@dhl.test', password: 'Test123!', name: 'Ana Supervisor', role: 'SUPERVISOR', client_id: null, branch_id: BRANCH_LAGOS, country_id: null, allowed_branch_ids: [BRANCH_LAGOS, BRANCH_ABUJA] },
   // Technicians - single branch each
-  { email: 'technician@dhl.test', password: 'Test123!', name: 'João Technician', role: 'TECHNICIAN', client_id: null, branch_id: BRANCH_HQ, allowed_branch_ids: null },
-  { email: 'tech.lagos@dhl.test', password: 'Test123!', name: 'Chidi Lagos Tech', role: 'TECHNICIAN', client_id: null, branch_id: BRANCH_LAGOS, allowed_branch_ids: null },
-  { email: 'tech.abuja@dhl.test', password: 'Test123!', name: 'Amina Abuja Tech', role: 'TECHNICIAN', client_id: null, branch_id: BRANCH_ABUJA, allowed_branch_ids: null },
+  { email: 'technician@dhl.test', password: 'Test123!', name: 'João Technician', role: 'TECHNICIAN', client_id: null, branch_id: BRANCH_HQ, country_id: null, allowed_branch_ids: null },
+  { email: 'tech.lagos@dhl.test', password: 'Test123!', name: 'Chidi Lagos Tech', role: 'TECHNICIAN', client_id: null, branch_id: BRANCH_LAGOS, country_id: null, allowed_branch_ids: null },
+  { email: 'tech.abuja@dhl.test', password: 'Test123!', name: 'Amina Abuja Tech', role: 'TECHNICIAN', client_id: null, branch_id: BRANCH_ABUJA, country_id: null, allowed_branch_ids: null },
   // Customers - linked to clients
-  { email: 'customer1@acme.test', password: 'Test123!', name: 'Pedro Cliente', role: 'CUSTOMER', client_id: 'a1b2c3d4-e5f6-4a5b-8c7d-9e0f1a2b3c4d', branch_id: null, allowed_branch_ids: null },
-  { email: 'customer2@global.test', password: 'Test123!', name: 'Maria Cliente', role: 'CUSTOMER', client_id: 'b2c3d4e5-f6a7-5b6c-9d8e-0f1a2b3c4d5e', branch_id: null, allowed_branch_ids: null },
+  { email: 'customer1@acme.test', password: 'Test123!', name: 'Pedro Cliente', role: 'CUSTOMER', client_id: 'a1b2c3d4-e5f6-4a5b-8c7d-9e0f1a2b3c4d', branch_id: null, country_id: null, allowed_branch_ids: null },
+  { email: 'customer2@global.test', password: 'Test123!', name: 'Maria Cliente', role: 'CUSTOMER', client_id: 'b2c3d4e5-f6a7-5b6c-9d8e-0f1a2b3c4d5e', branch_id: null, country_id: null, allowed_branch_ids: null },
 ]
 
 Deno.serve(async (req) => {
@@ -53,10 +67,11 @@ Deno.serve(async (req) => {
         continue
       }
 
-      // Update profile with client_id and branch assignments if provided
+      // Update profile with client_id, branch_id, country_id and branch assignments if provided
       const profileUpdate: Record<string, unknown> = {};
       if (user.client_id) profileUpdate.client_id = user.client_id;
       if (user.branch_id) profileUpdate.branch_id = user.branch_id;
+      if (user.country_id) profileUpdate.country_id = user.country_id;
       if (user.allowed_branch_ids) profileUpdate.allowed_branch_ids = user.allowed_branch_ids;
       
       if (Object.keys(profileUpdate).length > 0) {

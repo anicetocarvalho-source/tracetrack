@@ -610,7 +610,10 @@
     "needAccess": "Besoin d'accès? Contactez votre représentant DHL.",
     "invalidCredentials": "Identifiants invalides",
     "emailPlaceholder": "vous@entreprise.com",
-    "quickAccess": "Accès rapide pour la démo"
+    "quickAccess": "Accès rapide pour la démo",
+    "internalUsers": "Internes",
+    "countryAdmins": "Admins Pays",
+    "customers": "Clients"
   },
   "dashboard": {
     "title": "Tableau de bord",
