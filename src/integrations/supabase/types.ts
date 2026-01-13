@@ -413,6 +413,7 @@ export type Database = {
           allowed_branch_ids: string[] | null
           branch_id: string | null
           client_id: string | null
+          country_id: string | null
           created_at: string
           email: string
           id: string
@@ -426,6 +427,7 @@ export type Database = {
           allowed_branch_ids?: string[] | null
           branch_id?: string | null
           client_id?: string | null
+          country_id?: string | null
           created_at?: string
           email: string
           id: string
@@ -439,6 +441,7 @@ export type Database = {
           allowed_branch_ids?: string[] | null
           branch_id?: string | null
           client_id?: string | null
+          country_id?: string | null
           created_at?: string
           email?: string
           id?: string
@@ -461,6 +464,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
             referencedColumns: ["id"]
           },
         ]
@@ -1079,7 +1089,13 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "ADMIN" | "TECHNICIAN" | "SUPERVISOR" | "MANAGER" | "CUSTOMER"
+      app_role:
+        | "ADMIN"
+        | "TECHNICIAN"
+        | "SUPERVISOR"
+        | "MANAGER"
+        | "CUSTOMER"
+        | "COUNTRY_ADMIN"
       document_type: "POD" | "BL" | "INVOICE" | "OTHER"
       exception_severity: "P1" | "P2" | "P3"
       exception_status: "OPEN" | "ACKNOWLEDGED" | "RESOLVED"
@@ -1224,7 +1240,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["ADMIN", "TECHNICIAN", "SUPERVISOR", "MANAGER", "CUSTOMER"],
+      app_role: [
+        "ADMIN",
+        "TECHNICIAN",
+        "SUPERVISOR",
+        "MANAGER",
+        "CUSTOMER",
+        "COUNTRY_ADMIN",
+      ],
       document_type: ["POD", "BL", "INVOICE", "OTHER"],
       exception_severity: ["P1", "P2", "P3"],
       exception_status: ["OPEN", "ACKNOWLEDGED", "RESOLVED"],
