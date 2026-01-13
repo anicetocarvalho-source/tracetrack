@@ -56,6 +56,14 @@ const quickAccessAccounts = [
     category: 'country'
   },
   { 
+    label: 'Country Admin',
+    email: 'countryadmin.za@dhl.test', 
+    password: 'Test123!',
+    icon: Globe,
+    description: 'South Africa',
+    category: 'country'
+  },
+  { 
     label: 'Manager',
     email: 'manager@dhl.test', 
     password: 'Test123!',
