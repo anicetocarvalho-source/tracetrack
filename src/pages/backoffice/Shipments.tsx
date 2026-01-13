@@ -26,6 +26,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import type { ExceptionSeverity } from '@/lib/constants';
 import { Toggle } from '@/components/ui/toggle';
+import { useCountry } from '@/hooks/useCountry';
 
 const PAGE_SIZE = 20;
 
@@ -46,6 +47,7 @@ export default function Shipments() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { currentCountry } = useCountry();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
@@ -60,8 +62,23 @@ export default function Shipments() {
   const [bulkTransferDialogOpen, setBulkTransferDialogOpen] = useState(false);
   const [bulkNewStatus, setBulkNewStatus] = useState<ShipmentStatus | ''>('');
 
+  // Fetch branches for the selected country to filter data
+  const { data: countryBranchIds = [] } = useQuery({
+    queryKey: ['country-branch-ids', currentCountry?.id],
+    queryFn: async () => {
+      if (!currentCountry?.id) return [];
+      const { data, error } = await supabase
+        .from('branches')
+        .select('id')
+        .eq('country_id', currentCountry.id);
+      if (error) throw error;
+      return data.map(b => b.id);
+    },
+    enabled: !!currentCountry?.id,
+  });
+
   const { data, isLoading } = useQuery({
-    queryKey: ['shipments', search, statusFilter, dateRange?.from, dateRange?.to, page],
+    queryKey: ['shipments', search, statusFilter, dateRange?.from, dateRange?.to, page, currentCountry?.id, countryBranchIds],
     queryFn: async () => {
       let query = supabase
         .from('shipments')
@@ -72,6 +89,11 @@ export default function Shipments() {
         `, { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+      // Filter by country branches if a country is selected
+      if (currentCountry?.id && countryBranchIds.length > 0) {
+        query = query.in('branch_id', countryBranchIds);
+      }
 
       if (statusFilter && statusFilter !== 'all') {
         query = query.eq('current_status', statusFilter as ShipmentStatus);
@@ -95,13 +117,20 @@ export default function Shipments() {
     },
   });
 
-  // Fetch stats for quick overview
+  // Fetch stats for quick overview (filtered by country)
   const { data: stats } = useQuery({
-    queryKey: ['shipments-stats'],
+    queryKey: ['shipments-stats', currentCountry?.id, countryBranchIds],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('shipments')
-        .select('current_status');
+        .select('current_status, branch_id');
+      
+      // Filter by country branches if a country is selected
+      if (currentCountry?.id && countryBranchIds.length > 0) {
+        query = query.in('branch_id', countryBranchIds);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       
       const total = data.length;

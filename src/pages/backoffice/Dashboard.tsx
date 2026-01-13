@@ -15,6 +15,7 @@ import { ScorecardWidget } from '@/components/dashboard/ScorecardWidget';
 import { ClientComparisonCharts } from '@/components/dashboard/ClientComparisonCharts';
 import { ClientStatsCharts } from '@/components/dashboard/ClientStatsCharts';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
+import { useCountry } from '@/hooks/useCountry';
 import {
   BarChart,
   Bar,
@@ -64,6 +65,7 @@ interface SLATargetsConfig {
 
 export default function Dashboard() {
   const { t } = useTranslation();
+  const { currentCountry } = useCountry();
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subDays(new Date(), 29),
@@ -74,13 +76,35 @@ export default function Dashboard() {
     setDateRange(range);
   };
 
+  // Fetch branches for the selected country to filter data
+  const { data: countryBranchIds = [] } = useQuery({
+    queryKey: ['country-branch-ids', currentCountry?.id],
+    queryFn: async () => {
+      if (!currentCountry?.id) return [];
+      const { data, error } = await supabase
+        .from('branches')
+        .select('id')
+        .eq('country_id', currentCountry.id);
+      if (error) throw error;
+      return data.map(b => b.id);
+    },
+    enabled: !!currentCountry?.id,
+  });
+
   const { data: stats, isLoading } = useQuery({
-    queryKey: ['dashboard-stats', dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
+    queryKey: ['dashboard-stats', dateRange?.from?.toISOString(), dateRange?.to?.toISOString(), currentCountry?.id, countryBranchIds],
     queryFn: async () => {
       // Get all shipments with dates
-      const { data: allShipments } = await supabase
+      let query = supabase
         .from('shipments')
-        .select('id, current_status, created_at, client_id');
+        .select('id, current_status, created_at, client_id, branch_id');
+      
+      // Filter by country branches if a country is selected
+      if (currentCountry?.id && countryBranchIds.length > 0) {
+        query = query.in('branch_id', countryBranchIds);
+      }
+      
+      const { data: allShipments } = await query;
 
       // Filter shipments by date range
       const shipments = dateRange?.from && dateRange?.to
@@ -130,10 +154,16 @@ export default function Dashboard() {
         };
       });
 
-      // Get clients with shipment counts (filtered)
-      const { data: clients } = await supabase
+      // Get clients with shipment counts (filtered by country)
+      let clientsQuery = supabase
         .from('clients')
-        .select('id, name');
+        .select('id, name, branch_id');
+      
+      if (currentCountry?.id && countryBranchIds.length > 0) {
+        clientsQuery = clientsQuery.in('branch_id', countryBranchIds);
+      }
+      
+      const { data: clients } = await clientsQuery;
 
       const clientShipmentCounts = clients?.map(client => ({
         name: client.name.length > 15 ? client.name.slice(0, 15) + '...' : client.name,
@@ -161,17 +191,34 @@ export default function Dashboard() {
     },
   });
 
-  // Fetch exception counts by severity
+  // Fetch exception counts by severity (filtered by country)
   const { data: exceptionCounts } = useQuery({
-    queryKey: ['dashboard-exception-counts'],
+    queryKey: ['dashboard-exception-counts', currentCountry?.id, countryBranchIds],
     queryFn: async () => {
-      const { data } = await supabase
+      // Get shipment IDs for the country first
+      let shipmentIdsForCountry: string[] = [];
+      if (currentCountry?.id && countryBranchIds.length > 0) {
+        const { data: shipments } = await supabase
+          .from('shipments')
+          .select('id')
+          .in('branch_id', countryBranchIds);
+        shipmentIdsForCountry = shipments?.map(s => s.id) || [];
+      }
+
+      let query = supabase
         .from('shipment_exceptions')
-        .select('severity, status')
+        .select('severity, status, shipment_id')
         .in('status', ['OPEN', 'ACKNOWLEDGED']);
 
+      const { data } = await query;
+
+      // Filter by country shipments if applicable
+      const filteredData = currentCountry?.id && countryBranchIds.length > 0
+        ? data?.filter(ex => shipmentIdsForCountry.includes(ex.shipment_id))
+        : data;
+
       const counts = { P1: 0, P2: 0, P3: 0, total: 0 };
-      data?.forEach(ex => {
+      filteredData?.forEach(ex => {
         counts[ex.severity as keyof typeof counts]++;
         counts.total++;
       });

@@ -25,7 +25,8 @@ const CountryContext = createContext<CountryContextType | undefined>(undefined);
 const COUNTRY_STORAGE_KEY = 'selected-country-id';
 
 export function CountryProvider({ children }: { children: ReactNode }) {
-  const { user, profile, isCountryAdmin } = useAuth();
+  const { user, profile, isCountryAdmin, role } = useAuth();
+  const isAdmin = role === 'ADMIN';
   const [selectedCountryId, setSelectedCountryId] = useState<string | null>(() => {
     return localStorage.getItem(COUNTRY_STORAGE_KEY);
   });
@@ -33,7 +34,7 @@ export function CountryProvider({ children }: { children: ReactNode }) {
   // Fetch countries for COUNTRY_ADMIN users (only their assigned country)
   // or all countries for ADMINs
   const { data: countries = [], isLoading } = useQuery({
-    queryKey: ['countries', user?.id, isCountryAdmin, profile?.country_id],
+    queryKey: ['countries', user?.id, isCountryAdmin, isAdmin, profile?.country_id],
     queryFn: async () => {
       if (!user) return [];
 
@@ -63,7 +64,7 @@ export function CountryProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       return data as Country[];
     },
-    enabled: !!user && (isCountryAdmin || profile?.country_id !== undefined),
+    enabled: !!user && (isAdmin || isCountryAdmin || profile?.country_id !== undefined),
   });
 
   // Determine current country
@@ -79,7 +80,12 @@ export function CountryProvider({ children }: { children: ReactNode }) {
   }, [currentCountry?.id]);
 
   const switchCountry = (countryId: string) => {
-    setSelectedCountryId(countryId);
+    if (countryId === '') {
+      setSelectedCountryId(null);
+      localStorage.removeItem(COUNTRY_STORAGE_KEY);
+    } else {
+      setSelectedCountryId(countryId);
+    }
   };
 
   const value: CountryContextType = {

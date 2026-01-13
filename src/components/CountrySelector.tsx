@@ -83,10 +83,10 @@ export function CountrySelector({ compact = false }: CountrySelectorProps) {
               {!compact && (
                 <>
                   <span className="hidden sm:inline max-w-[100px] truncate">
-                    {currentCountry?.name || t('country.select', 'Select Country')}
+                    {currentCountry?.name || t('country.allCountries', 'All Countries')}
                   </span>
                   <span className="sm:hidden">
-                    {currentCountry?.code || '...'}
+                    {currentCountry?.code || t('common.all', 'All')}
                   </span>
                   <ChevronDown className="h-3 w-3 opacity-50" />
                 </>
@@ -104,6 +104,27 @@ export function CountrySelector({ compact = false }: CountrySelectorProps) {
           {t('country.selectCountry', 'Select Country')}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {/* All countries option for ADMINs */}
+        {role === 'ADMIN' && (
+          <DropdownMenuItem
+            onClick={() => switchCountry('')}
+            className={cn(
+              "cursor-pointer",
+              !currentCountry && "bg-accent"
+            )}
+          >
+            <Globe className="mr-2 h-4 w-4" />
+            <div className="flex-1 min-w-0">
+              <p className="truncate font-medium">{t('country.allCountries', 'All Countries')}</p>
+              <p className="text-xs text-muted-foreground">{t('country.noFilter', 'No country filter')}</p>
+            </div>
+            {!currentCountry && (
+              <Badge variant="secondary" className="ml-2 text-xs">
+                {t('country.current', 'Current')}
+              </Badge>
+            )}
+          </DropdownMenuItem>
+        )}
         {availableCountries.map((country) => (
           <DropdownMenuItem
             key={country.id}
