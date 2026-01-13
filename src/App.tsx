@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/hooks/useAuth";
 import { BranchProvider } from "@/hooks/useBranch";
+import { CountryProvider } from "@/hooks/useCountry";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SLANotificationManager } from "@/components/notifications/SLANotificationManager";
 import { PreferencesLoader } from "@/components/PreferencesLoader";
@@ -49,8 +50,9 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <AuthProvider>
-        <BranchProvider>
-          <PreferencesLoader>
+        <CountryProvider>
+          <BranchProvider>
+            <PreferencesLoader>
             <TourProvider>
               <TooltipProvider>
                 <Toaster />
@@ -211,8 +213,9 @@ const App = () => (
             </TooltipProvider>
           </TourProvider>
         </PreferencesLoader>
-      </BranchProvider>
-    </AuthProvider>
+          </BranchProvider>
+        </CountryProvider>
+      </AuthProvider>
   </ThemeProvider>
   </QueryClientProvider>
 );

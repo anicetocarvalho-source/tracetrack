@@ -38,6 +38,7 @@ import { PreferencesSyncIndicator } from '@/components/PreferencesSyncIndicator'
 import { HelpMenu } from '@/components/HelpMenu';
 import { BackofficeTour } from '@/components/tour/BackofficeTour';
 import { BranchSelector } from '@/components/BranchSelector';
+import { CountrySelector } from '@/components/CountrySelector';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   DropdownMenu,
@@ -313,6 +314,11 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
           >
             <Menu className="w-5 h-5" />
           </Button>
+          
+          {/* Country Selector - visible for COUNTRY_ADMIN and ADMIN */}
+          <div data-tour="country-selector" className="mr-2">
+            <CountrySelector />
+          </div>
           
           {/* Branch Selector - visible in header for multi-branch users */}
           <div data-tour="branch-selector">
