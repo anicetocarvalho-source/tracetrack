@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useBranch } from '@/hooks/useBranch';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
+import { BranchPerformanceComparison } from '@/components/dashboard/BranchPerformanceComparison';
 import {
   BarChart,
   Bar,
@@ -912,6 +913,9 @@ export default function BranchDashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Branch Performance Comparison Widget */}
+        <BranchPerformanceComparison />
 
         {/* SLA Compliance */}
         {slaComplianceData && (
