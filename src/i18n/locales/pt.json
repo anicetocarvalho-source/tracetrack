@@ -6,8 +6,15 @@
     "timezone": "Fuso Horário",
     "select": "Selecionar País",
     "switchCountry": "Trocar País",
-    "selectCountry": "Selecionar País",
-    "current": "Atual"
+    "selectCountry": "Selecione um País",
+    "selectCountryDescription": "Por favor selecione um país no seletor acima para visualizar o dashboard.",
+    "current": "Atual",
+    "code": "Código",
+    "dashboard": "Dashboard do País",
+    "branches": "Filiais",
+    "acrossAllBranches": "Em todas as filiais",
+    "branchPerformance": "Performance das Filiais",
+    "branchPerformanceDescription": "Estatísticas de envios por filial no país selecionado"
   },
   "aiHistory": {
     "totalSuggestions": "Total de Sugestões",
@@ -374,7 +381,8 @@
     "branchDashboard": "Painel da Filial",
     "branchComparison": "Comparação de Filiais",
     "branchTransferHistory": "Histórico de Transferências",
-    "systemConfig": "Config. Sistema"
+    "systemConfig": "Config. Sistema",
+    "countryDashboard": "Dashboard do País"
   },
   "branchDashboard": {
     "noBranchSelected": "Nenhuma filial selecionada",

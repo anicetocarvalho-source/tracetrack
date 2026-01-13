@@ -6,8 +6,15 @@
     "timezone": "Timezone",
     "select": "Select Country",
     "switchCountry": "Switch Country",
-    "selectCountry": "Select Country",
-    "current": "Current"
+    "selectCountry": "Select a Country",
+    "selectCountryDescription": "Please select a country from the selector above to view the dashboard.",
+    "current": "Current",
+    "code": "Code",
+    "dashboard": "Country Dashboard",
+    "branches": "Branches",
+    "acrossAllBranches": "Across all branches",
+    "branchPerformance": "Branch Performance",
+    "branchPerformanceDescription": "Shipment statistics by branch in the selected country"
   },
   "aiHistory": {
     "totalSuggestions": "Total Suggestions",
@@ -382,7 +389,8 @@
     "branchDashboard": "Branch Dashboard",
     "branchComparison": "Branch Comparison",
     "branchTransferHistory": "Transfer History",
-    "systemConfig": "System Config"
+    "systemConfig": "System Config",
+    "countryDashboard": "Country Dashboard"
   },
   "branchDashboard": {
     "noBranchSelected": "No branch selected",

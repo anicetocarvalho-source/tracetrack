@@ -6,8 +6,15 @@
     "timezone": "Fuseau Horaire",
     "select": "Sélectionner le Pays",
     "switchCountry": "Changer de Pays",
-    "selectCountry": "Sélectionner le Pays",
-    "current": "Actuel"
+    "selectCountry": "Sélectionnez un Pays",
+    "selectCountryDescription": "Veuillez sélectionner un pays dans le sélecteur ci-dessus pour voir le tableau de bord.",
+    "current": "Actuel",
+    "code": "Code",
+    "dashboard": "Dashboard du Pays",
+    "branches": "Succursales",
+    "acrossAllBranches": "Dans toutes les succursales",
+    "branchPerformance": "Performance des Succursales",
+    "branchPerformanceDescription": "Statistiques des expéditions par succursale dans le pays sélectionné"
   },
   "aiHistory": {
     "totalSuggestions": "Total des Suggestions",
@@ -373,7 +380,8 @@
     "branchDashboard": "Tableau de Bord Succursale",
     "branchComparison": "Comparaison des Succursales",
     "branchTransferHistory": "Historique des Transferts",
-    "systemConfig": "Config. Système"
+    "systemConfig": "Config. Système",
+    "countryDashboard": "Dashboard du Pays"
   },
   "branchDashboard": {
     "noBranchSelected": "Aucune succursale sélectionnée",
