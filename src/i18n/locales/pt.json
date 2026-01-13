@@ -920,7 +920,13 @@
     "primaryBranchHint": "A filial principal do utilizador para acesso a dados",
     "additionalBranches": "Acesso a Filiais Adicionais",
     "additionalBranchesHint": "Conceder acesso a filiais adicionais (apenas utilizadores multi-filial)",
-    "noBranchesAvailable": "Nenhuma filial adicional disponível"
+    "noBranchesAvailable": "Nenhuma filial adicional disponível",
+    "countryAdminMustHaveCountry": "Administradores de país devem ter um país atribuído"
+  },
+  "countries": {
+    "title": "Países",
+    "country": "País",
+    "selectCountry": "Selecionar um país"
   },
   "settings": {
     "title": "Configurações",
@@ -1042,6 +1048,7 @@
   },
   "roles": {
     "ADMIN": "Administrador",
+    "COUNTRY_ADMIN": "Admin. País",
     "MANAGER": "Gestor",
     "SUPERVISOR": "Supervisor",
     "TECHNICIAN": "Técnico",

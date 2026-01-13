@@ -13,6 +13,7 @@ interface AuthContextType {
   isInternalUser: boolean;
   isCustomer: boolean;
   isAdmin: boolean;
+  isCountryAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -154,9 +155,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRole(null);
   };
 
-  const isInternalUser = role === 'ADMIN' || role === 'TECHNICIAN' || role === 'SUPERVISOR' || role === 'MANAGER';
+  const isInternalUser = role === 'ADMIN' || role === 'COUNTRY_ADMIN' || role === 'TECHNICIAN' || role === 'SUPERVISOR' || role === 'MANAGER';
   const isCustomer = role === 'CUSTOMER';
   const isAdmin = role === 'ADMIN';
+  const isCountryAdmin = role === 'COUNTRY_ADMIN';
 
   return (
     <AuthContext.Provider
@@ -169,6 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isInternalUser,
         isCustomer,
         isAdmin,
+        isCountryAdmin,
         signIn,
         signUp,
         signOut,

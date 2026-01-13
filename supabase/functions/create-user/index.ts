@@ -53,10 +53,26 @@ Deno.serve(async (req) => {
       })
     }
 
-    const { email, password, name, role, client_id, branch_id } = await req.json()
+    // Only ADMIN can create COUNTRY_ADMIN users
+    if (newUserRole === 'COUNTRY_ADMIN' && roleData?.role !== 'ADMIN') {
+      return new Response(JSON.stringify({ error: 'Only admins can create country admin users' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const { email, password, name, role, client_id, branch_id, country_id } = await req.json()
 
     if (!email || !password || !name || !role) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Validate country_id for COUNTRY_ADMIN role
+    if (role === 'COUNTRY_ADMIN' && !country_id) {
+      return new Response(JSON.stringify({ error: 'Country admin must have a country assigned' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
@@ -79,10 +95,11 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Update profile with client_id and branch_id if provided
+    // Update profile with client_id, branch_id, and country_id if provided
     const profileUpdate: Record<string, any> = {}
     if (client_id) profileUpdate.client_id = client_id
     if (branch_id) profileUpdate.branch_id = branch_id
+    if (country_id) profileUpdate.country_id = country_id
     
     if (Object.keys(profileUpdate).length > 0) {
       await adminClient.from('profiles').update(profileUpdate).eq('id', newUser.user.id)
