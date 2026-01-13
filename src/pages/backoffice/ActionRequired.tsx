@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useCountry } from '@/hooks/useCountry';
 import { useToast } from '@/hooks/use-toast';
 import { SEVERITY_LABELS, SEVERITY_CLASSES, EXCEPTION_STATUS_LABELS } from '@/lib/constants';
 import type { ShipmentException } from '@/types/database';
@@ -24,9 +25,26 @@ export default function ActionRequired() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, role: userRole, profile } = useAuth();
+  const { user, role: userRole, profile, isAdmin, isCountryAdmin } = useAuth();
+  const { currentCountry } = useCountry();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Get branch IDs for the selected country
+  const { data: countryBranchIds = [] } = useQuery({
+    queryKey: ['country-branches', currentCountry?.id],
+    queryFn: async () => {
+      if (!currentCountry) return [];
+      const { data, error } = await supabase
+        .from('branches')
+        .select('id')
+        .eq('country_id', currentCountry.id)
+        .eq('is_active', true);
+      if (error) throw error;
+      return data.map(b => b.id);
+    },
+    enabled: !!currentCountry && (isAdmin || isCountryAdmin),
+  });
 
   // Initialize filters from URL params
   const [severityFilter, setSeverityFilter] = useState<string>(searchParams.get('severity') || 'all');
@@ -49,14 +67,16 @@ export default function ActionRequired() {
   const [resolutionNote, setResolutionNote] = useState('');
 
   // Fetch exceptions
+  const shouldFilterByCountry = (isAdmin || isCountryAdmin) && currentCountry && countryBranchIds.length > 0;
+
   const { data: exceptions, isLoading } = useQuery({
-    queryKey: ['shipment-exceptions', severityFilter, clientFilter, statusFilter],
+    queryKey: ['shipment-exceptions', severityFilter, clientFilter, statusFilter, currentCountry?.id, countryBranchIds],
     queryFn: async () => {
       let query = supabase
         .from('shipment_exceptions')
         .select(`
           *,
-          shipment:shipments(id, shipment_ref, client_ref, current_status, client:clients(id, name)),
+          shipment:shipments(id, shipment_ref, client_ref, current_status, branch_id, client:clients(id, name, branch_id)),
           exception_rule:exception_rules(id, name, description, max_hours_in_status)
         `)
         .order('detected_at', { ascending: false });
@@ -71,8 +91,15 @@ export default function ActionRequired() {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Client filter needs to be applied after join
+      // Filter by country (branch) if applicable
       let filtered = data || [];
+      if (shouldFilterByCountry) {
+        filtered = filtered.filter((e: any) => 
+          e.shipment?.branch_id && countryBranchIds.includes(e.shipment.branch_id)
+        );
+      }
+
+      // Client filter needs to be applied after join
       if (clientFilter !== 'all') {
         filtered = filtered.filter((e: any) => e.shipment?.client?.id === clientFilter);
       }
@@ -81,14 +108,20 @@ export default function ActionRequired() {
     },
   });
 
-  // Fetch clients for filter
+  // Fetch clients for filter (filtered by country)
   const { data: clients } = useQuery({
-    queryKey: ['clients-filter'],
+    queryKey: ['clients-filter', currentCountry?.id, countryBranchIds],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('clients')
-        .select('id, name')
+        .select('id, name, branch_id')
         .order('name');
+      
+      if (shouldFilterByCountry) {
+        query = query.in('branch_id', countryBranchIds);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
