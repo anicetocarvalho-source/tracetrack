@@ -1055,6 +1055,7 @@ export type Database = {
       }
       get_user_branch_id: { Args: { _user_id: string }; Returns: string }
       get_user_client_id: { Args: { _user_id: string }; Returns: string }
+      get_user_country_id: { Args: { _user_id: string }; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -1067,6 +1068,11 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_any_country_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_country_admin: {
+        Args: { _country_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_internal_user: { Args: { _user_id: string }; Returns: boolean }
       is_multi_branch_manager: { Args: { _user_id: string }; Returns: boolean }
       reset_rate_limit: {
@@ -1085,6 +1091,10 @@ export type Database = {
       unschedule_cron_job: { Args: { job_name: string }; Returns: undefined }
       user_has_branch_access: {
         Args: { _branch_id: string; _user_id: string }
+        Returns: boolean
+      }
+      user_has_country_access: {
+        Args: { _country_id: string; _user_id: string }
         Returns: boolean
       }
     }

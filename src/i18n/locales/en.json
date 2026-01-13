@@ -926,7 +926,13 @@
     "primaryBranchHint": "The user's main branch for data access",
     "additionalBranches": "Additional Branch Access",
     "additionalBranchesHint": "Grant access to additional branches (multi-branch users only)",
-    "noBranchesAvailable": "No additional branches available"
+    "noBranchesAvailable": "No additional branches available",
+    "countryAdminMustHaveCountry": "Country admin users must have a country assigned"
+  },
+  "countries": {
+    "title": "Countries",
+    "country": "Country",
+    "selectCountry": "Select a country"
   },
   "settings": {
     "title": "Settings",
@@ -1048,6 +1054,7 @@
   },
   "roles": {
     "ADMIN": "Admin",
+    "COUNTRY_ADMIN": "Country Admin",
     "MANAGER": "Manager",
     "SUPERVISOR": "Supervisor",
     "TECHNICIAN": "Technician",

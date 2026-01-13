@@ -42,15 +42,20 @@ export const STATUS_CLASSES: Record<ShipmentStatus, string> = {
   CANCELLED: 'status-cancelled',
 };
 
-export type AppRole = 'ADMIN' | 'TECHNICIAN' | 'SUPERVISOR' | 'MANAGER' | 'CUSTOMER';
+export type AppRole = 'ADMIN' | 'COUNTRY_ADMIN' | 'TECHNICIAN' | 'SUPERVISOR' | 'MANAGER' | 'CUSTOMER';
 
 export const ROLE_LABELS: Record<AppRole, string> = {
   ADMIN: 'Admin',
+  COUNTRY_ADMIN: 'Country Admin',
   TECHNICIAN: 'Technician',
   SUPERVISOR: 'Supervisor',
   MANAGER: 'Manager',
   CUSTOMER: 'Customer',
 };
+
+// Role hierarchy for permission checks
+export const INTERNAL_ROLES: AppRole[] = ['ADMIN', 'COUNTRY_ADMIN', 'MANAGER', 'SUPERVISOR', 'TECHNICIAN'];
+export const ADMIN_ROLES: AppRole[] = ['ADMIN', 'COUNTRY_ADMIN'];
 
 export const CONTAINER_TYPES = [
   '20GP',

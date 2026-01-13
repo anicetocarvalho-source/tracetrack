@@ -34,20 +34,22 @@ const Users = () => {
   const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
-  const [formData, setFormData] = useState({ email: '', password: '', name: '', role: '' as AppRole | '', client_id: '', branch_id: '' });
-  const [editFormData, setEditFormData] = useState({ role: '' as AppRole | '', client_id: '', is_active: true, branch_id: '', allowed_branch_ids: [] as string[] });
+  const [formData, setFormData] = useState({ email: '', password: '', name: '', role: '' as AppRole | '', client_id: '', branch_id: '', country_id: '' });
+  const [editFormData, setEditFormData] = useState({ role: '' as AppRole | '', client_id: '', is_active: true, branch_id: '', country_id: '', allowed_branch_ids: [] as string[] });
 
   const { toast } = useToast();
-  const { role: currentUserRole, user } = useAuth();
+  const { role: currentUserRole, user, isCountryAdmin } = useAuth();
   const queryClient = useQueryClient();
   const isManager = currentUserRole === 'MANAGER';
   const isAdmin = currentUserRole === 'ADMIN';
   const isSupervisor = currentUserRole === 'SUPERVISOR';
-  const canManageUsers = isAdmin || isManager || isSupervisor;
+  const canManageUsers = isAdmin || isCountryAdmin || isManager || isSupervisor;
 
   // Roles that the current user can assign
   const allowedRoles: AppRole[] = isAdmin
-    ? ['ADMIN', 'MANAGER', 'SUPERVISOR', 'TECHNICIAN', 'CUSTOMER']
+    ? ['ADMIN', 'COUNTRY_ADMIN', 'MANAGER', 'SUPERVISOR', 'TECHNICIAN', 'CUSTOMER']
+    : isCountryAdmin
+    ? ['MANAGER', 'SUPERVISOR', 'TECHNICIAN', 'CUSTOMER'] // Country admins cannot create ADMIN or COUNTRY_ADMIN
     : isManager 
     ? ['MANAGER', 'SUPERVISOR', 'TECHNICIAN', 'CUSTOMER']
     : ['TECHNICIAN', 'CUSTOMER']; // Supervisors can only assign these roles
@@ -86,11 +88,24 @@ const Users = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('branches')
-        .select('*, country:countries(name)')
+        .select('*, country:countries(id, name)')
         .eq('is_active', true)
         .order('name');
       if (error) throw error;
-      return data as (Branch & { country: { name: string } | null })[];
+      return data as (Branch & { country: { id: string; name: string } | null })[];
+    },
+  });
+
+  const { data: countries = [] } = useQuery({
+    queryKey: ['countries'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('countries')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+      if (error) throw error;
+      return data;
     },
   });
 
@@ -104,6 +119,7 @@ const Users = () => {
           role: data.role, 
           client_id: data.client_id || null,
           branch_id: data.branch_id || null,
+          country_id: data.country_id || null,
         },
       });
       if (error) throw error;
@@ -113,7 +129,7 @@ const Users = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setIsCreateOpen(false);
-      setFormData({ email: '', password: '', name: '', role: '', client_id: '', branch_id: '' });
+      setFormData({ email: '', password: '', name: '', role: '', client_id: '', branch_id: '', country_id: '' });
       toast({ title: t('users.userCreatedSuccess') });
     },
     onError: (error: Error) => {
@@ -209,6 +225,10 @@ const Users = () => {
       toast({ title: t('users.customerMustHaveClient'), variant: 'destructive' });
       return;
     }
+    if (formData.role === 'COUNTRY_ADMIN' && !formData.country_id) {
+      toast({ title: t('users.countryAdminMustHaveCountry'), variant: 'destructive' });
+      return;
+    }
     // Check if supervisor is trying to create a role they don't have permission for
     if (!allowedRoles.includes(formData.role as AppRole)) {
       toast({ title: t('users.noPermissionForRole'), variant: 'destructive' });
@@ -220,9 +240,13 @@ const Users = () => {
   // Check if current user can edit a specific user based on their role
   const canEditUser = (userRole: AppRole | null): boolean => {
     if (isAdmin) return true; // Admin can edit anyone
+    if (isCountryAdmin) {
+      // Country admins can edit anyone except ADMIN and COUNTRY_ADMIN
+      return userRole !== 'ADMIN' && userRole !== 'COUNTRY_ADMIN';
+    }
     if (isManager) {
-      // Managers can edit anyone except ADMIN
-      return userRole !== 'ADMIN';
+      // Managers can edit anyone except ADMIN and COUNTRY_ADMIN
+      return userRole !== 'ADMIN' && userRole !== 'COUNTRY_ADMIN';
     }
     if (isSupervisor) {
       // Supervisors can only edit TECHNICIAN and CUSTOMER
@@ -238,6 +262,7 @@ const Users = () => {
       client_id: u.client_id || '', 
       is_active: u.is_active,
       branch_id: u.branch_id || '',
+      country_id: (u as any).country_id || '',
       allowed_branch_ids: u.allowed_branch_ids || [],
     });
     setIsEditOpen(true);
@@ -283,7 +308,7 @@ const Users = () => {
 
   const getBranchName = (branchId: string | null) => branchId ? branches.find((b) => b.id === branchId)?.name || '-' : '-';
   
-  const isInternalRole = (role: AppRole | string) => ['ADMIN', 'MANAGER', 'SUPERVISOR', 'TECHNICIAN'].includes(role);
+  const isInternalRole = (role: AppRole | string) => ['ADMIN', 'COUNTRY_ADMIN', 'MANAGER', 'SUPERVISOR', 'TECHNICIAN'].includes(role);
 
   const handleAllowedBranchToggle = (branchId: string, checked: boolean) => {
     setEditFormData(prev => ({
@@ -350,7 +375,18 @@ const Users = () => {
                       </Select>
                     </div>
                   )}
-                  {isInternalRole(formData.role) && (
+                  {formData.role === 'COUNTRY_ADMIN' && (
+                    <div className="space-y-2">
+                      <Label>{t('countries.country')} *</Label>
+                      <Select value={formData.country_id} onValueChange={(v) => setFormData({ ...formData, country_id: v })}>
+                        <SelectTrigger><SelectValue placeholder={t('countries.selectCountry')} /></SelectTrigger>
+                        <SelectContent>
+                          {countries.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  {isInternalRole(formData.role) && formData.role !== 'COUNTRY_ADMIN' && (
                     <div className="space-y-2">
                       <Label>{t('branches.primaryBranch')} *</Label>
                       <Select value={formData.branch_id} onValueChange={(v) => setFormData({ ...formData, branch_id: v })}>

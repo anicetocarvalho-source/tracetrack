@@ -59,6 +59,7 @@ export interface Profile {
   name: string;
   client_id: string | null;
   branch_id: string | null;
+  country_id: string | null;
   allowed_branch_ids: string[] | null;
   is_active: boolean;
   created_at: string;
@@ -66,6 +67,7 @@ export interface Profile {
   last_login_at: string | null;
   // Joined fields
   branch?: Branch;
+  country?: Country;
 }
 
 export interface UserRole {
