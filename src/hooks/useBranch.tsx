@@ -125,6 +125,7 @@ export function BranchProvider({ children }: { children: ReactNode }) {
       queryClient.invalidateQueries({ queryKey: ['branch-sla-targets'] });
       queryClient.invalidateQueries({ queryKey: ['branch-sla-compliance'] });
       queryClient.invalidateQueries({ queryKey: ['branch-at-risk-shipments'] });
+      queryClient.invalidateQueries({ queryKey: ['branch-performance-comparison'] });
     }
   }, [availableBranches, queryClient]);
 
