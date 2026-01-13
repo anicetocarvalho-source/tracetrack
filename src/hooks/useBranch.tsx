@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Branch, Country } from '@/types/database';
@@ -21,6 +21,7 @@ const BRANCH_STORAGE_KEY = 'selected_branch_id';
 
 export function BranchProvider({ children }: { children: ReactNode }) {
   const { user, profile, role } = useAuth();
+  const queryClient = useQueryClient();
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(() => {
     return localStorage.getItem(BRANCH_STORAGE_KEY);
   });
@@ -111,13 +112,21 @@ export function BranchProvider({ children }: { children: ReactNode }) {
     }
   }, [currentBranch?.id]);
 
-  const switchBranch = (branchId: string) => {
+  const switchBranch = useCallback((branchId: string) => {
     const branch = availableBranches.find(b => b.id === branchId);
     if (branch) {
       setSelectedBranchId(branchId);
       localStorage.setItem(BRANCH_STORAGE_KEY, branchId);
+      
+      // Invalidate all branch-specific queries to force refetch with new branch
+      queryClient.invalidateQueries({ queryKey: ['branch-dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['branch-exception-counts'] });
+      queryClient.invalidateQueries({ queryKey: ['branch-exception-trends'] });
+      queryClient.invalidateQueries({ queryKey: ['branch-sla-targets'] });
+      queryClient.invalidateQueries({ queryKey: ['branch-sla-compliance'] });
+      queryClient.invalidateQueries({ queryKey: ['branch-at-risk-shipments'] });
     }
-  };
+  }, [availableBranches, queryClient]);
 
   const getBranchTimezone = (): string => {
     if (!currentBranch) return 'UTC';
