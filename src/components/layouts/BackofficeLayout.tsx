@@ -26,7 +26,8 @@ import {
   Eye,
   BarChart3,
   TrendingUp,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Globe
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -90,36 +91,37 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
 
   const navEntries: NavEntry[] = [
     { path: '/backoffice', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { path: '/backoffice/country-dashboard', label: t('nav.countryDashboard'), icon: Globe, roles: ['ADMIN', 'COUNTRY_ADMIN'] },
     { path: '/backoffice/branch-dashboard', label: t('nav.branchDashboard'), icon: BarChart3 },
     { path: '/backoffice/branch-comparison', label: t('nav.branchComparison'), icon: TrendingUp },
     { path: '/backoffice/branch-transfer-history', label: t('nav.branchTransferHistory'), icon: ArrowRightLeft, roles: ['ADMIN', 'SUPERVISOR', 'MANAGER'] },
     { path: '/backoffice/action-required', label: t('exceptions.title'), icon: AlertTriangle, highlight: true },
     { path: '/backoffice/shipments', label: t('nav.shipments'), icon: Package },
-    { path: '/backoffice/customer-requests', label: t('nav.customerRequests'), icon: FileText, roles: ['ADMIN', 'SUPERVISOR', 'MANAGER'] },
+    { path: '/backoffice/customer-requests', label: t('nav.customerRequests'), icon: FileText, roles: ['ADMIN', 'COUNTRY_ADMIN', 'SUPERVISOR', 'MANAGER'] },
     // SLA Group
     {
       label: t('nav.slaGroup'),
       icon: Clock,
-      roles: ['ADMIN', 'SUPERVISOR', 'MANAGER'],
+      roles: ['ADMIN', 'COUNTRY_ADMIN', 'SUPERVISOR', 'MANAGER'],
       items: [
-        { path: '/backoffice/sla-management', label: t('nav.slaManagement'), icon: Target, roles: ['ADMIN', 'SUPERVISOR', 'MANAGER'] },
-        { path: '/backoffice/sla-breach-report', label: t('nav.slaBreachReport'), icon: FileWarning, roles: ['ADMIN', 'SUPERVISOR', 'MANAGER'] },
-        { path: '/backoffice/sla-heatmap', label: t('nav.slaHeatmap'), icon: Grid3X3, roles: ['ADMIN', 'SUPERVISOR', 'MANAGER'] },
+        { path: '/backoffice/sla-management', label: t('nav.slaManagement'), icon: Target, roles: ['ADMIN', 'COUNTRY_ADMIN', 'SUPERVISOR', 'MANAGER'] },
+        { path: '/backoffice/sla-breach-report', label: t('nav.slaBreachReport'), icon: FileWarning, roles: ['ADMIN', 'COUNTRY_ADMIN', 'SUPERVISOR', 'MANAGER'] },
+        { path: '/backoffice/sla-heatmap', label: t('nav.slaHeatmap'), icon: Grid3X3, roles: ['ADMIN', 'COUNTRY_ADMIN', 'SUPERVISOR', 'MANAGER'] },
       ]
     },
-    { path: '/backoffice/scorecards', label: t('nav.scorecards'), icon: FileBarChart, roles: ['ADMIN', 'SUPERVISOR', 'MANAGER'] },
+    { path: '/backoffice/scorecards', label: t('nav.scorecards'), icon: FileBarChart, roles: ['ADMIN', 'COUNTRY_ADMIN', 'SUPERVISOR', 'MANAGER'] },
     { path: '/backoffice/notification-settings', label: t('nav.notificationSettings'), icon: BellRing },
     // Admin Group
     {
       label: t('nav.adminGroup'),
       icon: Cog,
-      roles: ['ADMIN', 'MANAGER'],
+      roles: ['ADMIN', 'COUNTRY_ADMIN', 'MANAGER'],
       items: [
-        { path: '/backoffice/clients', label: t('nav.clients'), icon: Building2, roles: ['ADMIN', 'MANAGER'] },
-        { path: '/backoffice/users', label: t('nav.users'), icon: Users, roles: ['ADMIN', 'MANAGER'] },
+        { path: '/backoffice/clients', label: t('nav.clients'), icon: Building2, roles: ['ADMIN', 'COUNTRY_ADMIN', 'MANAGER'] },
+        { path: '/backoffice/users', label: t('nav.users'), icon: Users, roles: ['ADMIN', 'COUNTRY_ADMIN', 'MANAGER'] },
         { path: '/backoffice/exception-rules', label: t('exceptions.rulesTitle'), icon: Settings2, roles: ['ADMIN', 'MANAGER'] },
-        { path: '/backoffice/branch-management', label: t('nav.branchManagement'), icon: Building2, roles: ['ADMIN', 'MANAGER'] },
-        { path: '/backoffice/audit-logs', label: t('nav.auditLogs'), icon: FileText, roles: ['ADMIN', 'MANAGER'] },
+        { path: '/backoffice/branch-management', label: t('nav.branchManagement'), icon: Building2, roles: ['ADMIN', 'COUNTRY_ADMIN', 'MANAGER'] },
+        { path: '/backoffice/audit-logs', label: t('nav.auditLogs'), icon: FileText, roles: ['ADMIN', 'COUNTRY_ADMIN', 'MANAGER'] },
         { path: '/backoffice/settings', label: t('nav.settings'), icon: Settings, roles: ['ADMIN', 'MANAGER'] },
         { path: '/backoffice/system-config', label: t('nav.systemConfig'), icon: Settings2, roles: ['ADMIN'] },
       ]

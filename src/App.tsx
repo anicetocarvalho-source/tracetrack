@@ -27,6 +27,7 @@ import BranchManagement from "./pages/backoffice/BranchManagement";
 import BranchDashboard from "./pages/backoffice/BranchDashboard";
 import BranchComparison from "./pages/backoffice/BranchComparison";
 import BranchTransferHistory from "./pages/backoffice/BranchTransferHistory";
+import CountryDashboard from "./pages/backoffice/CountryDashboard";
 import ActionRequired from "./pages/backoffice/ActionRequired";
 import ExceptionRules from "./pages/backoffice/ExceptionRules";
 import SLAManagement from "./pages/backoffice/SLAManagement";
@@ -122,6 +123,11 @@ const App = () => (
             <Route path="/backoffice/branch-transfer-history" element={
               <ProtectedRoute requireInternal>
                 <BranchTransferHistory />
+              </ProtectedRoute>
+            } />
+            <Route path="/backoffice/country-dashboard" element={
+              <ProtectedRoute requireInternal>
+                <CountryDashboard />
               </ProtectedRoute>
             } />
             <Route path="/backoffice/action-required" element={
