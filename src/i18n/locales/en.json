@@ -1437,6 +1437,16 @@
     "branchCreated": "Branch created successfully",
     "branchUpdated": "Branch updated successfully"
   },
+  "country": {
+    "currentCountry": "Current Country",
+    "selectCountry": "Select Country",
+    "switchCountry": "Switch Country",
+    "select": "Select Country",
+    "current": "Current",
+    "timezone": "Timezone",
+    "allCountries": "All Countries",
+    "noCountries": "No countries available"
+  },
   "transferHistory": {
     "title": "Branch Transfer History",
     "subtitle": "View all shipment transfers between branches with full audit trail",

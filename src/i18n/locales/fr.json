@@ -1430,6 +1430,16 @@
     "branchCreated": "Filiale créée avec succès",
     "branchUpdated": "Filiale mise à jour avec succès"
   },
+  "country": {
+    "currentCountry": "Pays Actuel",
+    "selectCountry": "Sélectionner Pays",
+    "switchCountry": "Changer de Pays",
+    "select": "Sélectionner Pays",
+    "current": "Actuel",
+    "timezone": "Fuseau Horaire",
+    "allCountries": "Tous les Pays",
+    "noCountries": "Aucun pays disponible"
+  },
   "transferHistory": {
     "title": "Historique des Transferts de Succursale",
     "subtitle": "Voir tous les transferts d'expéditions entre succursales avec piste d'audit complète",

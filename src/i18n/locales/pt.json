@@ -1431,6 +1431,16 @@
     "branchCreated": "Filial criada com sucesso",
     "branchUpdated": "Filial atualizada com sucesso"
   },
+  "country": {
+    "currentCountry": "País Atual",
+    "selectCountry": "Selecionar País",
+    "switchCountry": "Trocar País",
+    "select": "Selecionar País",
+    "current": "Atual",
+    "timezone": "Fuso Horário",
+    "allCountries": "Todos os Países",
+    "noCountries": "Nenhum país disponível"
+  },
   "transferHistory": {
     "title": "Histórico de Transferências de Filial",
     "subtitle": "Ver todas as transferências de envios entre filiais com registo completo de auditoria",
