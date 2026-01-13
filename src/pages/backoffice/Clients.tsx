@@ -29,6 +29,7 @@ import { useTranslation } from 'react-i18next';
 import { safeFormatDate } from '@/lib/utils';
 import type { Client } from '@/types/database';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCountry } from '@/hooks/useCountry';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -46,6 +47,7 @@ const itemVariants = {
 export default function Clients() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { currentCountry } = useCountry();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [name, setName] = useState('');
@@ -56,13 +58,35 @@ export default function Clients() {
   const [showFilters, setShowFilters] = useState(false);
   const [filterHasEmails, setFilterHasEmails] = useState<'all' | 'with' | 'without'>('all');
 
-  const { data: clients, isLoading } = useQuery({
-    queryKey: ['clients'],
+  // Fetch branches for the selected country to filter data
+  const { data: countryBranchIds = [] } = useQuery({
+    queryKey: ['country-branch-ids', currentCountry?.id],
     queryFn: async () => {
+      if (!currentCountry?.id) return [];
       const { data, error } = await supabase
+        .from('branches')
+        .select('id')
+        .eq('country_id', currentCountry.id);
+      if (error) throw error;
+      return data.map(b => b.id);
+    },
+    enabled: !!currentCountry?.id,
+  });
+
+  const { data: clients, isLoading } = useQuery({
+    queryKey: ['clients', currentCountry?.id, countryBranchIds],
+    queryFn: async () => {
+      let query = supabase
         .from('clients')
         .select('*')
         .order('name');
+      
+      // Filter by country branches if a country is selected
+      if (currentCountry?.id && countryBranchIds.length > 0) {
+        query = query.in('branch_id', countryBranchIds);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data as Client[];
     },

@@ -1,4 +1,14 @@
 {
+  "country": {
+    "allCountries": "Todos os Países",
+    "noFilter": "Sem filtro de país",
+    "currentCountry": "País Atual",
+    "timezone": "Fuso Horário",
+    "select": "Selecionar País",
+    "switchCountry": "Trocar País",
+    "selectCountry": "Selecionar País",
+    "current": "Atual"
+  },
   "aiHistory": {
     "totalSuggestions": "Total de Sugestões",
     "accepted": "Aceites",

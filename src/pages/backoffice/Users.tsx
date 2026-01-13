@@ -18,6 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { AppRole } from '@/lib/constants';
 import type { Profile, Client, UserRole, Branch } from '@/types/database';
+import { useCountry } from '@/hooks/useCountry';
 
 interface UserWithRole extends Profile {
   role: AppRole | null;
@@ -40,6 +41,7 @@ const Users = () => {
   const { toast } = useToast();
   const { role: currentUserRole, user, isCountryAdmin } = useAuth();
   const queryClient = useQueryClient();
+  const { currentCountry } = useCountry();
   const isManager = currentUserRole === 'MANAGER';
   const isAdmin = currentUserRole === 'ADMIN';
   const isSupervisor = currentUserRole === 'SUPERVISOR';
@@ -54,14 +56,37 @@ const Users = () => {
     ? ['MANAGER', 'SUPERVISOR', 'TECHNICIAN', 'CUSTOMER']
     : ['TECHNICIAN', 'CUSTOMER']; // Supervisors can only assign these roles
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['users', page],
+  // Fetch branches for the selected country to filter data
+  const { data: countryBranchIds = [] } = useQuery({
+    queryKey: ['country-branch-ids', currentCountry?.id],
     queryFn: async () => {
-      const { data, error, count } = await supabase
+      if (!currentCountry?.id) return [];
+      const { data, error } = await supabase
+        .from('branches')
+        .select('id')
+        .eq('country_id', currentCountry.id);
+      if (error) throw error;
+      return data.map(b => b.id);
+    },
+    enabled: !!currentCountry?.id,
+  });
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['users', page, currentCountry?.id, countryBranchIds],
+    queryFn: async () => {
+      let query = supabase
         .from('profiles')
         .select(`*, user_roles (*)`, { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+      
+      // Filter by country if a country is selected
+      if (currentCountry?.id) {
+        // Filter users by country_id or by branch_id in country branches
+        query = query.or(`country_id.eq.${currentCountry.id}${countryBranchIds.length > 0 ? `,branch_id.in.(${countryBranchIds.join(',')})` : ''}`);
+      }
+      
+      const { data, error, count } = await query;
       if (error) throw error;
       const users = (data || []).map((u: any) => ({ ...u, role: u.user_roles?.[0]?.role || null })) as UserWithRole[];
       return { users, totalCount: count || 0 };
