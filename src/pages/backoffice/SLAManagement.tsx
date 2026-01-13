@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Plus, Pencil, Trash2, Target, TrendingUp, AlertTriangle, CheckCircle, Building2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useCountry } from '@/hooks/useCountry';
 import { useTranslation } from 'react-i18next';
 import { STATUS_LABELS, ShipmentStatus } from '@/lib/constants';
 import { 
@@ -51,7 +52,8 @@ const STATUS_ORDER: ShipmentStatus[] = [
 const SLAManagement = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { role } = useAuth();
+  const { role, isAdmin, isCountryAdmin } = useAuth();
+  const { currentCountry } = useCountry();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<SLAConfig | null>(null);
@@ -64,35 +66,81 @@ const SLAManagement = () => {
 
   const isManager = role === 'MANAGER';
 
-  // Fetch SLA configs
-  const { data: slaConfigs = [], isLoading: isLoadingConfigs } = useQuery({
-    queryKey: ['sla-configs'],
+  // Get branch IDs for the selected country
+  const { data: countryBranchIds = [] } = useQuery({
+    queryKey: ['country-branches', currentCountry?.id],
     queryFn: async () => {
+      if (!currentCountry) return [];
       const { data, error } = await supabase
-        .from('sla_config')
-        .select('*, client:clients(name)')
-        .order('shipment_status');
+        .from('branches')
+        .select('id')
+        .eq('country_id', currentCountry.id)
+        .eq('is_active', true);
       if (error) throw error;
-      return data as SLAConfig[];
+      return data.map(b => b.id);
+    },
+    enabled: !!currentCountry && (isAdmin || isCountryAdmin),
+  });
+
+  const shouldFilterByCountry = (isAdmin || isCountryAdmin) && currentCountry && countryBranchIds.length > 0;
+
+  // Fetch SLA configs (filtered by country)
+  const { data: slaConfigs = [], isLoading: isLoadingConfigs } = useQuery({
+    queryKey: ['sla-configs', currentCountry?.id, countryBranchIds],
+    queryFn: async () => {
+      let query = supabase
+        .from('sla_config')
+        .select('*, client:clients(name, branch_id), branch:branches(name, country_id)')
+        .order('shipment_status');
+      
+      if (shouldFilterByCountry) {
+        // Filter by branch or client's branch
+        query = query.or(`branch_id.in.(${countryBranchIds.join(',')}),branch_id.is.null`);
+      }
+      
+      const { data, error } = await query;
+      if (error) throw error;
+      
+      // Additional client-side filtering for client-specific configs
+      let filtered = data || [];
+      if (shouldFilterByCountry) {
+        filtered = filtered.filter((config: any) => {
+          // Global configs (no client, no branch) should show for all
+          if (!config.client_id && !config.branch_id) return true;
+          // Branch-specific configs
+          if (config.branch_id && countryBranchIds.includes(config.branch_id)) return true;
+          // Client-specific configs - check client's branch
+          if (config.client_id && config.client?.branch_id && countryBranchIds.includes(config.client.branch_id)) return true;
+          return false;
+        });
+      }
+      
+      return filtered as SLAConfig[];
     },
   });
 
-  // Fetch clients for dropdown
+  // Fetch clients for dropdown (filtered by country)
   const { data: clients = [] } = useQuery({
-    queryKey: ['clients-list'],
+    queryKey: ['clients-list', currentCountry?.id, countryBranchIds],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('clients')
-        .select('id, name')
+        .select('id, name, branch_id')
         .order('name');
+      
+      if (shouldFilterByCountry) {
+        query = query.in('branch_id', countryBranchIds);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
   });
 
-  // Fetch SLA statistics
+  // Fetch SLA statistics (filtered by country)
   const { data: slaStats, isLoading: isLoadingStats } = useQuery({
-    queryKey: ['sla-stats'],
+    queryKey: ['sla-stats', currentCountry?.id, countryBranchIds],
     queryFn: async () => {
       // Get all shipment SLA records
       const { data: slaRecords, error } = await supabase
@@ -103,13 +151,20 @@ const SLAManagement = () => {
           elapsed_hours,
           breached,
           sla_config:sla_config(max_hours),
-          shipment:shipments(client:clients(name))
+          shipment:shipments(branch_id, client:clients(name, branch_id))
         `)
         .not('exited_at', 'is', null);
 
       if (error) throw error;
 
-      const records = slaRecords || [];
+      // Filter by country if applicable
+      let records = slaRecords || [];
+      if (shouldFilterByCountry) {
+        records = records.filter((r: any) => 
+          r.shipment?.branch_id && countryBranchIds.includes(r.shipment.branch_id)
+        );
+      }
+
       const totalRecords = records.length;
       const breachedRecords = records.filter(r => r.breached);
       const compliancePercent = totalRecords > 0 

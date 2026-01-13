@@ -50,6 +50,7 @@ import { DateRangePickerCompact } from '@/components/ui/date-range-picker';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useCountry } from '@/hooks/useCountry';
 import { supabase } from '@/integrations/supabase/client';
 import { RequestComments } from '@/components/requests/RequestComments';
 import {
@@ -63,9 +64,28 @@ import {
 export default function CustomerRequests() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user, role } = useAuth();
+  const { user, role, isAdmin, isCountryAdmin } = useAuth();
+  const { currentCountry } = useCountry();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Get branch IDs for the selected country
+  const { data: countryBranchIds = [] } = useQuery({
+    queryKey: ['country-branches', currentCountry?.id],
+    queryFn: async () => {
+      if (!currentCountry) return [];
+      const { data, error } = await supabase
+        .from('branches')
+        .select('id')
+        .eq('country_id', currentCountry.id)
+        .eq('is_active', true);
+      if (error) throw error;
+      return data.map(b => b.id);
+    },
+    enabled: !!currentCountry && (isAdmin || isCountryAdmin),
+  });
+
+  const shouldFilterByCountry = (isAdmin || isCountryAdmin) && currentCountry && countryBranchIds.length > 0;
 
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [clientFilter, setClientFilter] = useState<string>('ALL');
@@ -84,23 +104,27 @@ export default function CustomerRequests() {
 
   type ClientOption = { id: string; name: string };
   
-  // Fetch clients for the filter dropdown
+  // Fetch clients for the filter dropdown (filtered by country)
   const { data: clients } = useQuery<ClientOption[]>({
-    queryKey: ['clients-filter'],
+    queryKey: ['clients-filter', currentCountry?.id, countryBranchIds],
     queryFn: async () => {
-      // @ts-expect-error - Supabase deep type instantiation issue
-      const { data, error } = await supabase
+      let query = supabase
         .from('clients')
-        .select('id, name')
-        .eq('is_active', true)
+        .select('id, name, branch_id')
         .order('name');
+      
+      if (shouldFilterByCountry) {
+        query = query.in('branch_id', countryBranchIds);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return (data || []) as ClientOption[];
     },
   });
 
   const { data: requests, isLoading } = useQuery({
-    queryKey: ['all-customer-requests', statusFilter],
+    queryKey: ['all-customer-requests', statusFilter, currentCountry?.id, countryBranchIds],
     queryFn: async () => {
       const baseQuery = supabase
         .from('customer_requests')
@@ -110,7 +134,8 @@ export default function CustomerRequests() {
             shipment_ref,
             client_ref,
             client_id,
-            client:clients(id, name)
+            branch_id,
+            client:clients(id, name, branch_id)
           )
         `)
         .order('created_at', { ascending: false });
@@ -119,6 +144,14 @@ export default function CustomerRequests() {
         ? await baseQuery
         : await baseQuery.eq('status', statusFilter as 'OPEN' | 'IN_PROGRESS' | 'RESOLVED');
       if (error) throw error;
+
+      // Filter by country (branch) if applicable
+      let filtered = data || [];
+      if (shouldFilterByCountry) {
+        filtered = filtered.filter((r: any) => 
+          r.shipment?.branch_id && countryBranchIds.includes(r.shipment.branch_id)
+        );
+      }
 
       // Fetch user names
       const userIds = [
@@ -135,7 +168,7 @@ export default function CustomerRequests() {
 
       const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
 
-      return data?.map((r) => ({
+      return filtered?.map((r) => ({
         ...r,
         creator: profileMap.get(r.created_by) || null,
         resolver: r.resolved_by ? profileMap.get(r.resolved_by) || null : null,

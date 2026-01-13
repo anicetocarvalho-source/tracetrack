@@ -27,6 +27,8 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/hooks/useAuth';
+import { useCountry } from '@/hooks/useCountry';
 import { Country, Branch, BranchSettings } from '@/types/database';
 import { SHIPMENT_STATUSES, STATUS_LABELS, ShipmentStatus } from '@/lib/constants';
 
@@ -78,6 +80,8 @@ interface BranchSettingsForm {
 const BranchManagement = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { isAdmin, isCountryAdmin } = useAuth();
+  const { currentCountry } = useCountry();
   const queryClient = useQueryClient();
   
   const [countryDialogOpen, setCountryDialogOpen] = useState(false);
@@ -109,27 +113,41 @@ const BranchManagement = () => {
     sla_overrides: {} as Record<ShipmentStatus, number>,
   });
 
-  // Fetch countries
+  // Fetch countries (filtered for COUNTRY_ADMIN)
   const { data: countries = [], isLoading: countriesLoading } = useQuery({
-    queryKey: ['countries'],
+    queryKey: ['countries', currentCountry?.id, isCountryAdmin],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('countries')
         .select('*')
         .order('name');
+      
+      // COUNTRY_ADMIN can only see their assigned country
+      if (isCountryAdmin && currentCountry) {
+        query = query.eq('id', currentCountry.id);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data as Country[];
     },
   });
 
-  // Fetch branches with country join
+  // Fetch branches with country join (filtered by country)
   const { data: branches = [], isLoading: branchesLoading } = useQuery({
-    queryKey: ['branches'],
+    queryKey: ['branches', currentCountry?.id, isAdmin, isCountryAdmin],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('branches')
         .select('*, country:countries(*)')
         .order('name');
+      
+      // Filter by selected country for ADMIN/COUNTRY_ADMIN
+      if ((isAdmin || isCountryAdmin) && currentCountry) {
+        query = query.eq('country_id', currentCountry.id);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data as (Branch & { country: Country })[];
     },
