@@ -17,6 +17,8 @@ import { Link } from 'react-router-dom';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { AreaChart, Area, XAxis, YAxis, BarChart, Bar, Cell } from 'recharts';
 import { DateRangePickerCompact } from '@/components/ui/date-range-picker';
+import { useCountry } from '@/hooks/useCountry';
+import { useAuth } from '@/hooks/useAuth';
 
 interface SLABreachRecord {
   id: string;
@@ -56,6 +58,8 @@ const ITEMS_PER_PAGE = 20;
 
 const SLABreachReport = () => {
   const { t } = useTranslation();
+  const { currentCountry } = useCountry();
+  const { isAdmin, isCountryAdmin } = useAuth();
   const [clientFilter, setClientFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
@@ -71,14 +75,38 @@ const SLABreachReport = () => {
     setCurrentPage(1);
   };
 
-  // Fetch clients for filter
-  const { data: clients = [] } = useQuery({
-    queryKey: ['clients-list'],
+  // Get branch IDs for the selected country
+  const { data: countryBranchIds = [] } = useQuery({
+    queryKey: ['country-branches', currentCountry?.id],
     queryFn: async () => {
+      if (!currentCountry) return [];
       const { data, error } = await supabase
+        .from('branches')
+        .select('id')
+        .eq('country_id', currentCountry.id)
+        .eq('is_active', true);
+      if (error) throw error;
+      return data.map(b => b.id);
+    },
+    enabled: !!currentCountry && (isAdmin || isCountryAdmin),
+  });
+
+  const shouldFilterByCountry = (isAdmin || isCountryAdmin) && currentCountry && countryBranchIds.length > 0;
+
+  // Fetch clients for filter (filtered by country)
+  const { data: clients = [] } = useQuery({
+    queryKey: ['clients-list', currentCountry?.id, countryBranchIds],
+    queryFn: async () => {
+      let query = supabase
         .from('clients')
-        .select('id, name')
+        .select('id, name, branch_id')
         .order('name');
+      
+      if (shouldFilterByCountry) {
+        query = query.in('branch_id', countryBranchIds);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -86,7 +114,7 @@ const SLABreachReport = () => {
 
   // Fetch breach data
   const { data: breachData, isLoading } = useQuery({
-    queryKey: ['sla-breaches', clientFilter, statusFilter, dateRange?.from, dateRange?.to, currentPage],
+    queryKey: ['sla-breaches', clientFilter, statusFilter, dateRange?.from, dateRange?.to, currentPage, currentCountry?.id, countryBranchIds],
     queryFn: async () => {
       let query = supabase
         .from('shipment_sla')
@@ -102,6 +130,7 @@ const SLABreachReport = () => {
           shipment:shipments(
             shipment_ref,
             client_ref,
+            branch_id,
             client:clients(id, name)
           )
         `, { count: 'exact' })
@@ -129,8 +158,15 @@ const SLABreachReport = () => {
       const { data, error, count } = await query;
       if (error) throw error;
 
-      // Filter by client (done in JS since it's a nested filter)
-      let filteredData = data as SLABreachRecord[];
+      // Filter by country (branch) and client in JS since nested filters
+      let filteredData = data as (SLABreachRecord & { shipment: { branch_id?: string } })[];
+      
+      if (shouldFilterByCountry) {
+        filteredData = filteredData.filter(
+          r => r.shipment?.branch_id && countryBranchIds.includes(r.shipment.branch_id)
+        );
+      }
+      
       if (clientFilter !== 'all') {
         filteredData = filteredData.filter(
           r => r.shipment?.client?.id === clientFilter
@@ -138,7 +174,7 @@ const SLABreachReport = () => {
       }
 
       return {
-        breaches: filteredData,
+        breaches: filteredData as SLABreachRecord[],
         totalCount: count || 0,
         totalPages: Math.ceil((count || 0) / ITEMS_PER_PAGE),
       };
@@ -147,7 +183,7 @@ const SLABreachReport = () => {
 
   // Stats summary
   const { data: stats } = useQuery({
-    queryKey: ['sla-breach-stats', clientFilter, statusFilter, dateRange?.from, dateRange?.to],
+    queryKey: ['sla-breach-stats', clientFilter, statusFilter, dateRange?.from, dateRange?.to, currentCountry?.id, countryBranchIds],
     queryFn: async () => {
       let statsQuery = supabase
         .from('shipment_sla')
@@ -157,7 +193,7 @@ const SLABreachReport = () => {
           elapsed_hours,
           breached,
           sla_config:sla_config(max_hours),
-          shipment:shipments(client:clients(id))
+          shipment:shipments(branch_id, client:clients(id))
         `)
         .eq('breached', true);
 
@@ -177,6 +213,13 @@ const SLABreachReport = () => {
       if (error) throw error;
 
       let records = data || [];
+      
+      // Filter by country (branch)
+      if (shouldFilterByCountry) {
+        records = records.filter(
+          (r: any) => r.shipment?.branch_id && countryBranchIds.includes(r.shipment.branch_id)
+        );
+      }
       
       // Filter by client
       if (clientFilter !== 'all') {
@@ -241,19 +284,29 @@ const SLABreachReport = () => {
 
   // Fetch trend data for charts (last 30 days)
   const { data: trendData } = useQuery({
-    queryKey: ['sla-breach-trends'],
+    queryKey: ['sla-breach-trends', currentCountry?.id, countryBranchIds],
     queryFn: async () => {
       const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
       
       const { data, error } = await supabase
         .from('shipment_sla')
-        .select('exited_at, shipment_status, elapsed_hours, sla_config:sla_config(max_hours)')
+        .select('exited_at, shipment_status, elapsed_hours, sla_config:sla_config(max_hours), shipment:shipments(branch_id)')
         .eq('breached', true)
         .gte('exited_at', thirtyDaysAgo)
         .order('exited_at', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      
+      let records = data || [];
+      
+      // Filter by country (branch)
+      if (shouldFilterByCountry) {
+        records = records.filter(
+          (r: any) => r.shipment?.branch_id && countryBranchIds.includes(r.shipment.branch_id)
+        );
+      }
+      
+      return records;
     },
   });
 
