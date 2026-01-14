@@ -976,14 +976,13 @@ export default function ShipmentDetail() {
             {/* Documents */}
             <motion.div variants={itemVariants}>
               <Card className="hover:shadow-md transition-shadow duration-300">
-                <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <div className="p-1.5 rounded-lg bg-primary/10">
                       <Files className="w-4 h-4 text-primary" />
                     </div>
                     {t('documents.title')}
                   </CardTitle>
-                  <DocumentUploadDialog shipmentId={id!} />
                 </CardHeader>
                 <CardContent>
                   <DocumentList shipmentId={id!} isCustomer={false} />
