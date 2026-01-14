@@ -129,12 +129,18 @@ export default function Dashboard() {
       const onHoldCount = statusCounts['ON_HOLD_INCIDENT'] || 0;
       const deliveredCount = statusCounts['DELIVERED'] || 0;
 
-      // Get recent shipments (always show recent, not filtered)
-      const { data: recentShipments } = await supabase
+      // Get recent shipments (filtered by country if selected)
+      let recentQuery = supabase
         .from('shipments')
         .select('id, shipment_ref, client_ref, current_status, created_at, client:clients(name)')
         .order('created_at', { ascending: false })
         .limit(5);
+      
+      if (currentCountry?.id && countryBranchIds.length > 0) {
+        recentQuery = recentQuery.in('branch_id', countryBranchIds);
+      }
+      
+      const { data: recentShipments } = await recentQuery;
 
       // Calculate shipments over time based on selected range
       const rangeStart = dateRange?.from || subDays(new Date(), 29);
@@ -226,27 +232,42 @@ export default function Dashboard() {
     },
   });
 
-  // Fetch exception trends over time
+  // Fetch exception trends over time (filtered by country)
   const { data: exceptionTrends, isLoading: isLoadingTrends } = useQuery({
-    queryKey: ['dashboard-exception-trends', dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
+    queryKey: ['dashboard-exception-trends', dateRange?.from?.toISOString(), dateRange?.to?.toISOString(), currentCountry?.id, countryBranchIds],
     queryFn: async () => {
+      // Get shipment IDs for the country first
+      let shipmentIdsForCountry: string[] = [];
+      if (currentCountry?.id && countryBranchIds.length > 0) {
+        const { data: shipments } = await supabase
+          .from('shipments')
+          .select('id')
+          .in('branch_id', countryBranchIds);
+        shipmentIdsForCountry = shipments?.map(s => s.id) || [];
+      }
+
       const { data: allExceptions } = await supabase
         .from('shipment_exceptions')
-        .select('severity, detected_at, status');
+        .select('severity, detected_at, status, shipment_id');
+
+      // Filter by country shipments if applicable
+      let filteredExceptions = currentCountry?.id && countryBranchIds.length > 0
+        ? allExceptions?.filter(ex => shipmentIdsForCountry.includes(ex.shipment_id))
+        : allExceptions;
 
       // Filter exceptions by date range
       const rangeStart = dateRange?.from || subDays(new Date(), 29);
       const rangeEnd = dateRange?.to || new Date();
       
       const exceptions = dateRange?.from && dateRange?.to
-        ? allExceptions?.filter(ex => {
+        ? filteredExceptions?.filter(ex => {
             const detectedDate = new Date(ex.detected_at);
             return isWithinInterval(detectedDate, {
               start: startOfDay(dateRange.from!),
               end: endOfDay(dateRange.to!),
             });
           })
-        : allExceptions;
+        : filteredExceptions;
 
       // Calculate exceptions over time based on selected range
       const daysInRange = eachDayOfInterval({ start: rangeStart, end: rangeEnd });
@@ -271,26 +292,41 @@ export default function Dashboard() {
     },
   });
 
-  // Fetch resolution time analysis
+  // Fetch resolution time analysis (filtered by country)
   const { data: resolutionTimeData, isLoading: isLoadingResolution } = useQuery({
-    queryKey: ['dashboard-resolution-times', dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
+    queryKey: ['dashboard-resolution-times', dateRange?.from?.toISOString(), dateRange?.to?.toISOString(), currentCountry?.id, countryBranchIds],
     queryFn: async () => {
+      // Get shipment IDs for the country first
+      let shipmentIdsForCountry: string[] = [];
+      if (currentCountry?.id && countryBranchIds.length > 0) {
+        const { data: shipments } = await supabase
+          .from('shipments')
+          .select('id')
+          .in('branch_id', countryBranchIds);
+        shipmentIdsForCountry = shipments?.map(s => s.id) || [];
+      }
+
       const { data: resolvedExceptions } = await supabase
         .from('shipment_exceptions')
-        .select('severity, detected_at, resolved_at')
+        .select('severity, detected_at, resolved_at, shipment_id')
         .eq('status', 'RESOLVED')
         .not('resolved_at', 'is', null);
 
+      // Filter by country shipments if applicable
+      let filteredExceptions = currentCountry?.id && countryBranchIds.length > 0
+        ? resolvedExceptions?.filter(ex => shipmentIdsForCountry.includes(ex.shipment_id))
+        : resolvedExceptions;
+
       // Filter by date range
       const exceptions = dateRange?.from && dateRange?.to
-        ? resolvedExceptions?.filter(ex => {
+        ? filteredExceptions?.filter(ex => {
             const resolvedDate = new Date(ex.resolved_at!);
             return isWithinInterval(resolvedDate, {
               start: startOfDay(dateRange.from!),
               end: endOfDay(dateRange.to!),
             });
           })
-        : resolvedExceptions;
+        : filteredExceptions;
 
       // Calculate average resolution time by severity
       const severities = ['P1', 'P2', 'P3'] as const;
@@ -346,26 +382,41 @@ export default function Dashboard() {
 
   const activeSLATargets = slaTargets || DEFAULT_SLA_TARGETS;
 
-  // Fetch SLA compliance data
+  // Fetch SLA compliance data (filtered by country)
   const { data: slaComplianceData, isLoading: isLoadingSLA } = useQuery({
-    queryKey: ['dashboard-sla-compliance', dateRange?.from?.toISOString(), dateRange?.to?.toISOString(), activeSLATargets],
+    queryKey: ['dashboard-sla-compliance', dateRange?.from?.toISOString(), dateRange?.to?.toISOString(), activeSLATargets, currentCountry?.id, countryBranchIds],
     queryFn: async () => {
+      // Get shipment IDs for the country first
+      let shipmentIdsForCountry: string[] = [];
+      if (currentCountry?.id && countryBranchIds.length > 0) {
+        const { data: shipments } = await supabase
+          .from('shipments')
+          .select('id')
+          .in('branch_id', countryBranchIds);
+        shipmentIdsForCountry = shipments?.map(s => s.id) || [];
+      }
+
       const { data: resolvedExceptions } = await supabase
         .from('shipment_exceptions')
-        .select('severity, detected_at, resolved_at')
+        .select('severity, detected_at, resolved_at, shipment_id')
         .eq('status', 'RESOLVED')
         .not('resolved_at', 'is', null);
 
+      // Filter by country shipments if applicable
+      let filteredExceptions = currentCountry?.id && countryBranchIds.length > 0
+        ? resolvedExceptions?.filter(ex => shipmentIdsForCountry.includes(ex.shipment_id))
+        : resolvedExceptions;
+
       // Filter by date range
       const exceptions = dateRange?.from && dateRange?.to
-        ? resolvedExceptions?.filter(ex => {
+        ? filteredExceptions?.filter(ex => {
             const resolvedDate = new Date(ex.resolved_at!);
             return isWithinInterval(resolvedDate, {
               start: startOfDay(dateRange.from!),
               end: endOfDay(dateRange.to!),
             });
           })
-        : resolvedExceptions;
+        : filteredExceptions;
 
       // Calculate SLA compliance by severity
       const severities = ['P1', 'P2', 'P3'] as const;
@@ -416,9 +467,9 @@ export default function Dashboard() {
     },
   });
 
-  // Fetch slowest resolved exceptions
+  // Fetch slowest resolved exceptions (filtered by country)
   const { data: slowestExceptions, isLoading: isLoadingSlowest } = useQuery({
-    queryKey: ['dashboard-slowest-exceptions', dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
+    queryKey: ['dashboard-slowest-exceptions', dateRange?.from?.toISOString(), dateRange?.to?.toISOString(), currentCountry?.id, countryBranchIds],
     queryFn: async () => {
       const { data: resolvedExceptions, error } = await supabase
         .from('shipment_exceptions')
@@ -433,6 +484,7 @@ export default function Dashboard() {
             id,
             shipment_ref,
             current_status,
+            branch_id,
             client:clients(name)
           ),
           resolved_by_profile:profiles!shipment_exceptions_resolved_by_fkey(name)
@@ -446,16 +498,24 @@ export default function Dashboard() {
         return [];
       }
 
+      // Filter by country branches if applicable
+      let filteredExceptions = currentCountry?.id && countryBranchIds.length > 0
+        ? resolvedExceptions?.filter(ex => {
+            const branchId = (ex.shipment as any)?.branch_id;
+            return branchId && countryBranchIds.includes(branchId);
+          })
+        : resolvedExceptions;
+
       // Filter by date range
       const exceptions = dateRange?.from && dateRange?.to
-        ? resolvedExceptions?.filter(ex => {
+        ? filteredExceptions?.filter(ex => {
             const resolvedDate = new Date(ex.resolved_at!);
             return isWithinInterval(resolvedDate, {
               start: startOfDay(dateRange.from!),
               end: endOfDay(dateRange.to!),
             });
           })
-        : resolvedExceptions;
+        : filteredExceptions;
 
       // Calculate resolution time and sort by slowest
       const withResolutionTime = (exceptions || []).map(ex => {
@@ -490,9 +550,9 @@ export default function Dashboard() {
     enabled: !!activeSLATargets,
   });
 
-  // Fetch at-risk shipments (approaching SLA limits)
+  // Fetch at-risk shipments (approaching SLA limits, filtered by country)
   const { data: atRiskShipments, isLoading: isLoadingAtRisk } = useQuery({
-    queryKey: ['dashboard-at-risk-shipments'],
+    queryKey: ['dashboard-at-risk-shipments', currentCountry?.id, countryBranchIds],
     queryFn: async () => {
       const { data: activeSlaRecords, error } = await supabase
         .from('shipment_sla')
@@ -505,6 +565,7 @@ export default function Dashboard() {
           shipment:shipments(
             id,
             shipment_ref,
+            branch_id,
             client:clients(name)
           )
         `)
@@ -515,6 +576,14 @@ export default function Dashboard() {
         console.error('Error fetching at-risk shipments:', error);
         return { critical: [], warning: [], criticalCount: 0, warningCount: 0, total: 0 };
       }
+
+      // Filter by country branches if applicable
+      const filteredRecords = currentCountry?.id && countryBranchIds.length > 0
+        ? activeSlaRecords?.filter(record => {
+            const branchId = (record.shipment as any)?.branch_id;
+            return branchId && countryBranchIds.includes(branchId);
+          })
+        : activeSlaRecords;
 
       const now = new Date();
       const CRITICAL_THRESHOLD = 0.90;
@@ -531,7 +600,7 @@ export default function Dashboard() {
         riskLevel: 'critical' | 'warning';
       }[] = [];
 
-      for (const record of activeSlaRecords || []) {
+      for (const record of filteredRecords || []) {
         const maxHours = (record.sla_config as any)?.max_hours;
         if (!maxHours) continue;
 
