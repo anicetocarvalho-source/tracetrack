@@ -40,6 +40,7 @@ import { HelpMenu } from '@/components/HelpMenu';
 import { BackofficeTour } from '@/components/tour/BackofficeTour';
 import { BranchSelector } from '@/components/BranchSelector';
 import { CountrySelector } from '@/components/CountrySelector';
+import { CountryFilterIndicator } from '@/components/CountryFilterIndicator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   DropdownMenu,
@@ -325,6 +326,11 @@ export function BackofficeLayout({ children }: BackofficeLayoutProps) {
           {/* Branch Selector - visible in header for multi-branch users */}
           <div data-tour="branch-selector">
             <BranchSelector />
+          </div>
+          
+          {/* Country Filter Indicator - shows active country filter */}
+          <div className="ml-3">
+            <CountryFilterIndicator />
           </div>
           
           <div className="flex-1" />
