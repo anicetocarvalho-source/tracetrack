@@ -14,7 +14,12 @@
     "branches": "Succursales",
     "acrossAllBranches": "Dans toutes les succursales",
     "branchPerformance": "Performance des Succursales",
-    "branchPerformanceDescription": "Statistiques des expéditions par succursale dans le pays sélectionné"
+    "branchPerformanceDescription": "Statistiques des expéditions par succursale dans le pays sélectionné",
+    "filteringBy": "Filtrage par",
+    "currentlyFiltering": "Filtrage des données par",
+    "clickToRemoveFilter": "Cliquez X pour afficher tous les pays",
+    "showingAllData": "Affichage des données de tous les pays",
+    "useDropdownToFilter": "Utilisez le sélecteur de pays pour filtrer par pays spécifique"
   },
   "aiHistory": {
     "totalSuggestions": "Total des Suggestions",
