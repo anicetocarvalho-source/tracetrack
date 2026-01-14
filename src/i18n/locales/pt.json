@@ -14,7 +14,12 @@
     "branches": "Filiais",
     "acrossAllBranches": "Em todas as filiais",
     "branchPerformance": "Performance das Filiais",
-    "branchPerformanceDescription": "Estatísticas de envios por filial no país selecionado"
+    "branchPerformanceDescription": "Estatísticas de envios por filial no país selecionado",
+    "filteringBy": "A filtrar por",
+    "currentlyFiltering": "A filtrar dados por",
+    "clickToRemoveFilter": "Clique X para mostrar todos os países",
+    "showingAllData": "A mostrar dados de todos os países",
+    "useDropdownToFilter": "Use o seletor de país para filtrar por país específico"
   },
   "aiHistory": {
     "totalSuggestions": "Total de Sugestões",

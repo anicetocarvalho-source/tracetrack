@@ -14,7 +14,12 @@
     "branches": "Branches",
     "acrossAllBranches": "Across all branches",
     "branchPerformance": "Branch Performance",
-    "branchPerformanceDescription": "Shipment statistics by branch in the selected country"
+    "branchPerformanceDescription": "Shipment statistics by branch in the selected country",
+    "filteringBy": "Filtering by",
+    "currentlyFiltering": "Currently filtering data by",
+    "clickToRemoveFilter": "Click X to show all countries",
+    "showingAllData": "Showing data from all countries",
+    "useDropdownToFilter": "Use the country selector to filter by specific country"
   },
   "aiHistory": {
     "totalSuggestions": "Total Suggestions",
