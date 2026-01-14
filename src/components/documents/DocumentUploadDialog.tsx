@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Upload, Loader2, Plus, X, FileText, CloudUpload } from 'lucide-react';
+import { Upload, Loader2, Plus, X, FileText, CloudUpload, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,10 +38,92 @@ interface FileToUpload {
   file: File;
   documentType: DocumentType;
   id: string;
+  originalSize?: number;
+  compressed?: boolean;
 }
 
 const ALLOWED_EXTENSIONS = ['pdf', 'png', 'jpg', 'jpeg'];
+const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg'];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const COMPRESSION_THRESHOLD = 500 * 1024; // Compress images > 500KB
+const MAX_IMAGE_DIMENSION = 2048; // Max width/height after compression
+const COMPRESSION_QUALITY = 0.8; // JPEG quality (0-1)
+
+// Compress image using Canvas API
+const compressImage = async (file: File): Promise<{ file: File; wasCompressed: boolean }> => {
+  const ext = file.name.split('.').pop()?.toLowerCase();
+  
+  // Skip non-image files
+  if (!ext || !IMAGE_EXTENSIONS.includes(ext)) {
+    return { file, wasCompressed: false };
+  }
+  
+  // Skip small images
+  if (file.size <= COMPRESSION_THRESHOLD) {
+    return { file, wasCompressed: false };
+  }
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      
+      let { width, height } = img;
+      
+      // Calculate new dimensions if needed
+      if (width > MAX_IMAGE_DIMENSION || height > MAX_IMAGE_DIMENSION) {
+        if (width > height) {
+          height = Math.round((height * MAX_IMAGE_DIMENSION) / width);
+          width = MAX_IMAGE_DIMENSION;
+        } else {
+          width = Math.round((width * MAX_IMAGE_DIMENSION) / height);
+          height = MAX_IMAGE_DIMENSION;
+        }
+      }
+      
+      // Create canvas and draw resized image
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve({ file, wasCompressed: false });
+        return;
+      }
+      
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // Convert to blob with compression
+      canvas.toBlob(
+        (blob) => {
+          if (blob && blob.size < file.size) {
+            // Create new file with compressed data
+            const compressedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            });
+            resolve({ file: compressedFile, wasCompressed: true });
+          } else {
+            // Compression didn't help, use original
+            resolve({ file, wasCompressed: false });
+          }
+        },
+        'image/jpeg',
+        COMPRESSION_QUALITY
+      );
+    };
+    
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve({ file, wasCompressed: false });
+    };
+    
+    img.src = url;
+  });
+};
 
 export function DocumentUploadDialog({
   shipmentId,
@@ -57,6 +140,7 @@ export function DocumentUploadDialog({
   const [visibleToClient, setVisibleToClient] = useState(isCustomer);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isCompressing, setIsCompressing] = useState(false);
 
   const detectDocumentType = (filename: string): DocumentType => {
     const lower = filename.toLowerCase();
@@ -83,10 +167,11 @@ export function DocumentUploadDialog({
     return null;
   };
 
-  const addFiles = useCallback((newFiles: FileList | File[]) => {
-    const filesToAdd: FileToUpload[] = [];
+  const addFiles = useCallback(async (newFiles: FileList | File[]) => {
     const errors: string[] = [];
+    const validFiles: File[] = [];
 
+    // First validate all files
     Array.from(newFiles).forEach((file) => {
       const error = validateFile(file);
       if (error) {
@@ -95,11 +180,7 @@ export function DocumentUploadDialog({
         // Check for duplicates
         const isDuplicate = files.some((f) => f.file.name === file.name);
         if (!isDuplicate) {
-          filesToAdd.push({
-            file,
-            documentType: detectDocumentType(file.name),
-            id: crypto.randomUUID(),
-          });
+          validFiles.push(file);
         }
       }
     });
@@ -112,8 +193,46 @@ export function DocumentUploadDialog({
       });
     }
 
-    if (filesToAdd.length > 0) {
-      setFiles((prev) => [...prev, ...filesToAdd]);
+    if (validFiles.length === 0) return;
+
+    // Compress images
+    setIsCompressing(true);
+    let totalSaved = 0;
+
+    try {
+      const processedFiles: FileToUpload[] = await Promise.all(
+        validFiles.map(async (file) => {
+          const { file: processedFile, wasCompressed } = await compressImage(file);
+          
+          if (wasCompressed) {
+            totalSaved += file.size - processedFile.size;
+          }
+
+          return {
+            file: processedFile,
+            documentType: detectDocumentType(file.name),
+            id: crypto.randomUUID(),
+            originalSize: wasCompressed ? file.size : undefined,
+            compressed: wasCompressed,
+          };
+        })
+      );
+
+      setFiles((prev) => [...prev, ...processedFiles]);
+
+      // Show compression summary if any files were compressed
+      const compressedCount = processedFiles.filter((f) => f.compressed).length;
+      if (compressedCount > 0) {
+        toast({
+          title: t('documents.compressionComplete'),
+          description: t('documents.compressionSaved', {
+            count: compressedCount,
+            saved: formatFileSize(totalSaved),
+          }),
+        });
+      }
+    } finally {
+      setIsCompressing(false);
     }
   }, [files, t, toast]);
 
@@ -236,6 +355,13 @@ export function DocumentUploadDialog({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const totalSaved = files.reduce((acc, f) => {
+    if (f.compressed && f.originalSize) {
+      return acc + (f.originalSize - f.file.size);
+    }
+    return acc;
+  }, 0);
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => {
       if (!isOpen) handleClose();
@@ -263,7 +389,7 @@ export function DocumentUploadDialog({
               isDragging
                 ? 'border-primary bg-primary/5 scale-[1.02]'
                 : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50',
-              uploadMutation.isPending && 'pointer-events-none opacity-50'
+              (uploadMutation.isPending || isCompressing) && 'pointer-events-none opacity-50'
             )}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -277,26 +403,46 @@ export function DocumentUploadDialog({
               multiple
               className="hidden"
               onChange={handleFileInputChange}
-              disabled={uploadMutation.isPending}
+              disabled={uploadMutation.isPending || isCompressing}
             />
-            <CloudUpload className={cn(
-              'w-12 h-12 mx-auto mb-3 transition-colors',
-              isDragging ? 'text-primary' : 'text-muted-foreground'
-            )} />
-            <p className="text-sm font-medium mb-1">
-              {isDragging ? t('documents.dropHere') : t('documents.dragDropOrClick')}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {t('documents.allowedFormats')} • Max 10MB
-            </p>
+            {isCompressing ? (
+              <>
+                <Loader2 className="w-12 h-12 mx-auto mb-3 text-primary animate-spin" />
+                <p className="text-sm font-medium mb-1">{t('documents.compressing')}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t('documents.compressingDesc')}
+                </p>
+              </>
+            ) : (
+              <>
+                <CloudUpload className={cn(
+                  'w-12 h-12 mx-auto mb-3 transition-colors',
+                  isDragging ? 'text-primary' : 'text-muted-foreground'
+                )} />
+                <p className="text-sm font-medium mb-1">
+                  {isDragging ? t('documents.dropHere') : t('documents.dragDropOrClick')}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t('documents.allowedFormats')} • Max 10MB • {t('documents.autoCompression')}
+                </p>
+              </>
+            )}
           </div>
 
           {/* File List */}
           {files.length > 0 && (
             <div className="space-y-2">
-              <Label className="text-sm font-medium">
-                {t('documents.selectedFiles')} ({files.length})
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">
+                  {t('documents.selectedFiles')} ({files.length})
+                </Label>
+                {totalSaved > 0 && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Zap className="w-3 h-3" />
+                    {t('documents.saved')} {formatFileSize(totalSaved)}
+                  </Badge>
+                )}
+              </div>
               <div className="max-h-48 overflow-y-auto space-y-2 pr-1">
                 {files.map((fileItem) => (
                   <div
@@ -305,9 +451,22 @@ export function DocumentUploadDialog({
                   >
                     <FileText className="w-8 h-8 text-primary flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{fileItem.file.name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium truncate">{fileItem.file.name}</p>
+                        {fileItem.compressed && (
+                          <Badge variant="outline" className="text-xs flex items-center gap-1 flex-shrink-0">
+                            <Zap className="w-3 h-3" />
+                            {t('documents.compressed')}
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         {formatFileSize(fileItem.file.size)}
+                        {fileItem.compressed && fileItem.originalSize && (
+                          <span className="ml-1 line-through opacity-50">
+                            {formatFileSize(fileItem.originalSize)}
+                          </span>
+                        )}
                       </p>
                     </div>
                     <Select
@@ -374,13 +533,13 @@ export function DocumentUploadDialog({
               type="button" 
               variant="outline" 
               onClick={handleClose}
-              disabled={uploadMutation.isPending}
+              disabled={uploadMutation.isPending || isCompressing}
             >
               {t('common.cancel')}
             </Button>
             <Button 
               type="submit" 
-              disabled={files.length === 0 || uploadMutation.isPending}
+              disabled={files.length === 0 || uploadMutation.isPending || isCompressing}
             >
               {uploadMutation.isPending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
