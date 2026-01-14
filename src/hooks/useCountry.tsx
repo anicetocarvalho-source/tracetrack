@@ -68,9 +68,20 @@ export function CountryProvider({ children }: { children: ReactNode }) {
   });
 
   // Determine current country
-  const currentCountry = selectedCountryId 
-    ? countries.find(c => c.id === selectedCountryId) || countries[0] || null
-    : countries[0] || null;
+  // For ADMIN: null selectedCountryId means "All Countries" (currentCountry = null)
+  // For COUNTRY_ADMIN or others: default to first available country
+  const currentCountry = (() => {
+    if (selectedCountryId) {
+      return countries.find(c => c.id === selectedCountryId) || countries[0] || null;
+    }
+    // If no country selected
+    if (isAdmin && countries.length > 1) {
+      // ADMIN with "All Countries" selected - return null to show all
+      return null;
+    }
+    // For others, default to first country
+    return countries[0] || null;
+  })();
 
   // Persist selected country to localStorage
   useEffect(() => {
