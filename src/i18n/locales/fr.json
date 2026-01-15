@@ -469,6 +469,7 @@
     "status": "Statut",
     "country": "Pays",
     "selectCountry": "Sélectionner un pays",
+    "countryRequired": "Le pays est obligatoire",
     "countriesList": "Liste des Pays",
     "countriesListDesc": "Gérer les pays où votre organisation opère",
     "noCountries": "Aucun pays configuré pour le moment",
