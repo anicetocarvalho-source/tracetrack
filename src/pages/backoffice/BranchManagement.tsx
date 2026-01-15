@@ -661,12 +661,15 @@ const BranchManagement = () => {
                   </DialogHeader>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>{t('branchManagement.country')}</Label>
+                      <Label className="flex items-center gap-1">
+                        {t('branchManagement.country')}
+                        <span className="text-destructive">*</span>
+                      </Label>
                       <Select
                         value={branchForm.country_id}
                         onValueChange={(v) => setBranchForm({ ...branchForm, country_id: v })}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className={!branchForm.country_id ? 'border-destructive/50' : ''}>
                           <SelectValue placeholder={t('branchManagement.selectCountry')} />
                         </SelectTrigger>
                         <SelectContent>
@@ -677,6 +680,9 @@ const BranchManagement = () => {
                           ))}
                         </SelectContent>
                       </Select>
+                      {!branchForm.country_id && (
+                        <p className="text-sm text-destructive">{t('branchManagement.countryRequired')}</p>
+                      )}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
