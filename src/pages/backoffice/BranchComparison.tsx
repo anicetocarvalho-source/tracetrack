@@ -17,6 +17,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { BackofficeLayout } from '@/components/layouts/BackofficeLayout';
 import { useTranslation } from 'react-i18next';
 import { useBranch } from '@/hooks/useBranch';
+import { useCountry } from '@/hooks/useCountry';
+import { useAuth } from '@/hooks/useAuth';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -74,12 +76,25 @@ interface BranchMetrics {
 export default function BranchComparison() {
   const { t } = useTranslation();
   const { availableBranches } = useBranch();
+  const { currentCountry } = useCountry();
+  const { role } = useAuth();
   const [selectedBranchIds, setSelectedBranchIds] = useState<string[]>([]);
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subDays(new Date(), 29),
     to: new Date(),
   });
+
+  const isAdmin = role === 'ADMIN';
+  const isCountryAdmin = role === 'COUNTRY_ADMIN';
+
+  // Filter branches by selected country for ADMIN and COUNTRY_ADMIN roles
+  const filteredBranches = useMemo(() => {
+    if ((isAdmin || isCountryAdmin) && currentCountry) {
+      return availableBranches.filter(branch => branch.country_id === currentCountry.id);
+    }
+    return availableBranches;
+  }, [availableBranches, currentCountry, isAdmin, isCountryAdmin]);
 
   const toggleBranch = (branchId: string) => {
     setSelectedBranchIds(prev => 
@@ -90,23 +105,32 @@ export default function BranchComparison() {
   };
 
   const selectAllBranches = () => {
-    setSelectedBranchIds(availableBranches.map(b => b.id));
+    setSelectedBranchIds(filteredBranches.map(b => b.id));
   };
 
   const clearAllBranches = () => {
     setSelectedBranchIds([]);
   };
 
+  // Clear selected branches when country changes
+  useMemo(() => {
+    const validBranchIds = filteredBranches.map(b => b.id);
+    const invalidSelections = selectedBranchIds.filter(id => !validBranchIds.includes(id));
+    if (invalidSelections.length > 0) {
+      setSelectedBranchIds(prev => prev.filter(id => validBranchIds.includes(id)));
+    }
+  }, [filteredBranches]);
+
   // Fetch metrics for all selected branches
   const { data: branchMetrics, isLoading } = useQuery({
-    queryKey: ['branch-comparison-metrics', selectedBranchIds, dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
+    queryKey: ['branch-comparison-metrics', selectedBranchIds, dateRange?.from?.toISOString(), dateRange?.to?.toISOString(), currentCountry?.id],
     queryFn: async (): Promise<BranchMetrics[]> => {
       if (selectedBranchIds.length === 0) return [];
 
       const metrics: BranchMetrics[] = [];
 
       for (const branchId of selectedBranchIds) {
-        const branch = availableBranches.find(b => b.id === branchId);
+        const branch = filteredBranches.find(b => b.id === branchId);
         if (!branch) continue;
 
         // Fetch shipments for this branch
@@ -320,7 +344,7 @@ export default function BranchComparison() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-3">
-              {availableBranches.map((branch, idx) => (
+              {filteredBranches.map((branch, idx) => (
                 <div
                   key={branch.id}
                   className={cn(
@@ -351,7 +375,7 @@ export default function BranchComparison() {
               <div className="mt-4 flex items-center gap-2 flex-wrap">
                 <span className="text-sm text-muted-foreground">{t('branchComparison.comparing')}:</span>
                 {selectedBranchIds.map((id, idx) => {
-                  const branch = availableBranches.find(b => b.id === id);
+                  const branch = filteredBranches.find(b => b.id === id);
                   return (
                     <Badge key={id} variant="secondary" className="gap-1">
                       <div
