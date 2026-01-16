@@ -79,7 +79,7 @@ const handler = async (req: Request): Promise<Response> => {
         <body>
           <div class="container">
             <div class="header">
-              <h1 style="margin: 0; font-size: 24px;">DHL Tracking Portal</h1>
+              <h1 style="margin: 0; font-size: 24px;">DHL Tracking Platform</h1>
             </div>
             <div class="content">
               <p>Dear ${customer_name || 'Valued Customer'},</p>
@@ -107,7 +107,7 @@ const handler = async (req: Request): Promise<Response> => {
               <p>Best regards,<br>DHL Operations Team</p>
             </div>
             <div class="footer">
-              <p>This is an automated message from the DHL Tracking Portal.</p>
+              <p>This is an automated message from the DHL Tracking Platform.</p>
               <p>© ${new Date().getFullYear()} DHL. All rights reserved.</p>
             </div>
           </div>

@@ -160,7 +160,7 @@ export default function Auth() {
             <img src={dhlLogoRed} alt="DHL" className="h-10 w-auto" />
           </div>
           <h1 className="text-4xl font-bold mb-4">
-            Shipment Tracking Portal
+            Shipment Tracking Platform
           </h1>
           <p className="text-xl text-white/80 mb-8 max-w-md">
             {t('portal.trackShipments')}
@@ -204,7 +204,7 @@ export default function Auth() {
             <div className="inline-block mb-4">
               <img src={dhlLogoRed} alt="DHL" className="h-10 w-auto" />
             </div>
-            <h1 className="text-xl font-bold text-foreground">Shipment Tracking Portal</h1>
+            <h1 className="text-xl font-bold text-foreground">Shipment Tracking Platform</h1>
           </div>
 
           <Card className="border-0 shadow-2xl">
